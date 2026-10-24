@@ -14,7 +14,7 @@
       "version": "0:0.5.5-1",
       "files": {
         ".SRCINFO": "3f3cf20fffc94e3f572ccbe8cb937e6b45f2be49fca2c29572d90d87513d4284",
-        "PKGBUILD": "ce76c6727f6b57cec4c7abee21dc88540812465de392a2793352841393d79bfd"
+        "PKGBUILD": "a7ebb6b1b8a2dc2a74fb29d4266940f09879cbb6a33f6f47666df63f62432181"
       },
       "assets": [
         {
@@ -41,7 +41,7 @@
       "version": "0:0.5.5-1",
       "files": {
         ".SRCINFO": "206c0e11464a74089e01cbc371e04b52af315224aeed70ec1a0036e467267da9",
-        "PKGBUILD": "1c8b5fc07f1224cee7e2fcd60d8472e7e7b7879b302c08071c98e387cde1a315"
+        "PKGBUILD": "d2afa2c050bd7876e253cfb530d8e3e0bc3e94d85bb6906324f06518d12b3657"
       },
       "assets": [
         {
@@ -68,7 +68,7 @@
       "version": "0:0.5.5-1",
       "files": {
         ".SRCINFO": "eddbb21e491a0fcfd421acf707987306060466648a887e8e48806d2cb060b9c4",
-        "PKGBUILD": "fac35585799f99105d7ed74f35093daeb20a5b57160c7a6afdc61878bc615acf"
+        "PKGBUILD": "8cf2d68f976c30a508912b823d57d5201b38abbd29f9df0397161cd053a61727"
       },
       "assets": [
         {
@@ -95,7 +95,7 @@
       "version": "0:0.5.5-1",
       "files": {
         ".SRCINFO": "ffb553e52598ae9965e5fa7d5cf21841db69ea5721fcad12c690bd47bb7a41ef",
-        "PKGBUILD": "9d4db9af698f8ee015c5387242e46ef090e2ff9f55d82c02aa862cd8f4442b09"
+        "PKGBUILD": "182185d52502343c5af6136a664433efb773902f2ddf15f89489faa985432a9e"
       },
       "assets": [
         {

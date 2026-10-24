@@ -38,5 +38,5 @@ package() {
     cp -r --no-preserve=ownership usr/share/doc/dnr-webview/. "$pkgdir/usr/share/doc/$pkgname/"
 }
 
-# Pinned by fansion314/aur after verifying the published release bytes.
+# Pinned by fansion314/packages after verifying the published release bytes.
 sha256sums=('db25ae9978c7894b63bb7dce7748cc0911ac858bb44fcc0ecc8696674c45df82' '154607704fa1c19b4cda278639bc60f5899cecd914cd6bc65185919c214cefdb')

@@ -38,5 +38,5 @@ package() {
     cp -r --no-preserve=ownership usr/share/doc/dnr-cef/. "$pkgdir/usr/share/doc/$pkgname/"
 }
 
-# Pinned by fansion314/aur after verifying the published release bytes.
+# Pinned by fansion314/packages after verifying the published release bytes.
 sha256sums=('b8a1d28000a0c98659d451112b21231ec6d296579b3807b295380d320361e65a' 'adae5ed47e3db32ba014e726f56c6b7a1244cd948017156948e8693b9f267cd8')

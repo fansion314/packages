@@ -45,5 +45,5 @@ package() {
     install -Dm644 usr/share/doc/etcher-dnr/README.md "$pkgdir/usr/share/doc/$pkgname/README.md"
 }
 
-# Pinned by fansion314/aur after verifying the published release bytes.
+# Pinned by fansion314/packages after verifying the published release bytes.
 sha256sums=('9606d8f9365d21700bbb1e095ab51a2d0302f1346a8595734398ab1851452276' 'd132daf02bf7cdc145be549f9e90c060068b8aa9e69be27b3956f64236c70090')

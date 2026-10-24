@@ -44,5 +44,5 @@ package() {
     cp -r --no-preserve=ownership usr/share/doc/pi-dnr/. "$pkgdir/usr/share/doc/$pkgname/"
 }
 
-# Pinned by fansion314/aur after verifying the published release bytes.
+# Pinned by fansion314/packages after verifying the published release bytes.
 sha256sums=('92569217873bbad31108d3092a216c9c3fa5fb3cabcdb9a204ca64c399b8c7f6' '19c107c8ec176da91a1ba30458834033e1b284f8a8160bcd2494b24433bc352f')
