@@ -117,10 +117,11 @@ brew install --cask fansion314/packages/etcher-dnr
 ```sh
 brew reinstall fansion314/packages/dnr fansion314/packages/pi-dnr
 brew reinstall --cask fansion314/packages/etcher-dnr
-brew untap --force fansion314/dnr
+brew untap fansion314/dnr
 ```
 
-只重装已使用的应用。日常更新：
+只重装已使用的应用。若 untap 提示仍有旧来源安装，先按提示检查并迁移这些应用，
+再移除旧 tap；不要用 `--force` 触发卸载。日常更新：
 
 ```sh
 brew update
