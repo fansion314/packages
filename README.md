@@ -18,7 +18,7 @@ The explicit tap URL is required because this repository is named `packages`, wi
 
 ## Arch Linux / CachyOS
 
-Append this section to your existing paru configuration. If creating a user configuration, preserve system settings with `Include = /etc/paru.conf`. If `Mode` is explicitly set, include `pkgbuilds`.
+Configure paru with the section below. When migrating, replace the previous PKGBUILD repository entry for these packages and preserve unrelated settings. If creating a user configuration, preserve system settings with `Include = /etc/paru.conf`. If `Mode` is explicitly set, include `pkgbuilds`.
 
 ```ini
 [fansionia]
