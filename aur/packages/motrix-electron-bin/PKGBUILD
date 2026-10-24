@@ -1,9 +1,9 @@
 # Maintainer: fansion314 <https://github.com/fansion314>
 pkgname=motrix-electron-bin
-pkgver=2.0.0beta.52
-pkgrel=2
-_version=2.0.0-beta.52
-_tag=motrix-v2.0.0-beta.52-2
+pkgver=2.0.0
+pkgrel=1
+_version=2.0.0
+_tag=motrix-v2.0.0-1
 pkgdesc='Motrix download manager using system Electron (prebuilt Arch package)'
 arch=('x86_64')
 url='https://github.com/fansion314/packages'
@@ -17,7 +17,7 @@ _package="motrix-electron-${pkgver}-${pkgrel}-x86_64.pkg.tar.zst"
 source=("${url}/releases/download/${_tag}/${_package}")
 noextract=("${_package}")
 # Replaced with the verified release digest by arch-release.yml.
-sha256sums=('0422a7a07389aa4ddf3983da6d9ce8485ed4af2e59e99e12587a9ef0d9f7d091')
+sha256sums=('bd15177ba723204e5595122501a2008692b09f556aead388b79cd592bad28ac8')
 
 package() {
   bsdtar -xf "$srcdir/$_package" -C "$pkgdir" usr

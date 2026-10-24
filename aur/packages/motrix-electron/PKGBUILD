@@ -1,9 +1,9 @@
 # Maintainer: fansion314 <https://github.com/fansion314>
 pkgname=motrix-electron
-pkgver=2.0.0beta.52
-pkgrel=2
-_version=2.0.0-beta.52
-_tag=motrix-v2.0.0-beta.52-2
+pkgver=2.0.0
+pkgrel=1
+_version=2.0.0
+_tag=motrix-v2.0.0-1
 pkgdesc='Motrix download manager using system Electron and bundled Motrix aria2'
 arch=('x86_64')
 url='https://github.com/fansion314/packages'
@@ -14,8 +14,8 @@ optdepends=('libayatana-appindicator: system tray integration' 'ffmpeg: media do
 provides=("motrix=${pkgver}" "motrix2=${pkgver}")
 conflicts=('motrix' 'motrix-bin' 'motrix-git' 'motrix-beta-bin' 'motrix2' 'motrix2-bin' 'motrix-electron-bin')
 options=('!strip')
-_packaging_ref='tag=motrix-v2.0.0-beta.52-2'
-source=("Motrix::git+https://github.com/agalwood/Motrix.git#commit=b7a77d2979618d22aa3d86da2622ace10baf4d4e"
+_packaging_ref='tag=motrix-v2.0.0-1'
+source=("Motrix::git+https://github.com/agalwood/Motrix.git#commit=954e62cef4819ff56506412f513ab75ff019c079"
         "packaging::git+https://github.com/fansion314/packages.git#${_packaging_ref}")
 sha256sums=('SKIP' 'SKIP')
 
