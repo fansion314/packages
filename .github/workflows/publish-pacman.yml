@@ -12,11 +12,14 @@ jobs:
     runs-on: ubuntu-24.04
     outputs:
       changed: ${{ steps.probe.outputs.changed }}
+      commit: ${{ steps.code.outputs.commit }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           ref: main
           persist-credentials: false
+      - id: code
+        run: echo "commit=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
       - id: probe
         env:
           GH_TOKEN: ${{ github.token }}
@@ -35,7 +38,7 @@ jobs:
       - run: pacman -Syu --noconfirm --needed git python gnupg libarchive github-cli
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
-          ref: main
+          ref: ${{ needs.probe.outputs.commit }}
           persist-credentials: false
       - id: state
         run: python arch/state.py checkout .work/pacman-site
@@ -81,14 +84,14 @@ jobs:
       - id: deploy
         uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e
   candidate:
-    needs: [snapshot, pages]
+    needs: [probe, snapshot, pages]
     runs-on: ubuntu-24.04
     container: archlinux:base
     steps:
       - run: pacman -Syu --noconfirm --needed git python gnupg libarchive nodejs
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
-          ref: main
+          ref: ${{ needs.probe.outputs.commit }}
           persist-credentials: false
       - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
         with:
@@ -106,12 +109,12 @@ jobs:
           trap 'kill "$server_pid" || true' EXIT
           bash arch/test-install.sh http://127.0.0.1:8765/x86_64
   worker:
-    needs: [snapshot, candidate]
+    needs: [probe, snapshot, candidate]
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
-          ref: main
+          ref: ${{ needs.probe.outputs.commit }}
           persist-credentials: false
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1
         with:
@@ -134,14 +137,14 @@ jobs:
           python3 arch/repository.py worker --active "$ACTIVE" --candidate "$CANDIDATE" --phase active
           python3 arch/deploy.py active "$CANDIDATE" "$CANDIDATE"
   public:
-    needs: worker
+    needs: [probe, worker]
     runs-on: ubuntu-24.04
     container: archlinux:base
     steps:
       - run: pacman -Syu --noconfirm --needed git python gnupg
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
-          ref: main
+          ref: ${{ needs.probe.outputs.commit }}
           persist-credentials: false
       - name: Install from the public repository domain
         env:

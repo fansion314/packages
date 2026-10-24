@@ -13,6 +13,9 @@ database. Each repository owns a distinct signing subkey of the public identity
 in `keys/`. The primary private key is never uploaded to Actions. Existing public
 package bytes may receive a missing `.sig` through the manual backfill workflow.
 Existing packages and signatures are reused only after exact digest verification.
+Each publication resolves the maintenance commit once, then pins snapshot,
+candidate testing and Worker deployment to that same commit. Concurrent recipe
+auto-commits cannot mix generator or Worker code within a publication.
 
 `publish-pacman.yml` checks the newest matching Release of every allowlisted
 project. An incomplete newest Release fails the candidate instead of falling back
