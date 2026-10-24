@@ -5,6 +5,7 @@ import os
 from pathlib import Path
 import subprocess
 import sys
+import time
 from package import IDS, tag, digest
 
 
@@ -38,7 +39,7 @@ def publish(project, commit):
     def find_release():
         # GitHub's by-tag endpoint does not return drafts. The authenticated
         # release list includes drafts and must be paginated in this monorepo.
-        pages = json.loads(gh('api', '--paginate', '--slurp',
+        pages = json.loads(gh('api', '--paginate', '--slurp', '-H', 'Cache-Control: no-cache',
                               f'repos/{os.environ["GITHUB_REPOSITORY"]}/releases?per_page=100'))
         matches = [release for page in pages for release in page if release['tag_name'] == release_tag]
         if len(matches) > 1:
@@ -50,15 +51,19 @@ def publish(project, commit):
         flags = ['--prerelease'] if '-' in info['version'] else []
         gh('release', 'create', release_tag, '--verify-tag', '--draft', '--latest=false', '--target', commit,
            '--title', f"{project} {info['version']}-{info['pkgrel']}", '--notes-file', str(directory/'notes.md'), *flags)
-        release = find_release()
+        for attempt in range(30):
+            release = find_release()
+            if release is not None:
+                break
+            time.sleep(2)
         if release is None:
-            raise ValueError('Created draft was not found')
+            raise ValueError('Created draft was not visible after 60 seconds; retry the publication job')
     if release['draft']:
         if release['target_commitish'] not in [commit, 'main']:
             raise ValueError('Draft belongs to a different build')
         gh('release', 'upload', release_tag, *map(str, assets), '--clobber')
     # Verify draft/public bytes through GitHub digests before publication or idempotent success.
-    release = find_release()
+    release = json.loads(gh('api', f'repos/{os.environ["GITHUB_REPOSITORY"]}/releases/{release["id"]}'))
     actual = {a['name']: a.get('digest') for a in release['assets']}
     if actual != {name: 'sha256:'+value for name, value in expected.items()}:
         raise ValueError('Published asset set or bytes differ; increment pkgrel')
