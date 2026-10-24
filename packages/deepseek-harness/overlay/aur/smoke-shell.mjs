@@ -1,5 +1,7 @@
 /** Exercise real desktop zoom, persistence, window close and terminal termination with isolated user state. */
 import assert from 'node:assert/strict'
+import { execFileSync } from 'node:child_process'
+import { setTimeout as delay } from 'node:timers/promises'
 import { existsSync } from 'node:fs'
 import { mkdir, mkdtemp, readFile, readlink, realpath, rm, writeFile } from 'node:fs/promises'
 import { createRequire } from 'node:module'
@@ -16,12 +18,17 @@ let exited
 let child
 
 async function launch() {
+  const documents = join(scratch, 'Documents')
+  const xdg = join(scratch, 'xdg')
+  await mkdir(xdg, { recursive: true })
+  await writeFile(join(xdg, 'user-dirs.dirs'), `XDG_DOCUMENTS_DIR="${documents}"\n`)
+  assert.equal(execFileSync('xdg-user-dir', ['DOCUMENTS'], { encoding: 'utf8', env: { ...env, XDG_CONFIG_HOME: xdg } }).trim(), documents)
   const profile = join(scratch, 'dsh', 'profiles', 'desktop')
   await mkdir(profile, { recursive: true })
   await writeFile(join(profile, 'cordis.patch.yml'), '- id: webserver\n  config:\n    host: 127.0.0.1\n    port: 0\n')
   application = await electron.launch({ executablePath: resolve(appRoot, '../../bin/dsh-desktop'),
     args: [`--user-data-dir=${join(scratch, 'chromium')}`, '--lang=en-US'], timeout: 60_000,
-    env: { ...env, DSH_HOME: join(scratch, 'dsh'), DSH_AGENTS_HOME: join(scratch, 'agents'), XDG_CACHE_HOME: join(scratch, 'cache') } })
+    env: { ...env, DSH_HOME: join(scratch, 'dsh'), DSH_AGENTS_HOME: join(scratch, 'agents'), XDG_CACHE_HOME: join(scratch, 'cache'), XDG_CONFIG_HOME: xdg } })
   child = application.process()
   exited = new Promise(resolveExit => { child.once('exit', (code, signal) => { resolveExit({ code, signal }) }) })
   const welcome = application.windows().find(page => page.url().endsWith('/renderer/welcome.html'))
@@ -39,6 +46,9 @@ async function launch() {
   const main = application.windows().find(page => page.url().startsWith('dsh-app://app/'))
   assert.ok(main)
   await main.getByRole('button', { name: 'Account menu', exact: true }).waitFor()
+  const defaultWorkspace = join(documents, 'deepseek-harness', 'default-workspace')
+  for (let attempt = 0; attempt < 300 && !existsSync(defaultWorkspace); attempt++) await delay(100)
+  assert.ok(existsSync(defaultWorkspace), 'First-use workspace is created under the isolated Documents directory')
   return main
 }
 
@@ -153,7 +163,7 @@ try {
   await waitForExit()
   for (const pid of restartedHosts) assert.equal(existsSync(`/proc/${pid}`), false, 'Host exited after terminal SIGINT')
   application = undefined
-  console.log('Arch desktop: ASAR, branding, window-size and scale persistence, hide/reopen, Electron Host and clean quit/SIGINT verified')
+  console.log('Arch desktop: ASAR, default workspace, branding, window-size and scale persistence, hide/reopen, Electron Host and clean quit/SIGINT verified')
 } catch (error) {
   if (application) {
     for (const page of application.windows()) {

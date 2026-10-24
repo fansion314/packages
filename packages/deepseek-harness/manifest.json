@@ -1,7 +1,7 @@
 {
   "id": "deepseek-harness",
   "version": "0.2.1-rc.2",
-  "pkgrel": 2,
+  "pkgrel": 3,
   "package": "dsh-electron",
   "upstream": {
     "repository": "deepseek-ai/deepseek-harness",

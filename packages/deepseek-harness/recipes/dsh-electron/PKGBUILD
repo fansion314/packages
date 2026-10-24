@@ -11,7 +11,7 @@ license=('MIT')
 depends=('electron' 'libvips' 'python' 'python-numpy' 'python-pandas'
          'python-docx' 'python-pptx' 'python-openpyxl' 'python-pillow' 'python-lxml'
          'python-xlsxwriter' 'python-tzdata' 'python-dateutil' 'python-six'
-         'python-typing_extensions' 'python-et-xmlfile' 'ripgrep' 'gcc-libs' 'glibc' 'xdg-utils')
+         'python-typing_extensions' 'python-et-xmlfile' 'ripgrep' 'gcc-libs' 'glibc' 'xdg-utils' 'xdg-user-dirs')
 makedepends=('git' 'python' 'rust' 'clang' 'cmake' 'nodejs>=24' 'pnpm' 'node-gyp' 'pkgconf')
 conflicts=('dsh-electron-bin')
 options=('!strip')

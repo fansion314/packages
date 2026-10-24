@@ -16,7 +16,7 @@ class PackageTests(unittest.TestCase):
         for name in package.IDS:
             value = package.tag(package.manifest(name))
             self.assertEqual(package.parse_tag(value), name)
-            for invalid in [value+'x', value.replace('-2', '-0'), 'arch-v'+value]:
+            for invalid in [value+'x', value.rsplit('-', 1)[0]+'-0', 'arch-v'+value]:
                 with self.assertRaises(ValueError):
                     package.parse_tag(invalid)
 
@@ -34,6 +34,13 @@ class PackageTests(unittest.TestCase):
                 self.assertIn('/packages/releases/download/'+package.tag(info), sources)
                 self.assertIn("sha256sums=('"+'a'*64+"')", binary)
                 subprocess.run(['bash', '-n'], input=recipe, text=True, check=True)
+
+    def test_desktop_workspace_lookup_has_its_runtime_dependency(self):
+        with tempfile.TemporaryDirectory() as directory:
+            package.recipes('deepseek-harness', directory)
+            for recipe in Path(directory).glob('*/PKGBUILD'):
+                dependencies = subprocess.check_output(['bash', '-c', recipe.read_text()+'\nprintf "%s\\n" "${depends[@]}"'], text=True).splitlines()
+                self.assertIn('xdg-user-dirs', dependencies)
 
     def test_bin_templates_require_a_real_checksum_at_finalization(self):
         with tempfile.TemporaryDirectory() as directory:
