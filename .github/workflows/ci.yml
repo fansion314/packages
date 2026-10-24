@@ -34,3 +34,16 @@ jobs:
     uses: ./.github/workflows/build-package.yml
     with:
       package: ${{ matrix.package }}
+  repository-integration:
+    needs: static
+    runs-on: ubuntu-24.04
+    container: archlinux:base
+    steps:
+      - run: pacman -Syu --noconfirm --needed git python gnupg libarchive
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - name: Exercise real signed databases and retry recovery with ephemeral keys
+        env:
+          CI_ARCH_REPOSITORY: '1'
+        run: python -m unittest discover -s arch/tests -v
