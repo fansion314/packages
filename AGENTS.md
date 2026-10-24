@@ -72,8 +72,9 @@
 - Pages 地址 `https://fansion314.github.io/packages/`。数据库/签名采用不可变快照，最多保留 32 个（包含 staged candidate，active 不淘汰）；别删除 generated branch 或重写快照。最新匹配 Release 不完整时失败，不默默退回旧版。
 - Worker `fansionia-packages` 只将精确路径 302 到嵌入的 Pages/Release URL；不使用 KV、不运行时拉 JSON、不代理包体。prepare 同时含新旧映射且仍选旧 DB；确认部署后 active 切新 DB。HTTP 检查是操作门禁，不宣称跨独立 HTTP 请求的全球原子事务。
 - 回滚要选择保留的旧数据库、同时保留新包映射，不能直接恢复缺新映射的历史 Worker。激活后公开安装失败可重跑 failed job；新手动 publication 也会重新验收已 active 的快照，定时无变化时不重复安装/部署。
-- Cloudflare account `86191ab109215f74781aef56cee40263`；现有 Custom Domain/TLS 已配置。`CLOUDFLARE_API_TOKEN` 只授已有 fansionia-packages Worker 的 Editor；日常 versions upload/deploy 不改域名。Wrangler 由 `arch/package.json` 和锁文件固定，不升级到未验证版本。
+- Cloudflare account `86191ab109215f74781aef56cee40263`；现有 Custom Domain/TLS 已配置。`CLOUDFLARE_API_TOKEN` 只授已有 fansionia-packages Worker 的 Editor；日常 versions upload/deploy 不改域名。Wrangler 由 `arch/package.json` 和锁文件固定，不升级到未验证版本。Python 部署器直接用 Node 启动项目内的 `wrangler/bin/wrangler.js`，避免 pnpm shell shim 在直接 subprocess 调用中出现 Exec format error。
 - 非浏览器客户端必须可访问包域名：国家质询规则排除该 hostname，并仅对此 hostname 跳过 Browser Integrity Check。免费 Bot Fight Mode 没有主机名例外；如它拦截，关闭会影响整 zone，须有用户明确授权，不能擅自关闭全站防护或升级付费计划。
+- 2026-10-24 已获用户授权关闭该 zone 的免费 Bot Fight Mode；其余机器人设置和自定义 WAF 保留。首个正式域名仓库发布及真实 pacman 安装通过；不要为恢复默认设置而重新开启会拦截仓库客户端的挑战功能。当前 active 以线上 `/status.json` 为准，不把初始快照 ID 当永久配置。
 - 外部源用 GitHub App 通知本仓库：App `fansionia-package-distribution`，仅安装到 packages，Actions write/Metadata read；源仓库变量 `DISTRIBUTION_APP_ID` 与 secret `DISTRIBUTION_APP_PRIVATE_KEY`。勿把普通 GITHUB_TOKEN 当跨仓库 dispatch 凭据。
 - `downstream.yml` 每小时 4/19/34/49 分兜底；`arch/dispatch.py` 只恢复 `disabled_inactivity`，尊重 `disabled_manually`。GitHub 对 fork 的整仓 Actions 禁用可能仍需人在网页确认，不能声称 API enable 永远足够。
 

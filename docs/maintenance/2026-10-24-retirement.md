@@ -73,7 +73,13 @@ builder UID 所有文件通过现有 rootless Arch 容器删除，没有使用 s
 - 文档代码块、相对链接和 `git diff --check` 通过。
 - `fac0847` 对应完整 CI（[40080528122](https://github.com/fansion314/packages/actions/runs/40080528122)）通过：静态检查、原生签名数据库集成和四应用构建/烟雾测试。
 - 六项目新版本已公开；Homebrew/paru 的迁移后同步成功。签名 pacman 输入完整。
-- 此记录创建时，首个正式域名 pacman 快照**尚未激活**。Cloudflare 安全日志已确认免费
-  Bot Fight Mode 质询 CI 请求；该功能不能按 hostname 排除。关闭整 zone 的开关仍需
-  用户明确授权，不因本次文档/归档/清理任务而擅自关闭。获准后运行
-  `publish-pacman.yml`，直到正式域名真实安装 job 成功，再视为上线完成。
+- 最初上线被免费 Bot Fight Mode 质询阻塞。随后用户明确授权关闭该 zone 的此项功能，
+  已核对其他机器人设置和既有自定义 WAF 规则保持原值。
+- 修复 Python 直接执行 pnpm shell shim 的 Exec format error，改用 Node 启动已锁定的
+  项目 Wrangler。重试复用完整已签名快照，没有覆盖应用 Release 或数据库字节。
+- 首个正式快照 `140d9b39410eaf2091e8dc7a1e243de5` 已激活。
+  [发布流水线 40107812988](https://github.com/fansion314/packages/actions/runs/40107812988)
+  全部通过：输入探测、签名快照、Pages、候选 pacman 安装、Worker 两阶段部署、
+  **正式域名 pacman 安装**。最终部署代码提交为 `4f490dc`。
+- 独立检查确认 `/status.json` 为 active、数据库与签名指向同一不可变 Pages 快照、
+  包与签名跳转到准确 Release、公钥与 Git 跟踪字节一致、未知路径 404、POST 405。
