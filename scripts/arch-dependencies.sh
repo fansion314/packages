@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 project=${1:?package id required}
-pacman -Syu --noconfirm --needed base-devel git python nodejs pnpm electron asar rust sccache \
+pacman -Syu --noconfirm --needed base-devel git python nodejs npm pnpm electron asar rust sccache \
   gnome-keyring desktop-file-utils xorg-server-xvfb xorg-xauth dbus xdg-utils
 # Source templates contain fixed metadata only; evaluated on the isolated Arch runner.
 recipe=$(find "packages/$project/recipes" -mindepth 2 -maxdepth 2 -name PKGBUILD ! -path '*-bin/*' -print -quit)

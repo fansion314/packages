@@ -1,9 +1,10 @@
 // @vitest-environment node
-import { mkdtemp, readFile, rm } from 'node:fs/promises'
+import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises'
 import os from 'node:os'
 import path from 'node:path'
 import vm from 'node:vm'
 import { describe, expect, it } from 'vitest'
+import { packArchApplication } from '../../scripts/arch-asar.mjs'
 import { writeArchNotices } from '../../scripts/generate-arch-notices.mjs'
 import {
   parseArchTag,
@@ -12,6 +13,23 @@ import {
 import { validateArchEntries } from '../../scripts/verify-arch-package.mjs'
 
 describe('Arch release contract', () => {
+  it('unpacks native addons when the build source has a hidden ancestor', async () => {
+    const temporary = await mkdtemp(path.join(os.tmpdir(), 'arch-asar-test-'))
+    try {
+      const source = path.join(temporary, '.work/app')
+      const native = 'node_modules/better-sqlite3/prebuilds/linux-x64.node'
+      await mkdir(path.dirname(path.join(source, native)), { recursive: true })
+      await writeFile(path.join(source, native), 'native fixture')
+      const archive = path.join(temporary, 'app.asar')
+      await packArchApplication(source, archive)
+      expect(await readFile(`${archive}.unpacked/${native}`, 'utf8')).toBe(
+        'native fixture'
+      )
+    } finally {
+      await rm(temporary, { recursive: true, force: true })
+    }
+  })
+
   it('uses the system Electron package names while showing Motrix on the desktop', async () => {
     const desktop = await readFile('build/arch/motrix.desktop', 'utf8')
     expect(desktop).toMatch(/^Name=Motrix$/m)

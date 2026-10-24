@@ -14,7 +14,7 @@ on:
 permissions:
   contents: read
 concurrency:
-  group: aur-sync
+  group: aur-sync-${{ inputs.project || 'all' }}
   cancel-in-progress: false
 jobs:
   sync:

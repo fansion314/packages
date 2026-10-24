@@ -3,7 +3,7 @@
 set -euo pipefail
 kind=${1:?homebrew or aur}
 project=${2:-}
-for attempt in 1 2 3; do
+for attempt in 1 2 3 4 5; do
   if [[ $kind == homebrew ]]; then
     python3 homebrew/scripts/sync.py
     bash homebrew/scripts/test-install.sh

@@ -11,7 +11,8 @@ import {
 } from 'node:fs/promises'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { createPackage, createPackageWithOptions } from '@electron/asar'
+import { createPackage } from '@electron/asar'
+import { packArchApplication } from './arch-asar.mjs'
 import { writeArchNotices } from './generate-arch-notices.mjs'
 import { stageElectronApp } from './stage-electron-app.mjs'
 
@@ -105,10 +106,7 @@ const payload = path.join(root, 'dist/arch-root')
 await rm(payload, { recursive: true, force: true })
 const resources = path.join(payload, 'usr/lib/motrix-electron')
 await mkdir(resources, { recursive: true })
-await createPackageWithOptions(stageRoot, path.join(resources, 'app.asar'), {
-  unpack: '**/*.node',
-  unpackDir: 'dist/renderer',
-})
+await packArchApplication(stageRoot, path.join(resources, 'app.asar'))
 const copy = async (from, to, mode) => {
   const destination = path.join(payload, to)
   await mkdir(path.dirname(destination), { recursive: true })
