@@ -138,6 +138,12 @@ jobs:
           python3 arch/deploy.py active "$CANDIDATE" "$CANDIDATE"
   public:
     needs: [probe, worker]
+    # A manual retry must verify an already-active snapshot too. Scheduled
+    # unchanged checks remain cheap and do not reinstall every package.
+    if: >-
+      always() && needs.probe.result == 'success' &&
+      (needs.worker.result == 'success' ||
+       (needs.probe.outputs.changed == 'false' && github.event_name == 'workflow_dispatch'))
     runs-on: ubuntu-24.04
     container: archlinux:base
     steps:

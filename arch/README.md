@@ -50,6 +50,11 @@ Worker `/status.json`, rather than a speculative Git commit, determines the acti
 snapshot. The generated branch is persisted before Pages/Worker deployment, so a
 retry can recover every already-published snapshot.
 
+If activation succeeded but the public-domain installation check failed, rerun
+the failed job after correcting the cause. A new manual publication also repeats
+the public installation check when its snapshot is already active; unchanged
+scheduled checks skip installation and deployment.
+
 To roll back, generate a new Worker version selecting the previous retained
 snapshot while keeping the full current package mappings. Do not blindly restore
 an old Worker version that lacks packages referenced by newer cached databases.
@@ -60,7 +65,10 @@ Initialize the Worker once with `initialize-worker.yml`, then bind
 routine publication does not alter the domain binding. Its account token only
 requires Workers script deployment access; domain configuration is separate.
 The package hostname must allow non-browser downloads. Exclude it from any
-site-wide browser-challenge rule; pacman cannot solve JavaScript challenges.
+site-wide browser-challenge rule and Browser Integrity Check; pacman cannot
+solve JavaScript challenges. Free Bot Fight Mode cannot be skipped for one
+hostname. If it challenges repository clients, the zone owner must disable it
+or select a plan with scoped bot exceptions before enabling this public service.
 
 ## Signing-key operations
 
