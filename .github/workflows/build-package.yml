@@ -35,8 +35,10 @@ jobs:
           CI: 'true'
           RELEASE_TAG: ${{ inputs.release_tag }}
           RUSTC_WRAPPER: /usr/bin/sccache
+          DSH_ARCH_SCREENSHOTS: ${{ github.workspace }}/.work/evidence/${{ inputs.package }}
         run: |
           chown -R builder:builder "$GITHUB_WORKSPACE"
+          chown builder:builder "$GITHUB_STEP_SUMMARY"
           runuser -u builder -- bash scripts/build.sh "$PACKAGE"
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
@@ -49,4 +51,12 @@ jobs:
             dist/${{ inputs.package }}/notes.md
           if-no-files-found: error
           include-hidden-files: true
+          retention-days: 14
+      - name: Retain desktop smoke evidence
+        if: always() && inputs.package == 'deepseek-harness'
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: desktop-smoke-${{ inputs.package }}
+          path: .work/evidence/${{ inputs.package }}/
+          if-no-files-found: ignore
           retention-days: 14

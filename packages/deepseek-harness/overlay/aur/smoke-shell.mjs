@@ -82,6 +82,8 @@ try {
   const main = await launch()
   assert.equal(await application.evaluate(({ app }) => app.getAppPath()), join(appRoot, 'app.asar'))
   assert.equal(await main.title(), 'DeepSeek Harness')
+  const expandSidebar = main.getByRole('button', { name: 'Open sidebar', exact: true })
+  if (await expandSidebar.isVisible()) await expandSidebar.click()
   await main.getByText('DeepSeek Harness', { exact: true }).waitFor()
   assert.equal(await application.evaluate(({ Menu }) => Menu.getApplicationMenu()), null)
   await main.getByRole('button', { name: 'Account menu', exact: true }).click()
@@ -153,6 +155,11 @@ try {
   application = undefined
   console.log('Arch desktop: ASAR, branding, window-size and scale persistence, hide/reopen, Electron Host and clean quit/SIGINT verified')
 } catch (error) {
+  if (application) {
+    for (const page of application.windows()) {
+      console.error('Desktop page:', page.url(), await page.locator('body').innerText().catch(() => 'unavailable'))
+    }
+  }
   if (evidence && application) await screenshot('failure.png').catch(captureError => { console.error(captureError) })
   throw error
 } finally {
