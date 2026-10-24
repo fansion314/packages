@@ -1,8 +1,8 @@
 pkgbase = obsidian-electron-bin
 	pkgdesc = Obsidian with the latest system Electron (prebuilt GitHub release)
 	pkgver = 1.14.4
-	pkgrel = 1
-	url = https://github.com/fansion314/obsidian
+	pkgrel = 2
+	url = https://github.com/fansion314/packages
 	arch = x86_64
 	license = LicenseRef-Obsidian
 	depends = bash
@@ -14,10 +14,10 @@ pkgbase = obsidian-electron-bin
 	provides = obsidian-electron=1.14.4
 	conflicts = obsidian
 	conflicts = obsidian-electron
-	noextract = obsidian-electron-1.14.4-1-x86_64.pkg.tar.zst
+	noextract = obsidian-electron-1.14.4-2-x86_64.pkg.tar.zst
 	options = !strip
 	options = !debug
-	source_x86_64 = https://github.com/fansion314/obsidian/releases/download/v1.14.4-1/obsidian-electron-1.14.4-1-x86_64.pkg.tar.zst
-	sha256sums_x86_64 = 20603c3710cd3b2df7546702003d13af53ea846e854c2dfe374e31e47f5be7bc
+	source_x86_64 = https://github.com/fansion314/packages/releases/download/obsidian-v1.14.4-2/obsidian-electron-1.14.4-2-x86_64.pkg.tar.zst
+	sha256sums_x86_64 = b809a3aa7699063a88fc6a633e939967a06884c969f1016ed9f6578d70ced5db
 
 pkgname = obsidian-electron-bin

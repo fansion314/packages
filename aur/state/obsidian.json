@@ -1,29 +1,29 @@
 {
-  "repository": "fansion314/obsidian",
-  "reference": "52f2e494e33eeb8ab646f874d7d069b3da3846b3",
+  "repository": "fansion314/packages",
+  "reference": "obsidian-v1.14.4-2",
   "packages": {
     "obsidian-electron": {
-      "version": "0:1.14.4-1",
+      "version": "0:1.14.4-2",
       "files": {
-        ".SRCINFO": "048fb66dbe0a3e675258b2f7dc0877609ee1cf4bfb9167e853e25ba42edef188",
+        ".SRCINFO": "e413dcf140715891dc838503fdd7280cddda84e6049e5de36f89da6adf58c28e",
         "LICENSE-Obsidian": "d9fdc14f9c2fb95bb38310281268fdad413c1b49fa93213df3184f9b0ca1175c",
-        "PKGBUILD": "51728d5eed3c778079099fd12365daed3c655f77b01c766b94ac76212259e7a9",
+        "PKGBUILD": "70a15a540b776eb75485a8bf7c137c21b98824b37b9c116788b40fbac8540723",
         "md.obsidian.Obsidian.desktop": "0251425a4f4efdc5efb0384eaee38dd2430107c5a43094877a4fa75b48e43020",
         "obsidian.sh": "5cab5220361350abc9f8faae746366f98f0db97ce9623736e1623f871e2000b9"
       },
       "assets": []
     },
     "obsidian-electron-bin": {
-      "version": "0:1.14.4-1",
+      "version": "0:1.14.4-2",
       "files": {
-        ".SRCINFO": "6cbe2027d9229811562305a3f0070ba2a63f46d41af0397816a06fa1fba3279b",
-        "PKGBUILD": "110ef5e30b4b5f9c12977e6ffcdbe176cd05bb62101146270a69ccd25537fdb8"
+        ".SRCINFO": "7af315fd0d6bbf0e7cd60dde8e71c0140112bf92e9ec3844de0cb8a50f1bca59",
+        "PKGBUILD": "fdb573c0a5d5131e0ec47bf4c77baaa6d41b5631c4acea8ffcdbb874e62859f8"
       },
       "assets": [
         {
-          "url": "https://github.com/fansion314/obsidian/releases/download/v1.14.4-1/obsidian-electron-1.14.4-1-x86_64.pkg.tar.zst",
-          "sha256": "20603c3710cd3b2df7546702003d13af53ea846e854c2dfe374e31e47f5be7bc",
-          "size": 8731391
+          "url": "https://github.com/fansion314/packages/releases/download/obsidian-v1.14.4-2/obsidian-electron-1.14.4-2-x86_64.pkg.tar.zst",
+          "sha256": "b809a3aa7699063a88fc6a633e939967a06884c969f1016ed9f6578d70ced5db",
+          "size": 8727044
         }
       ]
     }
