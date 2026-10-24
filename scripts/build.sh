@@ -39,7 +39,7 @@ case "$project" in
       pnpm exec vitest run apps/desktop/tests/interface-scale.spec.ts apps/desktop/tests/window-state.spec.ts apps/desktop/tests/termination.spec.ts apps/desktop/tests/tray.spec.ts apps/desktop/tests/main-startup.spec.ts apps/desktop/tests/platform-view.spec.ts packages/client/ui-settings-general/tests/desktop-scale.client.spec.tsx packages/client/ui-sidebar/tests/sidebar-snapshot.client.spec.tsx
       node --test aur/system-runtime.test.mjs
       node aur/smoke-cli.mjs
-      dbus-run-session -- xvfb-run -a node aur/smoke-shell.mjs
+      dbus-run-session -- xvfb-run -a -s '-screen 0 1920x1080x24' node aur/smoke-shell.mjs
       desktop-file-validate aur/dsh-electron.desktop
     fi
     cd "$root"
