@@ -10,7 +10,7 @@ SCRIPT = Path(__file__).resolve().parents[1]/'scripts/commit-generated.sh'
 
 class GeneratedCommitTests(unittest.TestCase):
     def git(self, cwd, *args):
-        return subprocess.check_output(['git', '-c', 'user.name=Test', '-c', 'user.email=test@example.invalid', *args], cwd=cwd, stderr=subprocess.DEVNULL, text=True).strip()
+        return subprocess.check_output(['git', '-c', 'user.name=Test', '-c', 'user.email=test@example.invalid', *args], cwd=cwd, stderr=subprocess.DEVNULL, text=True, env={**os.environ, 'GIT_CONFIG_GLOBAL': os.devnull, 'GIT_CONFIG_NOSYSTEM': '1'}).strip()
 
     def scenario(self, conflict):
         with tempfile.TemporaryDirectory() as directory:
@@ -35,7 +35,7 @@ class GeneratedCommitTests(unittest.TestCase):
             self.git(other, 'push', 'origin', 'main')
             (first/'aur/packages/recipe').write_text('candidate')
             result = subprocess.run(['bash', str(SCRIPT), 'aur'], cwd=first,
-                                    env={**os.environ, 'GH_TOKEN': 'test-placeholder'}, capture_output=True, text=True)
+                                    env={**os.environ, 'GH_TOKEN': 'test-placeholder', 'GIT_CONFIG_GLOBAL': os.devnull, 'GIT_CONFIG_NOSYSTEM': '1'}, capture_output=True, text=True)
             if conflict:
                 self.assertEqual(result.returncode, 75, result.stderr)
                 self.assertEqual(self.git(other, 'show', 'HEAD:aur/packages/recipe'), 'concurrent')
@@ -44,7 +44,7 @@ class GeneratedCommitTests(unittest.TestCase):
                 self.assertEqual(self.git(first, 'show', 'HEAD:README.md'), 'concurrent')
                 self.assertEqual(self.git(first, 'show', 'HEAD:aur/packages/recipe'), 'candidate')
                 self.assertEqual(self.git(first, 'rev-parse', 'HEAD'), self.git(remote, 'rev-parse', 'main'))
-                again = subprocess.run(['bash', str(SCRIPT), 'aur'], cwd=first, capture_output=True)
+                again = subprocess.run(['bash', str(SCRIPT), 'aur'], cwd=first, capture_output=True, env={**os.environ, 'GIT_CONFIG_GLOBAL': os.devnull, 'GIT_CONFIG_NOSYSTEM': '1'})
                 self.assertEqual(again.returncode, 0)
 
     def test_unrelated_commit_survives_and_second_sync_is_noop(self):

@@ -46,7 +46,7 @@ The 20 recipes cover dnr/dnc and its backend variants, Pi, Etcher, Motrix, DeepS
 
 Builds fetch the exact upstream commit, apply patches without fallback, and use the upstream lockfile. Standalone source PKGBUILDs fetch both upstream and the packaging tag. `imports.json` records the migration snapshots; old histories and releases remain in their original repositories.
 
-CI builds on native Arch x86_64 as an unprivileged user, runs package-specific quality/smoke checks, and verifies binary repackaging before publishing. Every Release contains a pacman package, recipe bundle, build record and SHA-256 manifest. Public tags and assets are immutable; a changed package requires a higher `pkgrel`.
+CI builds on native Arch x86_64 as an unprivileged user, runs package-specific quality/smoke checks (including loading Bitwarden/Obsidian native addons with system Electron), and verifies binary repackaging before publishing. Every Release contains a pacman package, recipe bundle, build record and SHA-256 manifest. Public tags and assets are immutable; a changed package requires a higher `pkgrel`.
 
 Homebrew synchronization runs at minutes 17 and 47, and Arch synchronization at minute 23, subject to GitHub scheduling delays. Both support manual dispatch. Internal releases call Arch synchronization directly after publication. Candidates are committed only after download verification and platform-specific validation; no-change runs produce no commit. Homebrew installs are tested only on disposable macOS CI runners. CI smoke tests do not establish manual GUI or physical-device acceptance.
 

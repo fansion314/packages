@@ -63,6 +63,9 @@ case "$project" in
     ;;
   *) echo 'Unknown package' >&2; exit 1 ;;
 esac
+if [[ $project == bitwarden || $project == obsidian ]]; then
+  python scripts/verify-native.py "$project" "$archive"
+fi
 python scripts/package.py finalize "$project" "$archive" "$root/dist/$project"
 # Exercise the exact published recipe with the already-built input as source cache.
 cp "$archive" "$root/dist/$project/aur/$name-bin/"
