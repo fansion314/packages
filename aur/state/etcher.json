@@ -1,33 +1,33 @@
 {
   "repository": "fansion314/etcher",
-  "reference": "10c455e43ff80b9ca4cc87846b71c5f2eb759e1b",
+  "reference": "bcdb756b6ecae3ada6d375040528a99c9a4dda1b",
   "packages": {
     "etcher-dnr": {
-      "version": "0:2.1.8-1",
+      "version": "0:2.1.9-1",
       "files": {
-        ".SRCINFO": "55fc55559359669d8d8f620dd1aa3a95934329dc71166bd57cfab6637242bada",
-        "PKGBUILD": "01cdfc633746c0abe6bb0f8ae72613b29948dbb77852b62d56cfc414fdff7471",
+        ".SRCINFO": "4b6984297f3fef9b372d5b4f89d780b2c6226e2dee6d321a704bb6ed9c6d808c",
+        "PKGBUILD": "e0d28208f77f3e3a32c07a5029ca57f8e0c692d4ad91d49caa351183f3c0d52d",
         "etcher-dnr": "c3098db5b878a1a4624e30d9434fcbb484fbbe517c03a718d7d518a9371bf83f",
-        "etcher-dnr-port.tar.gz": "0532e1dd56076a668e3296a446fd5b1aee2c1af6116b308ee296be447a0bd5d1",
+        "etcher-dnr-port.tar.gz": "1347123cb6264e6c59fa9464a12f521fd79b0430d7998e5810c54b6e380eb92b",
         "etcher-dnr.desktop": "193c10c25951ebd21fa138cadb4726b79d21bc76444e1657caf19d7f6b0485d5"
       },
       "assets": []
     },
     "etcher-dnr-bin": {
-      "version": "0:2.1.8-1",
+      "version": "0:2.1.9-1",
       "files": {
-        ".SRCINFO": "7fde88bce736acf4e077350c906a6d594d95a6d519cdacdfdb2205ee747ec425",
-        "PKGBUILD": "e63d5ab5fd76016779ba30796d5be5e7e50b3f9020e919c4e112c91eaa0c1742"
+        ".SRCINFO": "7fd89573bdf36f66fba42706cbecb5889e4c4b2d0175c64c12a8766787c77eb0",
+        "PKGBUILD": "f7fe6550165826ff5d28e1162bfe802ce4efe736b0781ae57abda777011e9006"
       },
       "assets": [
         {
-          "url": "https://github.com/fansion314/etcher/releases/download/v2.1.8-dnr.1/etcher-dnr-2.1.8-1-x86_64.pkg.tar.zst",
-          "sha256": "9606d8f9365d21700bbb1e095ab51a2d0302f1346a8595734398ab1851452276",
-          "size": 40273397
+          "url": "https://github.com/fansion314/etcher/releases/download/v2.1.9-dnr.1/etcher-dnr-2.1.9-1-x86_64.pkg.tar.zst",
+          "sha256": "d6719859045e95fd94fc14d2a96f9d6a9f008f420ca9d4f5ed88c8b5de427904",
+          "size": 40276342
         },
         {
-          "url": "https://github.com/fansion314/etcher/releases/download/v2.1.8-dnr.1/etcher-dnr-2.1.8-1-x86_64.pkg.tar.zst.sha256",
-          "sha256": "d132daf02bf7cdc145be549f9e90c060068b8aa9e69be27b3956f64236c70090",
+          "url": "https://github.com/fansion314/etcher/releases/download/v2.1.9-dnr.1/etcher-dnr-2.1.9-1-x86_64.pkg.tar.zst.sha256",
+          "sha256": "4e47f95d8380d0043fa6bd394248e0778c485912b57cfc07d74a974bafcd3838",
           "size": 104
         }
       ]
