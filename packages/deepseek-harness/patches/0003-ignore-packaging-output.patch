@@ -1,0 +1,15 @@
+diff --git a/.gitignore b/.gitignore
+index 3cb86ce87d98d7d68c3649cc0a3ae415aa822462..264ba03b20a982e94bf8dc941d786bfc0526720b 100644
+--- a/.gitignore
++++ b/.gitignore
+@@ -47,3 +47,10 @@ worktrees/
+ .agents/worktrees/
+ .typert-*/
+ native/system/test/bin/
++/.arch-build/
++/release/
++/aur/*/src/
++/aur/*/pkg/
++/aur/*/*.pkg.tar.zst
++/aur/*/*.tar.zst
++/aur/dsh-electron/deepseek-harness/

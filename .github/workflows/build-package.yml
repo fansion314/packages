@@ -5,6 +5,9 @@ on:
       package:
         required: true
         type: string
+      release_tag:
+        default: ""
+        type: string
 permissions:
   contents: read
 jobs:
@@ -20,6 +23,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
+          ref: ${{ inputs.release_tag || github.ref }}
           persist-credentials: false
       - name: Install package dependencies
         env:
@@ -29,6 +33,8 @@ jobs:
         env:
           PACKAGE: ${{ inputs.package }}
           CI: 'true'
+          GITHUB_REF_TYPE: ${{ inputs.release_tag != '' && 'tag' || github.ref_type }}
+          GITHUB_REF_NAME: ${{ inputs.release_tag || github.ref_name }}
           RUSTC_WRAPPER: /usr/bin/sccache
         run: |
           chown -R builder:builder "$GITHUB_WORKSPACE"

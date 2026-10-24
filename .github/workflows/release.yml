@@ -5,37 +5,44 @@ on:
   workflow_dispatch:
     inputs:
       release_tag:
-        description: Existing package tag; select the same tag in the workflow ref picker
+        description: Existing package tag to rebuild and publish; run this workflow from main
         required: true
         type: string
 permissions:
   contents: read
 concurrency:
-  group: package-release-${{ github.ref }}
+  group: package-release-${{ inputs.release_tag || github.ref_name }}
   cancel-in-progress: false
 jobs:
   resolve:
     runs-on: ubuntu-24.04
     outputs:
       package: ${{ steps.resolve.outputs.package }}
+      commit: ${{ steps.resolve.outputs.commit }}
+      tag: ${{ steps.resolve.outputs.tag }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
+          ref: ${{ inputs.release_tag || github.ref }}
       - id: resolve
         env:
           REQUESTED_TAG: ${{ inputs.release_tag }}
         run: |
-          test "$GITHUB_REF_TYPE" = tag
-          if [[ -n $REQUESTED_TAG ]]; then test "$REQUESTED_TAG" = "$GITHUB_REF_NAME"; fi
-          test "$(git rev-parse "$GITHUB_REF_NAME^{commit}")" = "$GITHUB_SHA"
+          if [[ -z $REQUESTED_TAG ]]; then test "$GITHUB_REF_TYPE" = tag; fi
+          tag=${REQUESTED_TAG:-$GITHUB_REF_NAME}
+          commit=$(git rev-parse HEAD)
+          test "$(git rev-parse "refs/tags/$tag^{commit}")" = "$commit"
           git merge-base --is-ancestor HEAD origin/main
-          echo "package=$(python3 scripts/package.py resolve "$GITHUB_REF_NAME")" >> "$GITHUB_OUTPUT"
+          echo "package=$(python3 scripts/package.py resolve "$tag")" >> "$GITHUB_OUTPUT"
+          echo "commit=$commit" >> "$GITHUB_OUTPUT"
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
   package:
     needs: resolve
     uses: ./.github/workflows/build-package.yml
     with:
       package: ${{ needs.resolve.outputs.package }}
+      release_tag: ${{ needs.resolve.outputs.tag }}
   publish:
     needs: [package, resolve]
     runs-on: ubuntu-24.04
@@ -54,9 +61,11 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           PACKAGE: ${{ needs.resolve.outputs.package }}
+          SOURCE_COMMIT: ${{ needs.resolve.outputs.commit }}
+          GITHUB_REF_NAME: ${{ needs.resolve.outputs.tag }}
         run: |
-          git merge-base --is-ancestor HEAD origin/main
-          python3 scripts/publish.py "$PACKAGE" "$GITHUB_SHA"
+          git merge-base --is-ancestor "$SOURCE_COMMIT" origin/main
+          python3 scripts/publish.py "$PACKAGE" "$SOURCE_COMMIT"
   sync:
     needs: [publish, resolve]
     permissions:

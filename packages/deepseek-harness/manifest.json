@@ -13,7 +13,6 @@
     "commit": "ab4e62a6c2610eb4be29b7b5df51f4ec0dee7ecf"
   },
   "omitted": [
-    ".github/workflows/arch-release.yml",
-    ".gitignore"
+    ".github/workflows/arch-release.yml"
   ]
 }

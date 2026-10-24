@@ -59,4 +59,4 @@ python3 -m unittest discover -s aur/tests -v
 python3 scripts/package.py recipes motrix .cache/candidate-recipes
 ```
 
-Application builds, makepkg and installation tests belong in CI, not on the maintainer's local machine. Update `manifest.json`, source templates and patch series together, validate the branch CI, then push the matching application tag. Manual release dispatch must select that same existing tag as its workflow ref. A failed build may be retried; never move a published tag or replace public bytes.
+Application builds, makepkg and installation tests belong in CI, not on the maintainer's local machine. Update `manifest.json`, source templates and patch series together, validate the branch CI, then push the matching application tag. To retry an existing tag with corrected release automation, dispatch the release workflow from main and supply release_tag; application sources remain fixed to the supplied tag. A failed build may be retried; never move a published tag or replace public bytes.
