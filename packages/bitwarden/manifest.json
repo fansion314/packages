@@ -1,0 +1,10 @@
+{
+  "id": "bitwarden",
+  "version": "2026.10.0",
+  "pkgrel": 2,
+  "package": "bitwarden-electron",
+  "import": {
+    "repository": "fansion314/bitwarden",
+    "commit": "bd5544dd58c0af714ff7f27b16fd0604a7b44f1b"
+  }
+}

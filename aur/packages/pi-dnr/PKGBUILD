@@ -1,0 +1,60 @@
+# Maintainer: Peilin Fan <peilin.fan@foxmail.com>
+pkgname=pi-dnr
+pkgver=1.4.0
+pkgrel=1
+pkgdesc='Pi coding agent packaged as a single application for the shared dnr runtime'
+arch=('x86_64')
+url='https://github.com/fansion314/pi'
+license=('MIT')
+# The runtime is only needed by installed applications, not by the builder.
+depends=('dnr>=0.4.0' 'bash' 'glibc' 'libxcb' 'ripgrep' 'fd')
+makedepends=('git' 'nodejs>=22.19.0' 'npm' 'dnc>=0.4.0' 'libxcb' 'libarchive')
+optdepends=('git: install Git-based extensions and work with repositories'
+            'npm: install dependencies for npm and Git extensions'
+            'wl-clipboard: Wayland clipboard support'
+            'xclip: X11 clipboard writes and fallback reads')
+provides=("pi-coding-agent=$pkgver")
+conflicts=('pi-coding-agent')
+# Preserve the executable shell/ZIP container byte-for-byte.
+options=('!strip' '!debug')
+# Pin this packaging release; upstream version tags remain unchanged.
+source=("pi::git+https://github.com/fansion314/pi.git#tag=pi-dnr-v${pkgver}-${pkgrel}")
+sha256sums=('SKIP')
+
+prepare() {
+    cd "$srcdir/pi"
+    local version
+    version=$(node -p 'JSON.parse(require("fs").readFileSync("packages/coding-agent/package.json", "utf8")).version')
+    if [[ "$version" != "$pkgver" ]]; then
+        printf 'Expected pi %s, found %s\n' "$pkgver" "$version" >&2
+        return 1
+    fi
+    npm ci --ignore-scripts --no-audit --no-fund
+    npm run hydrate:model-data
+}
+
+build() {
+    cd "$srcdir/pi"
+    # Rebuild only the Linux helper; the reviewed macOS ARM64 prebuild is in Git.
+    npm --prefix packages/tui run build:native:linux
+    node scripts/build-dnp.mjs --dnc dnc --target all --output "$srcdir/pi/dist/pi.dnp"
+    rm -rf -- "$srcdir/pi/dist/pi-install"
+    node scripts/prepare-dnp-install.mjs --package "$srcdir/pi/dist/pi.dnp" \
+        --output "$srcdir/pi/dist/pi-install" --target linux-x64
+}
+
+check() {
+    cd "$srcdir/pi"
+    # Index, platform payload hashes, read-only sidecar, and real Node-API loading.
+    # Full dnr smoke tests are run separately on a machine with the runtime.
+    PI_DNP_TEST_PACKAGE="$srcdir/pi/dist/pi.dnp" node --test scripts/dnp-package.test.mjs
+}
+
+package() {
+    cd "$srcdir/pi"
+    install -d "$pkgdir/usr/lib/pi" "$pkgdir/usr/bin"
+    cp -a dist/pi-install/. "$pkgdir/usr/lib/pi/"
+    ln -s ../lib/pi/pi.dnp "$pkgdir/usr/bin/pi"
+    install -Dm644 LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
+    install -Dm644 packages/coding-agent/README.md "$pkgdir/usr/share/doc/$pkgname/README.md"
+}

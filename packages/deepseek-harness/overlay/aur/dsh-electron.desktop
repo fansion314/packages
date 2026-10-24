@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=DeepSeek Harness
+Comment=DeepSeek Harness desktop application
+Exec=dsh-desktop %U
+Icon=dsh-electron
+Terminal=false
+Categories=Development;
+MimeType=x-scheme-handler/dsh;
+StartupWMClass=dsh-electron

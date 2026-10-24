@@ -1,0 +1,14 @@
+--- a/lib/index.js
++++ b/lib/index.js
+@@ -10,6 +10,11 @@
+ const { createEntryApi } = require('node-addon-native-custom-loader');
+ const api = createEntryApi(node_path_1.default.resolve(__dirname, '..'));
+ function requireBuiltin(moduleId) {
++    // Arch Electron exposes internals explicitly; no V8 memory probing is needed.
++    if (process.execArgv.includes('--expose-internals') && require('node:module').isBuiltin(moduleId)) {
++        return require(moduleId);
++    }
++
+     return api.requireBuiltin(moduleId);
+ }
+ function isAllowedInternalId(moduleId) {

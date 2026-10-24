@@ -1,0 +1,2 @@
+# Unified diffs contain literal space-prefixed context lines, including empty lines.
+*.patch -whitespace

@@ -1,0 +1,26 @@
+{
+  "homebrew": {
+    "repository": "fansion314/homebrew-dnr",
+    "commit": "7e336d9cb69f1517bbbab48a75495b1967921e6a"
+  },
+  "aur": {
+    "repository": "fansion314/aur",
+    "commit": "48d22350f305d20eee00d050dac2e7562440d922"
+  },
+  "motrix": {
+    "repository": "fansion314/Motrix",
+    "commit": "692b52c3697334e7f429c039285f8f6b030ecbe9"
+  },
+  "deepseek-harness": {
+    "repository": "fansion314/deepseek-harness",
+    "commit": "ab4e62a6c2610eb4be29b7b5df51f4ec0dee7ecf"
+  },
+  "bitwarden": {
+    "repository": "fansion314/bitwarden",
+    "commit": "bd5544dd58c0af714ff7f27b16fd0604a7b44f1b"
+  },
+  "obsidian": {
+    "repository": "fansion314/obsidian",
+    "commit": "52f2e494e33eeb8ab646f874d7d069b3da3846b3"
+  }
+}

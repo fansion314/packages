@@ -1,0 +1,23 @@
+pkgbase = obsidian-electron-bin
+	pkgdesc = Obsidian with the latest system Electron (prebuilt GitHub release)
+	pkgver = 1.14.4
+	pkgrel = 1
+	url = https://github.com/fansion314/obsidian
+	arch = x86_64
+	license = LicenseRef-Obsidian
+	depends = bash
+	depends = electron
+	depends = fontconfig
+	depends = zlib
+	depends = hicolor-icon-theme
+	provides = obsidian=1.14.4
+	provides = obsidian-electron=1.14.4
+	conflicts = obsidian
+	conflicts = obsidian-electron
+	noextract = obsidian-electron-1.14.4-1-x86_64.pkg.tar.zst
+	options = !strip
+	options = !debug
+	source_x86_64 = https://github.com/fansion314/obsidian/releases/download/v1.14.4-1/obsidian-electron-1.14.4-1-x86_64.pkg.tar.zst
+	sha256sums_x86_64 = 20603c3710cd3b2df7546702003d13af53ea846e854c2dfe374e31e47f5be7bc
+
+pkgname = obsidian-electron-bin

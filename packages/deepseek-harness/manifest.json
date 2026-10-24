@@ -1,0 +1,19 @@
+{
+  "id": "deepseek-harness",
+  "version": "0.2.1-rc.2",
+  "pkgrel": 2,
+  "package": "dsh-electron",
+  "upstream": {
+    "repository": "deepseek-ai/deepseek-harness",
+    "tag": "dsh-v0.2.1-rc.2",
+    "commit": "687f282e8625c6b8d11ff58211a90524be2e4317"
+  },
+  "import": {
+    "repository": "fansion314/deepseek-harness",
+    "commit": "ab4e62a6c2610eb4be29b7b5df51f4ec0dee7ecf"
+  },
+  "omitted": [
+    ".github/workflows/arch-release.yml",
+    ".gitignore"
+  ]
+}

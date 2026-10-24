@@ -1,0 +1,50 @@
+# Based on Arch Linux's obsidian PKGBUILD by Sven-Hendrik Haase,
+# Gennadiy Mykhailiuta and Xuanwo.
+
+pkgname=obsidian-electron
+pkgver=@PKGVER@
+pkgrel=@PKGREL@
+pkgdesc='A powerful knowledge base on top of local Markdown files (official app, latest system Electron)'
+# Only the verified x86_64 payload is supported by this recipe and CI.
+arch=('x86_64')
+url='https://obsidian.md'
+license=('LicenseRef-Obsidian')
+depends=('bash' 'electron' 'fontconfig' 'zlib' 'hicolor-icon-theme')
+provides=("obsidian=${pkgver}")
+conflicts=('obsidian' 'obsidian-electron-bin')
+options=('!strip' '!debug')
+
+# The standalone .asar.gz is only the updater payload: it lacks app.asar,
+# @electron/remote and the native btime/get-fonts modules. Keep the official
+# bootstrap and native modules from the installer, but never ship its Electron.
+source=('obsidian.sh'
+        'md.obsidian.Obsidian.desktop'
+        'LICENSE-Obsidian')
+source_x86_64=("https://github.com/obsidianmd/obsidian-releases/releases/download/v${pkgver}/obsidian-${pkgver}.tar.gz")
+sha256sums=('5cab5220361350abc9f8faae746366f98f0db97ce9623736e1623f871e2000b9' '0251425a4f4efdc5efb0384eaee38dd2430107c5a43094877a4fa75b48e43020' 'd9fdc14f9c2fb95bb38310281268fdad413c1b49fa93213df3184f9b0ca1175c')
+sha256sums_x86_64=('e70b7cd63787e7f798a84fec453f5c446b91877bd3f612e8fb98e9b76cc81120')
+
+package() {
+    local resources="$srcdir/obsidian-${pkgver}/resources"
+    local appdir="$pkgdir/usr/lib/obsidian-electron"
+
+    install -dm755 "$appdir"
+    cp -a "$resources/app.asar.unpacked" "$appdir/"
+    install -m644 "$resources/"{app.asar,obsidian.asar,icon.png} \
+        "$appdir/"
+    install -m755 "$srcdir/obsidian.sh" "$appdir/obsidian"
+    install -m644 "$srcdir/"{md.obsidian.Obsidian.desktop,LICENSE-Obsidian} "$appdir/"
+
+    # Keep private application files under /usr/lib, with standard desktop integration.
+    install -dm755 "$pkgdir/usr/bin" "$pkgdir/usr/share/applications" \
+        "$pkgdir/usr/share/icons/hicolor/512x512/apps" \
+        "$pkgdir/usr/share/licenses/$pkgname"
+    ln -s /usr/lib/obsidian-electron/obsidian "$pkgdir/usr/bin/obsidian"
+    # Match upstream package.json desktopName and the native Wayland app_id.
+    ln -s /usr/lib/obsidian-electron/md.obsidian.Obsidian.desktop \
+        "$pkgdir/usr/share/applications/md.obsidian.Obsidian.desktop"
+    ln -s /usr/lib/obsidian-electron/icon.png \
+        "$pkgdir/usr/share/icons/hicolor/512x512/apps/obsidian.png"
+    ln -s /usr/lib/obsidian-electron/LICENSE-Obsidian \
+        "$pkgdir/usr/share/licenses/$pkgname/LICENSE-Obsidian"
+}

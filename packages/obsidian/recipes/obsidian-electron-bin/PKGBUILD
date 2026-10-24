@@ -1,0 +1,23 @@
+pkgname=obsidian-electron-bin
+pkgver=@PKGVER@
+pkgrel=@PKGREL@
+pkgdesc='Obsidian with the latest system Electron (prebuilt GitHub release)'
+arch=('x86_64')
+url='https://github.com/@REPOSITORY@'
+license=('LicenseRef-Obsidian')
+depends=('bash' 'electron' 'fontconfig' 'zlib' 'hicolor-icon-theme')
+provides=("obsidian=${pkgver}" "obsidian-electron=${pkgver}")
+conflicts=('obsidian' 'obsidian-electron')
+options=('!strip' '!debug')
+
+# This pacman package is built by GitHub Actions from the sibling recipe.
+_package="obsidian-electron-${pkgver}-${pkgrel}-x86_64.pkg.tar.zst"
+source_x86_64=("https://github.com/@REPOSITORY@/releases/download/@TAG@/${_package}")
+noextract=("${_package}")
+sha256sums_x86_64=('@SHA256@')
+
+package() {
+    bsdtar -xf "$srcdir/$_package" -C "$pkgdir" usr
+    mv "$pkgdir/usr/share/licenses/obsidian-electron" \
+        "$pkgdir/usr/share/licenses/$pkgname"
+}

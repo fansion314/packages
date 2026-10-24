@@ -1,0 +1,25 @@
+# Bilingual-pair consistency record for README.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write aur/README.md
+/arch-linux-and-cachyos:
+  en: d24e42d43afda612
+  zh: b4432a365cecdfeb
+/arch-linux-and-cachyos/summary:
+  en: fe385bfb98df92da
+  zh: 5fe773ce45c47a86
+/arch-linux-and-cachyos/contents:
+  en: d419d34f1714d7d8
+  zh: d7edb9f48b977cde
+/arch-linux-and-cachyos/installation:
+  en: 579975d21d2ad16c
+  zh: c2842005b5dc1320
+/arch-linux-and-cachyos/release-builds:
+  en: d0cdef8409b45598
+  zh: 9a5f8630fda9b69e
+/arch-linux-and-cachyos/system-packages:
+  en: b279710abe42d653
+  zh: c62e68d615af6cfb
+/arch-linux-and-cachyos/runtime:
+  en: 56f6126ee2074b31
+  zh: 5b39e2425ec1e297

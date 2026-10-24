@@ -1,0 +1,36 @@
+pkgbase = etcher-dnr-bin
+	pkgdesc = Etcher image flasher using the shared dnr runtime (prebuilt)
+	pkgver = 2.1.8
+	pkgrel = 1
+	url = https://github.com/fansion314/etcher
+	arch = x86_64
+	license = Apache-2.0
+	depends = dnr>=0.4.3
+	depends = webkit2gtk-4.1
+	depends = gtk3
+	depends = glib2
+	depends = util-linux-libs
+	depends = udisks2
+	depends = polkit
+	depends = zenity
+	depends = xdg-utils
+	depends = libnotify
+	depends = systemd-libs
+	depends = systemd
+	provides = etcher-dnr=2.1.8
+	provides = etcher=2.1.8
+	provides = balena-etcher=2.1.8
+	conflicts = etcher-dnr
+	conflicts = etcher
+	conflicts = etcher-bin
+	conflicts = balena-etcher
+	conflicts = balena-etcher-bin
+	noextract = etcher-dnr-2.1.8-1-x86_64.pkg.tar.zst
+	options = !strip
+	options = !debug
+	source = https://github.com/fansion314/etcher/releases/download/v2.1.8-dnr.1/etcher-dnr-2.1.8-1-x86_64.pkg.tar.zst
+	source = https://github.com/fansion314/etcher/releases/download/v2.1.8-dnr.1/etcher-dnr-2.1.8-1-x86_64.pkg.tar.zst.sha256
+	sha256sums = 9606d8f9365d21700bbb1e095ab51a2d0302f1346a8595734398ab1851452276
+	sha256sums = d132daf02bf7cdc145be549f9e90c060068b8aa9e69be27b3956f64236c70090
+
+pkgname = etcher-dnr-bin

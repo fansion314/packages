@@ -1,0 +1,35 @@
+pkgbase = dsh-electron-bin
+	pkgdesc = DeepSeek Harness desktop using system Electron (prebuilt)
+	pkgver = 0.2.1rc.2
+	pkgrel = 1
+	url = https://github.com/fansion314/deepseek-harness
+	arch = x86_64
+	license = MIT
+	depends = electron
+	depends = libvips
+	depends = python
+	depends = python-numpy
+	depends = python-pandas
+	depends = python-docx
+	depends = python-pptx
+	depends = python-openpyxl
+	depends = python-pillow
+	depends = python-lxml
+	depends = python-xlsxwriter
+	depends = python-tzdata
+	depends = python-dateutil
+	depends = python-six
+	depends = python-typing_extensions
+	depends = python-et-xmlfile
+	depends = ripgrep
+	depends = gcc-libs
+	depends = glibc
+	depends = xdg-utils
+	provides = dsh-electron=0.2.1rc.2
+	conflicts = dsh-electron
+	noextract = dsh-electron-0.2.1rc.2-1-x86_64.pkg.tar.zst
+	options = !strip
+	source = https://github.com/fansion314/deepseek-harness/releases/download/arch-v0.2.1-rc.2-1/dsh-electron-0.2.1rc.2-1-x86_64.pkg.tar.zst
+	sha256sums = b43fb9302c9f4447c3a37bc51eecfc34b2ee9f5365584849c1698495614b94d3
+
+pkgname = dsh-electron-bin

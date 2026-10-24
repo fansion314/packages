@@ -1,0 +1,28 @@
+name: Validate package maintenance
+on:
+  push:
+    branches: [main]
+    paths: ['packages/**', 'scripts/**', 'tests/**', '.github/workflows/**', 'homebrew/scripts/**', 'homebrew/templates/**', 'aur/scripts/**', 'aur/tests/**', 'aur/sources.json']
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  static:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - run: python3 -m unittest discover -s tests -v
+      - run: python3 -m unittest discover -s homebrew/scripts -p 'test_*.py' -v
+      - run: python3 -m unittest discover -s aur/tests -v
+      - name: Check shell syntax
+        run: find scripts homebrew/scripts aur/scripts packages -type f -name '*.sh' -exec bash -n {} +
+  packages:
+    needs: static
+    strategy:
+      fail-fast: false
+      matrix:
+        package: [bitwarden, obsidian, motrix, deepseek-harness]
+    uses: ./.github/workflows/build-package.yml
+    with:
+      package: ${{ matrix.package }}

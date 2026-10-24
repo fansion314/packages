@@ -1,0 +1,18 @@
+{
+  "repository": "fansion314/etcher",
+  "tag": "v2.1.8-dnr.1",
+  "version": "2.1.8",
+  "release": 1,
+  "revision": 1,
+  "asset": "etcher-dnr-2.1.8-1-macos-arm64-r1.tar.gz",
+  "url": "https://github.com/fansion314/etcher/releases/download/v2.1.8-dnr.1/etcher-dnr-2.1.8-1-macos-arm64-r1.tar.gz",
+  "github_digest": "sha256:39ad66b4d629406e7c00be2a16b189aa4ec020cecec4a165a648bf78fcdc7dfa",
+  "sha256": "39ad66b4d629406e7c00be2a16b189aa4ec020cecec4a165a648bf78fcdc7dfa",
+  "key": [
+    2,
+    1,
+    8,
+    1,
+    1
+  ]
+}

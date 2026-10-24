@@ -1,0 +1,48 @@
+name: Release one application
+on:
+  push:
+    tags: ['bitwarden-v*', 'obsidian-v*', 'motrix-v*', 'deepseek-harness-v*']
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: Existing package tag; select the same tag in the workflow ref picker
+        required: true
+        type: string
+permissions:
+  contents: read
+concurrency:
+  group: package-release-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  resolve:
+    runs-on: ubuntu-24.04
+    outputs:
+      package: ${{ steps.resolve.outputs.package }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+      - id: resolve
+        env:
+          REQUESTED_TAG: ${{ inputs.release_tag }}
+        run: |
+          test "$GITHUB_REF_TYPE" = tag
+          if [[ -n $REQUESTED_TAG ]]; then test "$REQUESTED_TAG" = "$GITHUB_REF_NAME"; fi
+          test "$(git rev-parse "$GITHUB_REF_NAME^{commit}")" = "$GITHUB_SHA"
+          git merge-base --is-ancestor HEAD origin/main
+          echo "package=$(python3 scripts/package.py resolve "$GITHUB_REF_NAME")" >> "$GITHUB_OUTPUT"
+  package:
+    needs: resolve
+    permissions:
+      contents: write
+    uses: ./.github/workflows/build-package.yml
+    with:
+      package: ${{ needs.resolve.outputs.package }}
+      publish: true
+  sync:
+    needs: [package, resolve]
+    permissions:
+      contents: write
+    uses: ./.github/workflows/sync-aur.yml
+    with:
+      project: ${{ needs.resolve.outputs.package }}

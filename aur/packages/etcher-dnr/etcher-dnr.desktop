@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Name=balenaEtcher
+Comment=Flash and verify operating system images
+Exec=etcher %u
+Icon=etcher
+Terminal=false
+Categories=Utility;System;
+StartupNotify=true
+StartupWMClass=io.balena.etcher.dnr
+MimeType=application/x-cd-image;application/x-raw-disk-image;x-scheme-handler/etcher;

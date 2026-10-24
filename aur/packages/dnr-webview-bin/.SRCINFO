@@ -1,0 +1,36 @@
+pkgbase = dnr-webview-bin
+	pkgdesc = Shared Deno runtime (WebView, prebuilt)
+	pkgver = 0.5.5
+	pkgrel = 1
+	url = https://github.com/fansion314/dnr
+	arch = x86_64
+	license = MIT
+	license = Apache-2.0
+	license = BSD-3-Clause
+	depends = glibc
+	depends = gcc-libs
+	depends = gtk3
+	depends = glib2
+	depends = cairo
+	depends = zlib
+	depends = webkit2gtk-4.1
+	depends = libsoup3
+	optdepends = libxss: X11 session idle time monitoring
+	optdepends = libayatana-appindicator: system tray support
+	optdepends = libnotify: desktop notifications via notify-send
+	provides = dnr=0.5.5
+	provides = dnr-webview=0.5.5
+	conflicts = dnr
+	conflicts = dnr-bin
+	conflicts = dnr-cef
+	conflicts = dnr-cef-bin
+	conflicts = dnr-webview
+	noextract = dnr-webview-0.5.5-1-x86_64.pkg.tar.zst
+	options = !strip
+	options = !debug
+	source = https://github.com/fansion314/dnr/releases/download/v0.5.5/dnr-webview-0.5.5-1-x86_64.pkg.tar.zst
+	source = https://github.com/fansion314/dnr/releases/download/v0.5.5/dnr-webview-0.5.5-1-x86_64.pkg.tar.zst.sha256
+	sha256sums = db25ae9978c7894b63bb7dce7748cc0911ac858bb44fcc0ecc8696674c45df82
+	sha256sums = 154607704fa1c19b4cda278639bc60f5899cecd914cd6bc65185919c214cefdb
+
+pkgname = dnr-webview-bin

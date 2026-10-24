@@ -1,0 +1,45 @@
+# Maintainer: Peilin Fan <peilin.fan@foxmail.com>
+pkgname=dnr-bin
+pkgver=0.5.5
+pkgrel=1
+pkgdesc='Shared Deno runtime (system CEF + WebView, prebuilt)'
+arch=('x86_64')
+url='https://github.com/fansion314/dnr'
+license=('MIT' 'Apache-2.0' 'BSD-3-Clause')
+depends=('glibc' 'gcc-libs' 'zlib')
+optdepends=('libxss: X11 session idle time monitoring'
+            'cef: system CEF desktop backend (also requires gtk3)'
+            'gtk3: native desktop UI for the CEF backend'
+            'webkit2gtk-4.1: WebView desktop backend (auto fallback)'
+            'libayatana-appindicator: system tray support'
+            'libnotify: desktop notifications via notify-send')
+provides=("dnr=$pkgver")
+conflicts=('dnr' 'dnr-cef' 'dnr-cef-bin' 'dnr-webview' 'dnr-webview-bin')
+options=('!strip' '!debug')
+_package="dnr-$pkgver-1-x86_64.pkg.tar.zst"
+_release="$url/releases/download/v$pkgver"
+source=("$_release/$_package" "$_release/$_package.sha256")
+noextract=("$_package")
+# CI creates the archive after this tag exists. Verify its release checksum below.
+sha256sums=('SKIP' 'SKIP')
+
+prepare() {
+    cd "$srcdir"
+    local digest filename extra
+    read -r digest filename extra < "$_package.sha256"
+    [[ $digest =~ ^[0-9a-f]{64}$ && $filename == "$_package" && -z $extra ]] || return 1
+    printf '%s  %s\n' "$digest" "$_package" | sha256sum --check --status || return 1
+    mkdir -p payload
+    bsdtar -xf "$_package" -C payload usr/bin/dnr usr/share/licenses/dnr usr/share/doc/dnr
+}
+
+package() {
+    cd "$srcdir/payload"
+    install -Dm755 usr/bin/dnr "$pkgdir/usr/bin/dnr"
+    install -d "$pkgdir/usr/share/licenses/$pkgname" "$pkgdir/usr/share/doc/$pkgname"
+    cp -r --no-preserve=ownership usr/share/licenses/dnr/. "$pkgdir/usr/share/licenses/$pkgname/"
+    cp -r --no-preserve=ownership usr/share/doc/dnr/. "$pkgdir/usr/share/doc/$pkgname/"
+}
+
+# Pinned by fansion314/aur after verifying the published release bytes.
+sha256sums=('81c41362d9155f85cf1226dabf3b1f0502a980541459461b34041f39a3f26e74' '8e52cf165500f048305162a1a15adc82c697fc24f442e652cd6afb4072f01b77')

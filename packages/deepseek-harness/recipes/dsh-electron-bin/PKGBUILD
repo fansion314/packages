@@ -1,0 +1,27 @@
+# Maintainer: fansion314 <https://github.com/fansion314>
+pkgname=dsh-electron-bin
+pkgver=@PKGVER@
+pkgrel=@PKGREL@
+_version=@VERSION@
+_tag=@TAG@
+pkgdesc='DeepSeek Harness desktop using system Electron (prebuilt)'
+arch=('x86_64')
+url='https://github.com/@REPOSITORY@'
+license=('MIT')
+depends=('electron' 'libvips' 'python' 'python-numpy' 'python-pandas'
+         'python-docx' 'python-pptx' 'python-openpyxl' 'python-pillow' 'python-lxml'
+         'python-xlsxwriter' 'python-tzdata' 'python-dateutil' 'python-six'
+         'python-typing_extensions' 'python-et-xmlfile' 'ripgrep' 'gcc-libs' 'glibc' 'xdg-utils')
+provides=("dsh-electron=${pkgver}")
+conflicts=('dsh-electron')
+options=('!strip')
+_package="dsh-electron-${pkgver}-${pkgrel}-x86_64.pkg.tar.zst"
+source=("${url}/releases/download/${_tag}/${_package}")
+noextract=("${_package}")
+sha256sums=('@SHA256@')
+
+package() {
+  bsdtar -xf "$srcdir/$_package" -C "$pkgdir" usr
+  chmod 755 "$pkgdir/usr/bin/dsh-desktop"
+  mv "$pkgdir/usr/share/licenses/dsh-electron" "$pkgdir/usr/share/licenses/$pkgname"
+}

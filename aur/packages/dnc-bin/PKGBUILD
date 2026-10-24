@@ -1,0 +1,40 @@
+# Maintainer: Peilin Fan <peilin.fan@foxmail.com>
+pkgname=dnc-bin
+pkgver=0.5.5
+pkgrel=1
+pkgdesc='Lightweight application packager for the shared dnr runtime (prebuilt)'
+arch=('x86_64')
+url='https://github.com/fansion314/dnr'
+license=('MIT')
+depends=('glibc' 'gcc-libs')
+optdepends=('base-devel: build Arch application packages with dnc')
+provides=("dnc=$pkgver")
+conflicts=('dnc')
+options=('!strip' '!debug')
+_package="dnc-$pkgver-1-x86_64.pkg.tar.zst"
+_release="$url/releases/download/v$pkgver"
+source=("$_release/$_package" "$_release/$_package.sha256")
+noextract=("$_package")
+# CI creates the archive after this tag exists. Verify its release checksum below.
+sha256sums=('SKIP' 'SKIP')
+
+prepare() {
+    cd "$srcdir"
+    local digest filename extra
+    read -r digest filename extra < "$_package.sha256"
+    [[ $digest =~ ^[0-9a-f]{64}$ && $filename == "$_package" && -z $extra ]] || return 1
+    printf '%s  %s\n' "$digest" "$_package" | sha256sum --check --status || return 1
+    mkdir -p payload
+    bsdtar -xf "$_package" -C payload usr/bin/dnc usr/share/licenses/dnc usr/share/doc/dnc
+}
+
+package() {
+    cd "$srcdir/payload"
+    install -Dm755 usr/bin/dnc "$pkgdir/usr/bin/dnc"
+    install -d "$pkgdir/usr/share/licenses/$pkgname" "$pkgdir/usr/share/doc/$pkgname"
+    cp -r --no-preserve=ownership usr/share/licenses/dnc/. "$pkgdir/usr/share/licenses/$pkgname/"
+    cp -r --no-preserve=ownership usr/share/doc/dnc/. "$pkgdir/usr/share/doc/$pkgname/"
+}
+
+# Pinned by fansion314/aur after verifying the published release bytes.
+sha256sums=('5819ec72d27a0a19375cb0ad60bdb57e3a28f1fe91e6c1a068bdb649144a9bdb' 'abb72a9d3ad2cca05e3706f4824330a95802c97d11a42844295c2a7dc22337bc')

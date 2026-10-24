@@ -1,0 +1,18 @@
+{
+  "repository": "fansion314/dnr",
+  "tag": "v0.5.5",
+  "version": "0.5.5",
+  "release": 0,
+  "revision": 1,
+  "asset": "dnr-0.5.5-macos-arm64-r1.tar.gz",
+  "url": "https://github.com/fansion314/dnr/releases/download/v0.5.5/dnr-0.5.5-macos-arm64-r1.tar.gz",
+  "github_digest": "sha256:7439aa361a4bbfcc10309787b95efcd65de5d76199085028fbc8ac7956209ffe",
+  "sha256": "7439aa361a4bbfcc10309787b95efcd65de5d76199085028fbc8ac7956209ffe",
+  "key": [
+    0,
+    5,
+    5,
+    0,
+    1
+  ]
+}

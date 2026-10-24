@@ -1,0 +1,25 @@
+{
+  "id": "motrix",
+  "version": "2.0.0-beta.52",
+  "pkgrel": 2,
+  "package": "motrix-electron",
+  "upstream": {
+    "repository": "agalwood/Motrix",
+    "tag": "v2.0.0-beta.52",
+    "commit": "b7a77d2979618d22aa3d86da2622ace10baf4d4e"
+  },
+  "import": {
+    "repository": "fansion314/Motrix",
+    "commit": "692b52c3697334e7f429c039285f8f6b030ecbe9"
+  },
+  "omitted": [
+    ".claude/rules/git-workflow.md",
+    ".github/workflows/arch-release.yml",
+    ".github/workflows/sync-arch-recipes.yml",
+    "docs/arch-aur.md",
+    "docs/arch-aur.zh-CN.md",
+    "docs/arch-linux.md",
+    "docs/arch-linux.zh-CN.md",
+    "tests/test_sync_arch_recipes.py"
+  ]
+}

@@ -1,0 +1,25 @@
+# Download this repository's preprocessed system-Electron application archive.
+# No upstream DEB extraction, ASAR processing, or application build is performed.
+pkgname=bitwarden-electron-bin
+pkgver=@PKGVER@
+pkgrel=@PKGREL@
+pkgdesc='Bitwarden using system Electron (prebuilt application)'
+arch=('x86_64')
+url='https://github.com/@REPOSITORY@'
+license=('GPL-3.0-only')
+depends=('electron' 'bash' 'glibc' 'libgcc' 'hicolor-icon-theme'
+         'libnotify' 'org.freedesktop.secrets' 'libxtst' 'libxss' 'libnss_nis')
+provides=("bitwarden=$pkgver" "bitwarden-electron=$pkgver")
+conflicts=('bitwarden' 'bitwarden-bin' 'bitwarden-electron')
+options=('!strip' '!debug')
+# Independently pin the published input: pkgrel can change without rebuilding it.
+_release='@VERSION@-@PKGREL@'
+_archive='bitwarden-electron-@PKGVER@-@PKGREL@-x86_64.pkg.tar.zst'
+source=("https://github.com/@REPOSITORY@/releases/download/@TAG@/${_archive}")
+noextract=("$_archive")
+sha256sums=('@SHA256@')
+
+package() {
+  # The release asset can also be installed directly with pacman -U.
+  bsdtar -xf "$srcdir/$_archive" -C "$pkgdir" usr
+}

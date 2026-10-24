@@ -1,0 +1,5 @@
+#!/bin/sh
+# Package operations must use the same Electron Node runtime as the application.
+launcher=$(/usr/bin/realpath -- "$0")
+bin=${launcher%/*}
+exec "$bin/node" "$bin/../pnpm/bin/pnpm.mjs" "$@"

@@ -1,0 +1,55 @@
+# Maintainer: Peilin Fan <peilin.fan@foxmail.com>
+pkgname=etcher-dnr
+pkgver=2.1.8
+pkgrel=1
+pkgdesc='Etcher image flasher using the shared dnr runtime'
+arch=('x86_64')
+url='https://github.com/balena-io/etcher'
+license=('Apache-2.0')
+provides=("etcher=$pkgver" "balena-etcher=$pkgver")
+conflicts=('etcher-dnr-bin' 'etcher' 'etcher-bin' 'balena-etcher' 'balena-etcher-bin')
+depends=('dnr>=0.4.3' 'webkit2gtk-4.1' 'gtk3' 'glib2' 'util-linux-libs' 'udisks2'
+         'polkit' 'zenity' 'xdg-utils' 'libnotify' 'systemd-libs' 'systemd')
+makedepends=('nodejs>=24.15' 'pnpm>=11' 'dnc>=0.4.1' 'pkgconf' 'python')
+checkdepends=('xz')
+options=('!strip' '!debug' 'staticlibs' 'libtool' '!purge' 'emptydirs')
+_commit=38f8e17e554074ad586e6efa8425c07a4ef3e13c
+source=("etcher-${_commit}.tar.gz::https://codeload.github.com/balena-io/etcher/tar.gz/${_commit}"
+        'etcher-dnr-port.tar.gz' 'etcher-dnr' 'etcher-dnr.desktop')
+sha256sums=('2ae8ab28606c54cd983c5c76f3ea6fa44bd0d538bde2d2aa72a5103f8d5af945'
+            '0532e1dd56076a668e3296a446fd5b1aee2c1af6116b308ee296be447a0bd5d1'
+            'c3098db5b878a1a4624e30d9434fcbb484fbbe517c03a718d7d518a9371bf83f'
+            '193c10c25951ebd21fa138cadb4726b79d21bc76444e1657caf19d7f6b0485d5')
+
+prepare() {
+    cp -a "$srcdir/dnr" "$srcdir/etcher-$_commit/"
+    cd "$srcdir/etcher-$_commit/dnr"
+    # Use the repository Node toolchain, not an inherited Electron Node 20 pin.
+    pnpm install --frozen-lockfile
+}
+
+build() {
+    cd "$srcdir/etcher-$_commit/dnr"
+    node build.mjs
+}
+
+check() {
+    cd "$srcdir/etcher-$_commit"
+    node dnr/tests/run.mjs
+    cc -std=c11 -O2 -Wall -Wextra -Werror dnr/native/tests/test-native.c \
+        -o "$srcdir/native-tests" $(pkg-config --cflags --libs mount gio-2.0)
+    "$srcdir/native-tests"
+    node dnr/tests/package.mjs
+}
+
+package() {
+    cd "$srcdir/etcher-$_commit"
+    # Install v4 native groups beside the archive. Root workers never need a
+    # user-owned extraction directory. This command does not start the runtime.
+    dnc install out/bundle/etcher.dnp "$pkgdir/usr/lib/etcher-dnr"
+    install -Dm755 "$srcdir/etcher-dnr" "$pkgdir/usr/bin/etcher"
+    install -Dm644 "$srcdir/etcher-dnr.desktop" "$pkgdir/usr/share/applications/etcher.desktop"
+    install -Dm644 assets/icon.png "$pkgdir/usr/share/icons/hicolor/512x512/apps/etcher.png"
+    install -Dm644 LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
+    install -Dm644 dnr/README.md "$pkgdir/usr/share/doc/$pkgname/README.md"
+}

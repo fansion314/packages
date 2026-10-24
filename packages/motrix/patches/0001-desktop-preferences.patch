@@ -1,0 +1,918 @@
+diff --git a/e2e/appearance.spec.ts b/e2e/appearance.spec.ts
+new file mode 100644
+index 0000000000000000000000000000000000000000..af476a5765246cf038314556ba9f672d1d5db839
+--- /dev/null
++++ b/e2e/appearance.spec.ts
+@@ -0,0 +1,103 @@
++import {
++  expect,
++  launchMotrix,
++  test,
++  waitForEngineReady,
++} from './fixtures/electron-app'
++
++test('appearance scale and Linux tray color apply immediately and survive restart', async ({
++  userDataDir,
++  rpcPort,
++}) => {
++  let app = await launchMotrix({ userDataDir, rpcPort })
++  const zoomFactors = () =>
++    app.evaluate(({ BrowserWindow }) =>
++      BrowserWindow.getAllWindows().map((win) =>
++        win.webContents.getZoomFactor()
++      )
++    )
++  const mainPage = async () => {
++    await expect
++      .poll(() =>
++        app.windows().some((window) => window.url().includes('w=main'))
++      )
++      .toBe(true)
++    return app.windows().find((window) => window.url().includes('w=main'))!
++  }
++  try {
++    let page = await mainPage()
++    await expect(() => waitForEngineReady(page)).toPass({ timeout: 15000 })
++    if (
++      !(await page
++        .getByRole('link', { name: 'Settings', exact: true })
++        .isVisible())
++    ) {
++      await page
++        .getByRole('button', { name: 'Toggle sidebar', exact: true })
++        .click()
++    }
++    await page.getByRole('link', { name: 'Settings', exact: true }).click()
++    await page.keyboard.press('Escape')
++    await page.getByText('Appearance', { exact: true }).first().click()
++    await page
++      .getByRole('spinbutton', { name: 'Interface scale (%)' })
++      .fill('125')
++    if (process.platform === 'linux') {
++      await page.getByRole('combobox', { name: 'Tray icon color' }).click()
++      await page
++        .getByRole('option', { name: 'Light icon', exact: true })
++        .click()
++    }
++    await expect.poll(zoomFactors).toEqual(expect.arrayContaining([1]))
++    await page.getByRole('button', { name: 'Save', exact: true }).click()
++    await expect
++      .poll(async () =>
++        (await zoomFactors()).filter(
++          (value) => Math.abs(value - 1.25) > 0.000001
++        )
++      )
++      .toEqual([])
++    await app.close()
++
++    app = await launchMotrix({ userDataDir, rpcPort })
++    page = await mainPage()
++    await expect(() => waitForEngineReady(page)).toPass({ timeout: 15000 })
++    await expect
++      .poll(async () =>
++        (await zoomFactors()).filter(
++          (value) => Math.abs(value - 1.25) > 0.000001
++        )
++      )
++      .toEqual([])
++    if (
++      !(await page
++        .getByRole('link', { name: 'Settings', exact: true })
++        .isVisible())
++    ) {
++      await page
++        .getByRole('button', { name: 'Toggle sidebar', exact: true })
++        .click()
++    }
++    await page.getByRole('link', { name: 'Settings', exact: true }).click()
++    await page.keyboard.press('Escape')
++    await page.getByText('Appearance', { exact: true }).first().click()
++    await expect(
++      page.getByRole('spinbutton', { name: 'Interface scale (%)' })
++    ).toHaveValue('125')
++    if (process.platform === 'linux')
++      await expect(
++        page.getByRole('combobox', { name: 'Tray icon color' })
++      ).toHaveText('Light icon')
++    await page
++      .getByRole('spinbutton', { name: 'Interface scale (%)' })
++      .fill('100')
++    await page.getByRole('button', { name: 'Save', exact: true }).click()
++    await expect
++      .poll(async () =>
++        (await zoomFactors()).filter((value) => Math.abs(value - 1) > 0.000001)
++      )
++      .toEqual([])
++  } finally {
++    await app.close()
++  }
++})
+diff --git a/src/core/settings/settings-manager.test.ts b/src/core/settings/settings-manager.test.ts
+index 54b5326c4803f60659eda42942ff5f104a48173c..eff3d8e836fe9c230573678fb9f683949b5738a3 100644
+--- a/src/core/settings/settings-manager.test.ts
++++ b/src/core/settings/settings-manager.test.ts
+@@ -444,6 +444,25 @@ describe('SettingsManager', () => {
+   })
+ 
+   describe('load', () => {
++    it('migrates the previous Linux tray icon preference to trayIconColor', async () => {
++      mockedFs.readFile.mockResolvedValue(
++        JSON.stringify({
++          version: CURRENT_SETTINGS_VERSION,
++          app: { trayIconTheme: 'light' },
++        })
++      )
++      mockedFs.writeFile.mockResolvedValue(undefined)
++
++      await manager.load()
++
++      expect(manager.getApp().trayIconColor).toBe('light')
++      const saved = JSON.parse(
++        mockedFs.writeFile.mock.calls.at(-1)![1] as string
++      )
++      expect(saved.app.trayIconColor).toBe('light')
++      expect(saved.app).not.toHaveProperty('trayIconTheme')
++    })
++
+     it.each([
+       ['darwin', 64_000, 512_000],
+       ['win32', 65_536, 524_288],
+diff --git a/src/core/settings/settings-manager.ts b/src/core/settings/settings-manager.ts
+index c246a40e5b8cfbeb52eff7309ad4561bde82a418..30e7b86f138102787d1c1bcda9e42210e2f34155 100644
+--- a/src/core/settings/settings-manager.ts
++++ b/src/core/settings/settings-manager.ts
+@@ -225,6 +225,7 @@ export class SettingsManager {
+     let parsed: Record<string, unknown>
+     let seedMissingRpcSecret = true
+     let seedMissingSpeedLimit = false
++    let migratedTrayIconColor = false
+ 
+     try {
+       const decoded: unknown = JSON.parse(raw)
+@@ -233,6 +234,19 @@ export class SettingsManager {
+       }
+       parsed = decoded
+       const migrated = migrate(parsed)
++      const app = migrated.app
++      if (isPlainObject(app) && app.trayIconColor === undefined) {
++        const oldColor = app.trayIconTheme
++        if (
++          oldColor === 'auto' ||
++          oldColor === 'light' ||
++          oldColor === 'dark'
++        ) {
++          app.trayIconColor = oldColor
++          delete app.trayIconTheme
++          migratedTrayIconColor = true
++        }
++      }
+       // Empty is a supported explicit choice (local RPC with no token), while
+       // a missing or invalid field keeps the secure generated first-run
+       // default. Check presence after migration so legacy shapes participate.
+@@ -260,7 +274,12 @@ export class SettingsManager {
+     const seeded = this.seedSentinels(seedMissingRpcSecret)
+     const versionStale =
+       !parsed.version || parsed.version !== CURRENT_SETTINGS_VERSION
+-    if (seeded || seedMissingSpeedLimit || versionStale) {
++    if (
++      seeded ||
++      seedMissingSpeedLimit ||
++      versionStale ||
++      migratedTrayIconColor
++    ) {
+       await this.save()
+     }
+   }
+diff --git a/src/main/index.ts b/src/main/index.ts
+index bd9a1433845af098f9a13b82c27fce28b47ad759..e57701ff4b56f3a7e38121bec4761fd4c980da12 100644
+--- a/src/main/index.ts
++++ b/src/main/index.ts
+@@ -372,6 +372,9 @@ const settingsManager = new SettingsManager(settingsPath, {
+   ...defaultSaveDirOptions,
+   onChange: (old, updated) => {
+     eventBus.emit(Events.SettingsChanged, { old, updated })
++    if (old.app.uiScale !== updated.app.uiScale) {
++      windowManager?.applyUiScale()
++    }
+     if (
+       old.app.notifyInAppOnComplete !== updated.app.notifyInAppOnComplete ||
+       old.app.notifyInAppOnError !== updated.app.notifyInAppOnError ||
+diff --git a/src/main/platform/tray-icon.test.ts b/src/main/platform/tray-icon.test.ts
+index f15f3fbae2a1ba3c0fab1540bd9f91890c5d0b8b..bdad8fafcb68914323e04ada7a23aa1f62ed341a 100644
+--- a/src/main/platform/tray-icon.test.ts
++++ b/src/main/platform/tray-icon.test.ts
+@@ -30,6 +30,40 @@ describe('createLinuxIconProvider', () => {
+     }))
+   })
+ 
++  it.each([
++    { preference: 'light' as const, background: 'dark' },
++    { preference: 'dark' as const, background: 'light' },
++  ])(
++    'keeps $preference artwork despite native theme changes',
++    async ({ preference, background }) => {
++      const provider = createLinuxIconProvider(assetDir, () => preference)
++      for (const dark of [true, false]) {
++        nativeThemeMock.shouldUseDarkColors = dark
++        await provider.init()
++        for (const active of [false, true]) {
++          expect(provider.getIcon(active)).toEqual({
++            filePath: path.join(
++              assetDir,
++              `mo-tray-${background}-${active ? 'active' : 'normal'}.png`
++            ),
++          })
++        }
++      }
++    }
++  )
++
++  it('returns to automatic theme selection after a manual override', async () => {
++    let preference: 'auto' | 'light' | 'dark' = 'light'
++    const provider = createLinuxIconProvider(assetDir, () => preference)
++    await provider.init()
++    preference = 'auto'
++    nativeThemeMock.shouldUseDarkColors = false
++    await provider.init()
++    expect(provider.getIcon(false)).toEqual({
++      filePath: path.join(assetDir, 'mo-tray-light-normal.png'),
++    })
++  })
++
+   it.each([
+     { dark: true, theme: 'dark', color: 'white' },
+     { dark: false, theme: 'light', color: 'dark blue' },
+diff --git a/src/main/window/window-manager.test.ts b/src/main/window/window-manager.test.ts
+index ce52f38eb1cdd5fe7f87a2d9641ed5e52160cf0c..a14115188019f0c87689b37a37eb35d15426c9c7 100644
+--- a/src/main/window/window-manager.test.ts
++++ b/src/main/window/window-manager.test.ts
+@@ -12,6 +12,7 @@ vi.mock('electron', () => {
+       on: ReturnType<typeof vi.fn>
+       removeAllListeners: ReturnType<typeof vi.fn>
+       setWindowOpenHandler: ReturnType<typeof vi.fn>
++      setZoomFactor: ReturnType<typeof vi.fn>
+     }
+     private _destroyed = false
+     private _minimized = false
+@@ -32,6 +33,7 @@ vi.mock('electron', () => {
+         on: vi.fn(),
+         removeAllListeners: vi.fn(),
+         setWindowOpenHandler: vi.fn(),
++        setZoomFactor: vi.fn(),
+       }
+       instances.push(this)
+     }
+@@ -146,6 +148,40 @@ function createMockSettingsManager(
+ }
+ 
+ describe('WindowManager', () => {
++  it('applies saved scale to new windows and updates every existing window', () => {
++    const settings = { app: { uiScale: 125 }, windowState: {} }
++    const sm = createMockSettingsManager()
++    vi.mocked(sm.get).mockReturnValue(
++      settings as ReturnType<SettingsManager['get']>
++    )
++    const wm = new WindowManager({
++      settingsManager: sm,
++      preloadPath: '/fake/preload.cjs',
++      loadUrl: vi.fn(),
++    })
++    const main = wm.open('main')
++    const secondary = wm.open('add-task')
++    if (!main || !secondary) throw new Error('Expected both windows to open')
++    expect(
++      (
++        main as unknown as {
++          options: { webPreferences: { zoomFactor: number } }
++        }
++      ).options.webPreferences.zoomFactor
++    ).toBe(1.25)
++    settings.app.uiScale = 150
++    wm.applyUiScale()
++    expect(main.webContents.setZoomFactor).toHaveBeenLastCalledWith(1.5)
++    expect(secondary.webContents.setZoomFactor).toHaveBeenLastCalledWith(1.5)
++    const listeners = (secondary.webContents.on as ReturnType<typeof vi.fn>)
++      .mock.calls
++    const onLoad = listeners.find(
++      ([event]) => event === 'did-finish-load'
++    )?.[1] as (() => void) | undefined
++    settings.app.uiScale = 175
++    onLoad?.()
++    expect(secondary.webContents.setZoomFactor).toHaveBeenLastCalledWith(1.75)
++  })
+   beforeEach(() => {
+     ;(BrowserWindow as unknown as { instances: unknown[] }).instances.length = 0
+     ;(
+@@ -512,6 +548,8 @@ describe('WindowManager', () => {
+       .options
+ 
+     expect(options.webPreferences).toEqual({
++      zoomMode: 'isolated',
++      zoomFactor: 1,
+       preload: '/fake/preload.cjs',
+       nodeIntegration: false,
+       contextIsolation: true,
+diff --git a/src/main/window/window-manager.ts b/src/main/window/window-manager.ts
+index ba232d6d5ad21690e1af22603a17e5f1f7f1ecec..74f032f48c0f9aca60178b9c770bae8910936e98 100644
+--- a/src/main/window/window-manager.ts
++++ b/src/main/window/window-manager.ts
+@@ -330,6 +330,14 @@ export class WindowManager {
+       .catch(() => {})
+   }
+ 
++  applyUiScale(): void {
++    const zoomFactor =
++      (this.deps.settingsManager.get().app?.uiScale ?? 100) / 100
++    for (const win of this.getAllWindows()) {
++      win.webContents.setZoomFactor(zoomFactor)
++    }
++  }
++
+   // ─── Private ──────────────────────────────────────────
+ 
+   private focusWindow(id: WindowId, win: BrowserWindow): void {
+@@ -484,6 +492,9 @@ export class WindowManager {
+       show: false,
+       ...platformOpts,
+       webPreferences: {
++        // Shared file origins must not reset another window's saved scale.
++        zoomMode: 'isolated',
++        zoomFactor: (this.deps.settingsManager.get().app?.uiScale ?? 100) / 100,
+         preload: this.deps.preloadPath,
+         nodeIntegration: false,
+         contextIsolation: true,
+@@ -635,7 +646,13 @@ export class WindowManager {
+     // publishing the same stale native value over the transition.
+     // Cocoa can leave the maximized state via a manual resize without emitting
+     // unmaximize, so reconcile once the resize gesture finishes as well.
+-    win.webContents.on('did-finish-load', publish)
++    win.webContents.on('did-finish-load', () => {
++      if (win.isDestroyed()) return
++      win.webContents.setZoomFactor(
++        (this.deps.settingsManager.get().app?.uiScale ?? 100) / 100
++      )
++      publish()
++    })
+     win.on('maximize', publish)
+     win.on('unmaximize', publish)
+     win.on('enter-full-screen', () => {
+diff --git a/src/renderer/routes/settings/cards/appearance-dialog.test.tsx b/src/renderer/routes/settings/cards/appearance-dialog.test.tsx
+index 4c02e1e73f1d7ab6dd42041e296fb9edf09c0382..3e609bc5948026a6aad6171762668ac77f17164d 100644
+--- a/src/renderer/routes/settings/cards/appearance-dialog.test.tsx
++++ b/src/renderer/routes/settings/cards/appearance-dialog.test.tsx
+@@ -71,6 +71,55 @@ beforeEach(async () => {
+ })
+ 
+ describe('<AppearanceDialog>', () => {
++  it('saves a valid desktop interface scale only after confirmation', async () => {
++    render(
++      <AppearanceDialog
++        open
++        onClose={vi.fn()}
++        labelKey="settings.cards.appearance.title"
++        descKey="settings.cards.appearance.desc"
++      />
++    )
++    const scale = await screen.findByRole('spinbutton', {
++      name: 'Interface scale (%)',
++    })
++    await waitFor(() => expect(scale).toHaveValue(100))
++    const user = userEvent.setup()
++    await user.clear(scale)
++    await user.type(scale, '137')
++    expect(transport.invoke).not.toHaveBeenCalledWith(
++      Commands.UpdateSettings,
++      expect.anything()
++    )
++    await user.click(screen.getByRole('button', { name: 'Save' }))
++    expect(transport.invoke).toHaveBeenCalledWith(Commands.UpdateSettings, {
++      app: { uiScale: 137 },
++    })
++  })
++
++  it('rejects an out-of-range desktop interface scale', async () => {
++    render(
++      <AppearanceDialog
++        open
++        onClose={vi.fn()}
++        labelKey="settings.cards.appearance.title"
++        descKey="settings.cards.appearance.desc"
++      />
++    )
++    const scale = await screen.findByRole('spinbutton', {
++      name: 'Interface scale (%)',
++    })
++    const user = userEvent.setup()
++    await user.clear(scale)
++    await user.type(scale, '250')
++    await user.click(screen.getByRole('button', { name: 'Save' }))
++    expect(transport.invoke).not.toHaveBeenCalledWith(
++      Commands.UpdateSettings,
++      expect.anything()
++    )
++    expect(scale).toHaveAttribute('aria-invalid', 'true')
++  })
++
+   it('pins Follow system first and saves the preference only after confirmation', async () => {
+     render(
+       <AppearanceDialog
+diff --git a/src/renderer/routes/settings/cards/appearance-dialog.tsx b/src/renderer/routes/settings/cards/appearance-dialog.tsx
+index 32b45cd1fb1c83215d8cecf89f86266fef90c30a..25c6f7ea00dd2a4a4882c1ac0c2c880655d89557 100644
+--- a/src/renderer/routes/settings/cards/appearance-dialog.tsx
++++ b/src/renderer/routes/settings/cards/appearance-dialog.tsx
+@@ -23,7 +23,9 @@ import {
+   FormDescription,
+   FormField,
+   FormLabel,
++  FormMessage,
+ } from '@renderer/components/ui/form'
++import { Input } from '@renderer/components/ui/input'
+ import {
+   ScrollArea,
+   ScrollAreaContent,
+@@ -49,6 +51,7 @@ import {
+   SUPPORTED_LOCALES,
+ } from '@shared/constants/locales'
+ import { DEFAULT_APP_SETTINGS } from '@shared/schemas'
++import { UI_SCALE_MAX, UI_SCALE_MIN } from '@shared/schemas/app-settings'
+ import { resolveByteUnitSystem } from '@shared/schemas/byte-unit-system'
+ import type { MotrixAppSettings } from '@shared/types/settings'
+ import { useEffect } from 'react'
+@@ -60,6 +63,7 @@ import { SidebarColorPicker } from './sidebar-color-picker'
+ type AppearanceFields = Pick<
+   MotrixAppSettings,
+   | 'theme'
++  | 'uiScale'
+   | 'sidebarColor'
+   | 'reduceMotion'
+   | 'language'
+@@ -74,6 +78,7 @@ type AppearanceFields = Pick<
+ // fields it edits. Keep this Pick<> in sync if the schema fields change.
+ const DEFAULTS: AppearanceFields = {
+   theme: DEFAULT_APP_SETTINGS.theme,
++  uiScale: DEFAULT_APP_SETTINGS.uiScale,
+   sidebarColor: DEFAULT_APP_SETTINGS.sidebarColor,
+   reduceMotion: DEFAULT_APP_SETTINGS.reduceMotion,
+   language: DEFAULT_APP_SETTINGS.language,
+@@ -108,6 +113,7 @@ export function AppearanceDialog({
+     if (all?.app) {
+       form.reset({
+         theme: all.app.theme,
++        uiScale: all.app.uiScale ?? DEFAULTS.uiScale,
+         sidebarColor: all.app.sidebarColor ?? DEFAULTS.sidebarColor,
+         reduceMotion: all.app.reduceMotion ?? DEFAULTS.reduceMotion,
+         language: all.app.language,
+@@ -430,6 +436,43 @@ export function AppearanceDialog({
+                         </SettingsFormRow>
+                       )}
+                     />
++                    {transport.platform !== 'web' && (
++                      <FormField
++                        control={form.control}
++                        name="uiScale"
++                        render={({ field }) => (
++                          <SettingsFormRow>
++                            <div className="space-y-1">
++                              <FormLabel>
++                                {t('settings.appearance.uiScale')}
++                              </FormLabel>
++                              <FormDescription className="text-xs">
++                                {t('settings.appearance.uiScaleDesc')}
++                              </FormDescription>
++                              <FormMessage />
++                            </div>
++                            <FormControl>
++                              <Input
++                                {...field}
++                                type="number"
++                                min={UI_SCALE_MIN}
++                                max={UI_SCALE_MAX}
++                                step={1}
++                                className="h-8 w-30"
++                                value={
++                                  Number.isFinite(field.value)
++                                    ? field.value
++                                    : ''
++                                }
++                                onChange={(event) =>
++                                  field.onChange(event.target.valueAsNumber)
++                                }
++                              />
++                            </FormControl>
++                          </SettingsFormRow>
++                        )}
++                      />
++                    )}
+                     {(isMac || isLinux) && (
+                       <>
+                         <Separator className="my-4" />
+diff --git a/src/renderer/routes/settings/cards/settings-form-schemas.ts b/src/renderer/routes/settings/cards/settings-form-schemas.ts
+index db53b1cc8962e94773d9a39542b52e4530aab23b..80b5cbd25e22f45dc95a194de43c91770fae084b 100644
+--- a/src/renderer/routes/settings/cards/settings-form-schemas.ts
++++ b/src/renderer/routes/settings/cards/settings-form-schemas.ts
+@@ -22,6 +22,7 @@ export const generalFormSchema = appSettingsInputSchema.pick({
+ 
+ export const appearanceFormSchema = appSettingsInputSchema.pick({
+   theme: true,
++  uiScale: true,
+   sidebarColor: true,
+   reduceMotion: true,
+   language: true,
+diff --git a/src/shared/locales/ar.json b/src/shared/locales/ar.json
+index 0577dabc5bffb7137879be3b16154b4930852e57..235c0b3cd8bd539d48319d0c54a91c0c81f57c18 100644
+--- a/src/shared/locales/ar.json
++++ b/src/shared/locales/ar.json
+@@ -1979,6 +1979,8 @@
+       "themeAuto": "النظام",
+       "themeDark": "داكنة",
+       "themeLight": "فاتحة",
++      "uiScale": "Interface scale (%)",
++      "uiScaleDesc": "75–200%. Changes apply to all windows when saved.",
+       "trayIconColor": "لون أيقونة علبة النظام",
+       "trayIconColorAuto": "اتباع سمة التطبيق",
+       "trayIconColorDark": "أيقونة داكنة (لوحة فاتحة)",
+diff --git a/src/shared/locales/bg.json b/src/shared/locales/bg.json
+index 3746e78fb098f1663d37fee5a910bc86239936a1..e1c7befe609b56ab7def9e86859bd3d9af2db9e1 100644
+--- a/src/shared/locales/bg.json
++++ b/src/shared/locales/bg.json
+@@ -1903,6 +1903,8 @@
+       "themeAuto": "Системна",
+       "themeDark": "Тъмна",
+       "themeLight": "Светла",
++      "uiScale": "Interface scale (%)",
++      "uiScaleDesc": "75–200%. Changes apply to all windows when saved.",
+       "trayIconColor": "Цвят на иконата в системната област",
+       "trayIconColorAuto": "Според темата на приложението",
+       "trayIconColorDark": "Тъмна икона (светъл панел)",
+diff --git a/src/shared/locales/ca.json b/src/shared/locales/ca.json
+index aa599058a12354c818ffe38ad3011a72a09edce9..c5ed4269d0e964f419c11efc263e7b666b967805 100644
+--- a/src/shared/locales/ca.json
++++ b/src/shared/locales/ca.json
+@@ -1922,6 +1922,8 @@
+       "themeAuto": "Del sistema",
+       "themeDark": "Fosc",
+       "themeLight": "Clar",
++      "uiScale": "Interface scale (%)",
++      "uiScaleDesc": "75–200%. Changes apply to all windows when saved.",
+       "trayIconColor": "Color de la icona de la safata",
+       "trayIconColorAuto": "Seguir el tema de l'aplicació",
+       "trayIconColorDark": "Icona fosca (tauler clar)",
+diff --git a/src/shared/locales/de.json b/src/shared/locales/de.json
+index 02980ea708d87397b3c78e3fcdf66cc2eb363e62..de5b78a8135b76997c2109f3e0062fd7b4d30eb7 100644
+--- a/src/shared/locales/de.json
++++ b/src/shared/locales/de.json
+@@ -1303,6 +1303,8 @@
+       "language": "Sprache",
+       "traySpeedometer": "Geschwindigkeit in der Menüleiste anzeigen",
+       "traySpeedometerDesc": "Download- und Upload-Geschwindigkeit neben dem Anwendungssymbol anzeigen.",
++      "uiScale": "Interface scale (%)",
++      "uiScaleDesc": "75–200%. Changes apply to all windows when saved.",
+       "trayIconColor": "Symbolfarbe im Infobereich",
+       "trayIconColorDesc": "Wählen Sie eine Farbe, die sich von Ihrer Systemleiste abhebt.",
+       "trayIconColorAuto": "Anwendungsdesign folgen",
+diff --git a/src/shared/locales/el.json b/src/shared/locales/el.json
+index 77586548ad3a57a2eaf898cb2f73aa916ddde40a..ea8d080de11a67cc4300aee5e6418403e3b19664 100644
+--- a/src/shared/locales/el.json
++++ b/src/shared/locales/el.json
+@@ -1903,6 +1903,8 @@
+       "themeAuto": "Συστήματος",
+       "themeDark": "Σκοτεινό",
+       "themeLight": "Φωτεινό",
++      "uiScale": "Interface scale (%)",
++      "uiScaleDesc": "75–200%. Changes apply to all windows when saved.",
+       "trayIconColor": "Χρώμα εικονιδίου περιοχής ειδοποιήσεων",
+       "trayIconColorAuto": "Σύμφωνα με το θέμα της εφαρμογής",
+       "trayIconColorDark": "Σκοτεινό εικονίδιο (φωτεινή γραμμή)",
+diff --git a/src/shared/locales/en-US.json b/src/shared/locales/en-US.json
+index 49dd3cc48acef652572a8d282ac7dde355ddc137..138c3530f23483007fc56eaa86197b7585250071 100644
+--- a/src/shared/locales/en-US.json
++++ b/src/shared/locales/en-US.json
+@@ -1297,6 +1297,8 @@
+     },
+     "appearance": {
+       "theme": "Theme",
++      "uiScale": "Interface scale (%)",
++      "uiScaleDesc": "75–200%. Changes apply to all windows when saved.",
+       "themeAuto": "System",
+       "themeLight": "Light",
+       "themeDark": "Dark",
+diff --git a/src/shared/locales/es.json b/src/shared/locales/es.json
+index 2220359021dbe9e495ac7861188fc723029097f8..1278c5f4eb2def800a35ff169c5d248d8b0c0975 100644
+--- a/src/shared/locales/es.json
++++ b/src/shared/locales/es.json
+@@ -1317,6 +1317,8 @@
+       "language": "Idioma",
+       "traySpeedometer": "Mostrar velocidad en la barra de menús",
+       "traySpeedometerDesc": "Muestra la velocidad de descarga y subida junto al icono de la aplicación.",
++      "uiScale": "Interface scale (%)",
++      "uiScaleDesc": "75–200%. Changes apply to all windows when saved.",
+       "trayIconColor": "Color del icono de la bandeja",
+       "trayIconColorDesc": "Elige un color que destaque en el panel del sistema.",
+       "trayIconColorAuto": "Usar el tema de la aplicación",
+diff --git a/src/shared/locales/fa.json b/src/shared/locales/fa.json
+index 21ddffa177a5ce2c68701e7b7671266ca4987225..b9075b933edb8699ea1208cdece24c8cc6eb2ccb 100644
+--- a/src/shared/locales/fa.json
++++ b/src/shared/locales/fa.json
+@@ -1903,6 +1903,8 @@
+       "themeAuto": "سیستم",
+       "themeDark": "تیره",
+       "themeLight": "روشن",
++      "uiScale": "Interface scale (%)",
++      "uiScaleDesc": "75–200%. Changes apply to all windows when saved.",
+       "trayIconColor": "رنگ آیکون سینی سیستم",
+       "trayIconColorAuto": "پیروی از پوستهٔ برنامه",
+       "trayIconColorDark": "آیکون تیره (پنل روشن)",
+diff --git a/src/shared/locales/fr.json b/src/shared/locales/fr.json
+index b2cc3a08f72b0e493772c28f04ce3840699dc291..9bbb6a80eba80cdcbc7edd0298ce772456650d7f 100644
+--- a/src/shared/locales/fr.json
++++ b/src/shared/locales/fr.json
+@@ -1921,6 +1921,8 @@
+       "themeAuto": "Système",
+       "themeDark": "Sombre",
+       "themeLight": "Clair",
++      "uiScale": "Interface scale (%)",
++      "uiScaleDesc": "75–200%. Changes apply to all windows when saved.",
+       "trayIconColor": "Couleur de l’icône de notification",
+       "trayIconColorAuto": "Suivre le thème de l’application",
+       "trayIconColorDark": "Icône sombre (panneau clair)",
+diff --git a/src/shared/locales/hu.json b/src/shared/locales/hu.json
+index bfc8a1d4f94dfa64b90f89e9446c2f9784bc2310..1a8a0ce7ebf7f428b9531cd21fa40253ff5f3a68 100644
+--- a/src/shared/locales/hu.json
++++ b/src/shared/locales/hu.json
+@@ -1297,6 +1297,8 @@
+     },
+     "appearance": {
+       "theme": "Téma",
++      "uiScale": "Felület méretezése (%)",
++      "uiScaleDesc": "75–200%. A módosítások mentéskor minden ablakra érvényesek.",
+       "themeAuto": "Rendszer",
+       "themeLight": "Világos",
+       "themeDark": "Sötét",
+diff --git a/src/shared/locales/id.json b/src/shared/locales/id.json
+index d23215c65fc5e53cd2b4ffd49bb3c766caa20e2a..d8916371ffa2042160bbcaa0b8cee4d3b9d37e4d 100644
+--- a/src/shared/locales/id.json
++++ b/src/shared/locales/id.json
+@@ -1289,6 +1289,8 @@
+       "language": "Bahasa",
+       "traySpeedometer": "Tampilkan kecepatan di bar menu",
+       "traySpeedometerDesc": "Lihat kecepatan unduh dan unggah di samping ikon aplikasi.",
++      "uiScale": "Interface scale (%)",
++      "uiScaleDesc": "75–200%. Changes apply to all windows when saved.",
+       "trayIconColor": "Warna ikon baki",
+       "trayIconColorDesc": "Pilih warna yang terlihat jelas pada panel sistem.",
+       "trayIconColorAuto": "Ikuti tema aplikasi",
+diff --git a/src/shared/locales/it.json b/src/shared/locales/it.json
+index f535b4cbe3d8a985af3ad7041f4670cb206c5af4..65340fe2f3f70d2ac5c890ffc50c090093b49d0f 100644
+--- a/src/shared/locales/it.json
++++ b/src/shared/locales/it.json
+@@ -1317,6 +1317,8 @@
+       "language": "Lingua",
+       "traySpeedometer": "Mostra velocità nella barra dei menu",
+       "traySpeedometerDesc": "Visualizza le velocità di download e caricamento accanto all’icona dell’app.",
++      "uiScale": "Interface scale (%)",
++      "uiScaleDesc": "75–200%. Changes apply to all windows when saved.",
+       "trayIconColor": "Colore dell’icona nell’area di notifica",
+       "trayIconColorDesc": "Scegli un colore ben visibile sul pannello di sistema.",
+       "trayIconColorAuto": "Segui il tema dell’app",
+diff --git a/src/shared/locales/ja.json b/src/shared/locales/ja.json
+index 259b157b71c33951740986710e42fd86937d24a7..0669d7ae7dac580927b7d1ee02a93c0b636f3649 100644
+--- a/src/shared/locales/ja.json
++++ b/src/shared/locales/ja.json
+@@ -1289,6 +1289,8 @@
+       "language": "言語",
+       "traySpeedometer": "メニューバーに速度を表示",
+       "traySpeedometerDesc": "アプリのアイコンの横にダウンロード速度とアップロード速度を表示します。",
++      "uiScale": "Interface scale (%)",
++      "uiScaleDesc": "75–200%. Changes apply to all windows when saved.",
+       "trayIconColor": "トレイアイコンの色",
+       "trayIconColorDesc": "システムパネル上で見やすい色を選択します。",
+       "trayIconColorAuto": "アプリのテーマに合わせる",
+diff --git a/src/shared/locales/ko.json b/src/shared/locales/ko.json
+index 678f72bec7a83a9345f0d174bc193d638be7e048..088b209ab819ca87fc40d6557ad0070a404974a2 100644
+--- a/src/shared/locales/ko.json
++++ b/src/shared/locales/ko.json
+@@ -1289,6 +1289,8 @@
+       "language": "언어",
+       "traySpeedometer": "메뉴 막대에 속도 표시",
+       "traySpeedometerDesc": "앱 아이콘 옆에 다운로드 및 업로드 속도를 표시합니다.",
++      "uiScale": "Interface scale (%)",
++      "uiScaleDesc": "75–200%. Changes apply to all windows when saved.",
+       "trayIconColor": "트레이 아이콘 색상",
+       "trayIconColorDesc": "시스템 패널에서 잘 보이는 색상을 선택하세요.",
+       "trayIconColorAuto": "앱 테마 따르기",
+diff --git a/src/shared/locales/nb.json b/src/shared/locales/nb.json
+index d7080879aaa348c8d4424ccc989503911082171e..9f39ddcdcdf9b4eceb7e0fa18faa18134a9ae2ad 100644
+--- a/src/shared/locales/nb.json
++++ b/src/shared/locales/nb.json
+@@ -1903,6 +1903,8 @@
+       "themeAuto": "System",
+       "themeDark": "Mørkt",
+       "themeLight": "Lyst",
++      "uiScale": "Interface scale (%)",
++      "uiScaleDesc": "75–200%. Changes apply to all windows when saved.",
+       "trayIconColor": "Farge på systemstatusikon",
+       "trayIconColorAuto": "Følg appens tema",
+       "trayIconColorDark": "Mørkt ikon (lyst panel)",
+diff --git a/src/shared/locales/nl.json b/src/shared/locales/nl.json
+index 6528f6120187adee2dad672791432372335cd2c2..3c873644a5441e99b65ad3fa6bfc8a1203218e81 100644
+--- a/src/shared/locales/nl.json
++++ b/src/shared/locales/nl.json
+@@ -1903,6 +1903,8 @@
+       "themeAuto": "Systeem",
+       "themeDark": "Donker",
+       "themeLight": "Licht",
++      "uiScale": "Interface scale (%)",
++      "uiScaleDesc": "75–200%. Changes apply to all windows when saved.",
+       "trayIconColor": "Kleur van systeemvakpictogram",
+       "trayIconColorAuto": "Appthema volgen",
+       "trayIconColorDark": "Donker pictogram (licht paneel)",
+diff --git a/src/shared/locales/pl.json b/src/shared/locales/pl.json
+index e3bb42f0fc9fc8f4391d639d9bcb637d86ba0617..efe71866313f3a486727aa2af58fd08308e05c27 100644
+--- a/src/shared/locales/pl.json
++++ b/src/shared/locales/pl.json
+@@ -1331,6 +1331,8 @@
+       "language": "Język",
+       "traySpeedometer": "Pokaż prędkość na pasku menu",
+       "traySpeedometerDesc": "Wyświetlaj prędkość pobierania i wysyłania obok ikony aplikacji.",
++      "uiScale": "Interface scale (%)",
++      "uiScaleDesc": "75–200%. Changes apply to all windows when saved.",
+       "trayIconColor": "Kolor ikony w zasobniku",
+       "trayIconColorDesc": "Wybierz kolor widoczny na panelu systemowym.",
+       "trayIconColorAuto": "Zgodnie z motywem aplikacji",
+diff --git a/src/shared/locales/pt-BR.json b/src/shared/locales/pt-BR.json
+index 40cf5e1006d893c937e874aac0ca531a3acdbb91..0b2f9330e5cdc7707840afb108fe6c8db5c69a03 100644
+--- a/src/shared/locales/pt-BR.json
++++ b/src/shared/locales/pt-BR.json
+@@ -1317,6 +1317,8 @@
+       "language": "Idioma",
+       "traySpeedometer": "Mostrar velocidade na barra de menus",
+       "traySpeedometerDesc": "Mostra as velocidades de download e upload ao lado do ícone do aplicativo.",
++      "uiScale": "Interface scale (%)",
++      "uiScaleDesc": "75–200%. Changes apply to all windows when saved.",
+       "trayIconColor": "Cor do ícone da bandeja",
+       "trayIconColorDesc": "Escolha uma cor que se destaque no painel do sistema.",
+       "trayIconColorAuto": "Seguir o tema do aplicativo",
+diff --git a/src/shared/locales/ro.json b/src/shared/locales/ro.json
+index e2629584938b9ac93740783e4e43e954fd436fee..61367744e0af9d522aa4414f6294d0b382fa6286 100644
+--- a/src/shared/locales/ro.json
++++ b/src/shared/locales/ro.json
+@@ -1922,6 +1922,8 @@
+       "themeAuto": "Sistem",
+       "themeDark": "Întunecată",
+       "themeLight": "Luminoasă",
++      "uiScale": "Interface scale (%)",
++      "uiScaleDesc": "75–200%. Changes apply to all windows when saved.",
+       "trayIconColor": "Culoarea pictogramei din zona de notificare",
+       "trayIconColorAuto": "Urmează tema aplicației",
+       "trayIconColorDark": "Pictogramă de culoare închisă (panou luminos)",
+diff --git a/src/shared/locales/ru.json b/src/shared/locales/ru.json
+index 4003e65b2cbf05ec67d5e4f4904050c2d2bf60ee..3198d7bf45e82846afe12a738ac473dcdc0317dc 100644
+--- a/src/shared/locales/ru.json
++++ b/src/shared/locales/ru.json
+@@ -1331,6 +1331,8 @@
+       "language": "Язык",
+       "traySpeedometer": "Показывать скорость в строке меню",
+       "traySpeedometerDesc": "Отображать скорость загрузки и отдачи рядом со значком приложения.",
++      "uiScale": "Interface scale (%)",
++      "uiScaleDesc": "75–200%. Changes apply to all windows when saved.",
+       "trayIconColor": "Цвет значка в трее",
+       "trayIconColorDesc": "Выберите цвет, который хорошо виден на системной панели.",
+       "trayIconColorAuto": "Как в теме приложения",
+diff --git a/src/shared/locales/th.json b/src/shared/locales/th.json
+index ef195989ad7883f9529ab40f63eda0c4b3dcd49b..ccc87b0d6c8d72c90f371d66e775ffb1fd20827b 100644
+--- a/src/shared/locales/th.json
++++ b/src/shared/locales/th.json
+@@ -1884,6 +1884,8 @@
+       "themeAuto": "ระบบ",
+       "themeDark": "มืด",
+       "themeLight": "สว่าง",
++      "uiScale": "Interface scale (%)",
++      "uiScaleDesc": "75–200%. Changes apply to all windows when saved.",
+       "trayIconColor": "สีไอคอนถาดระบบ",
+       "trayIconColorAuto": "ตามธีมแอป",
+       "trayIconColorDark": "ไอคอนสีเข้ม (แผงสีอ่อน)",
+diff --git a/src/shared/locales/tr.json b/src/shared/locales/tr.json
+index b22516839accbe1be96221d432bb41104ae0df7f..a26288c672040d2c52b9865e636e6f4c904fa211 100644
+--- a/src/shared/locales/tr.json
++++ b/src/shared/locales/tr.json
+@@ -1303,6 +1303,8 @@
+       "language": "Dil",
+       "traySpeedometer": "Menü çubuğunda hızı göster",
+       "traySpeedometerDesc": "Uygulama simgesinin yanında indirme ve gönderme hızlarını görün.",
++      "uiScale": "Interface scale (%)",
++      "uiScaleDesc": "75–200%. Changes apply to all windows when saved.",
+       "trayIconColor": "Sistem tepsisi simgesinin rengi",
+       "trayIconColorDesc": "Sistem panelinizde belirgin görünen bir renk seçin.",
+       "trayIconColorAuto": "Uygulama temasını kullan",
+diff --git a/src/shared/locales/uk.json b/src/shared/locales/uk.json
+index 61d8ead59bee1c6c6085f985657f93c50fa098b8..7141c3ece7dd0f7e364a32c609f82c58f3acedb5 100644
+--- a/src/shared/locales/uk.json
++++ b/src/shared/locales/uk.json
+@@ -1941,6 +1941,8 @@
+       "themeAuto": "Системна",
+       "themeDark": "Темна",
+       "themeLight": "Світла",
++      "uiScale": "Interface scale (%)",
++      "uiScaleDesc": "75–200%. Changes apply to all windows when saved.",
+       "trayIconColor": "Колір значка в системному лотку",
+       "trayIconColorAuto": "За темою застосунку",
+       "trayIconColorDark": "Темний значок (світла панель)",
+diff --git a/src/shared/locales/vi.json b/src/shared/locales/vi.json
+index 38386669f717782337793b575a359806d376e844..de163cf9981af9c7926019abe1a489be77d4baa1 100644
+--- a/src/shared/locales/vi.json
++++ b/src/shared/locales/vi.json
+@@ -1289,6 +1289,8 @@
+       "language": "Ngôn ngữ",
+       "traySpeedometer": "Hiện tốc độ trên thanh menu",
+       "traySpeedometerDesc": "Xem tốc độ tải xuống và tải lên bên cạnh biểu tượng ứng dụng.",
++      "uiScale": "Interface scale (%)",
++      "uiScaleDesc": "75–200%. Changes apply to all windows when saved.",
+       "trayIconColor": "Màu biểu tượng khay hệ thống",
+       "trayIconColorDesc": "Chọn màu dễ nhìn trên thanh hệ thống.",
+       "trayIconColorAuto": "Theo chủ đề ứng dụng",
+diff --git a/src/shared/locales/zh-CN.json b/src/shared/locales/zh-CN.json
+index bc9a2a820340198a03ac6a90cc108c7675f39a35..bec84826d8e2335ac853444f7bc44ec8f8d78ae2 100644
+--- a/src/shared/locales/zh-CN.json
++++ b/src/shared/locales/zh-CN.json
+@@ -1283,6 +1283,8 @@
+     },
+     "appearance": {
+       "theme": "主题",
++      "uiScale": "界面缩放（%）",
++      "uiScaleDesc": "75–200%，保存后立即应用到所有窗口。",
+       "themeAuto": "跟随系统",
+       "themeLight": "浅色",
+       "themeDark": "深色",
+diff --git a/src/shared/locales/zh-TW.json b/src/shared/locales/zh-TW.json
+index 8072705158ed14f938a4f6fcfa0e9be1d5628406..70ef4c9772f5dbb9125f6ce546da757704faf546 100644
+--- a/src/shared/locales/zh-TW.json
++++ b/src/shared/locales/zh-TW.json
+@@ -1283,6 +1283,8 @@
+     },
+     "appearance": {
+       "theme": "主題",
++      "uiScale": "介面縮放（%）",
++      "uiScaleDesc": "75–200%，儲存後立即套用至所有視窗。",
+       "themeAuto": "跟隨系統",
+       "themeLight": "淺色",
+       "themeDark": "深色",
+diff --git a/src/shared/schemas/app-settings.test.ts b/src/shared/schemas/app-settings.test.ts
+index c1300f5c169dc07a9dac68536624ba3ba3ea7f73..6c3d2444665cf62a157caabb365618a498fb8048 100644
+--- a/src/shared/schemas/app-settings.test.ts
++++ b/src/shared/schemas/app-settings.test.ts
+@@ -6,6 +6,21 @@ import {
+ } from './app-settings'
+ 
+ describe('appSettingsSchema', () => {
++  it('defaults and preserves a valid desktop interface scale', () => {
++    expect(appSettingsSchema.parse({}).uiScale).toBe(100)
++    expect(appSettingsSchema.parse({ uiScale: 137 }).uiScale).toBe(137)
++  })
++
++  it.each([0, 74, 201, 125.5, '125', null])(
++    'recovers invalid saved scale %s but rejects it as input',
++    (uiScale) => {
++      expect(appSettingsSchema.parse({ uiScale }).uiScale).toBe(100)
++      expect(
++        appSettingsInputSchema.partial().safeParse({ uiScale }).success
++      ).toBe(false)
++    }
++  )
++
+   it('recovers missing or damaged speed limit units without losing valid choices', () => {
+     expect(appSettingsSchema.parse({}).speedLimitUnits).toEqual({
+       baseUpload: 'kilo',
+diff --git a/src/shared/schemas/app-settings.ts b/src/shared/schemas/app-settings.ts
+index 538f61ef3116caaf5e32a4a9577379b97f538928..b1328d23ce38e1476f29a30127b2f1ebd45a58be 100644
+--- a/src/shared/schemas/app-settings.ts
++++ b/src/shared/schemas/app-settings.ts
+@@ -18,6 +18,8 @@ import { DEFAULT_TRAY_ICON_COLOR, trayIconColorSchema } from './tray-icon-color'
+ import { windowMinimumDimensionSchema } from './window-bounds'
+ 
+ export const appUpdateChannelSchema = z.enum(['stable', 'beta'])
++export const UI_SCALE_MIN = 75
++export const UI_SCALE_MAX = 200
+ export const fileDeletionModeSchema = z.enum(['trash', 'permanent'])
+ export type FileDeletionMode = z.infer<typeof fileDeletionModeSchema>
+ export const notificationBadgeStyleSchema = z.enum(['count', 'dot', 'hidden'])
+@@ -39,6 +41,7 @@ export const appSettingsSchema = z.object({
+   mainWindowMinWidth: windowMinimumDimensionSchema.catch(914),
+   mainWindowMinHeight: windowMinimumDimensionSchema.catch(672),
+   theme: z.enum(['system', 'light', 'dark']).catch('system'),
++  uiScale: z.number().int().min(UI_SCALE_MIN).max(UI_SCALE_MAX).catch(100),
+   sidebarColor: sidebarColorSchema.catch('cyan'),
+   reduceMotion: z.boolean().catch(false),
+   language: languagePreferenceSchema.catch(DEFAULT_LOCALE),
+diff --git a/src/shared/types/settings.ts b/src/shared/types/settings.ts
+index b70715670a9d49f6da697c78d3f95ae96d56eae3..2588b48bde5e89c4d1303298a424b65fb9f8391b 100644
+--- a/src/shared/types/settings.ts
++++ b/src/shared/types/settings.ts
+@@ -229,6 +229,8 @@ export interface MotrixAppSettings {
+   mainWindowMinWidth: number
+   mainWindowMinHeight: number
+   theme: 'system' | 'light' | 'dark'
++  /** Desktop interface scale in percent. */
++  uiScale: number
+   sidebarColor: SidebarColor
+   reduceMotion: boolean
+   byteUnitSystem: ByteUnitPreference

@@ -1,0 +1,48 @@
+# Maintainer: Peilin Fan <peilin.fan@foxmail.com>
+pkgname=pi-dnr-bin
+pkgver=1.4.0
+pkgrel=1
+pkgdesc='Pi coding agent for the shared dnr runtime (prebuilt)'
+arch=('x86_64')
+url='https://github.com/fansion314/pi'
+license=('MIT')
+# Dual, CEF-only and WebView-only runtime packages satisfy this dependency.
+depends=('dnr>=0.4.0' 'bash' 'glibc' 'libxcb' 'ripgrep' 'fd')
+optdepends=('git: install Git-based extensions and work with repositories'
+            'npm: install dependencies for npm and Git extensions'
+            'wl-clipboard: Wayland clipboard support'
+            'xclip: X11 clipboard writes and fallback reads')
+provides=("pi-dnr=$pkgver" "pi-coding-agent=$pkgver")
+conflicts=('pi-dnr' 'pi-coding-agent')
+options=('!strip' '!debug')
+_package="pi-dnr-$pkgver-$pkgrel-x86_64.pkg.tar.zst"
+_release="$url/releases/download/pi-dnr-v$pkgver-$pkgrel"
+source=("$_release/$_package" "$_release/$_package.sha256")
+noextract=("$_package")
+# The release archive is produced by CI after tagging; verify its checksum below.
+sha256sums=('SKIP' 'SKIP')
+
+prepare() {
+    cd "$srcdir"
+    local digest filename extra
+    read -r digest filename extra < "$_package.sha256"
+    [[ $digest =~ ^[0-9a-f]{64}$ && $filename == "$_package" && -z $extra ]] || return 1
+    printf '%s  %s\n' "$digest" "$_package" | sha256sum --check --status || return 1
+    mkdir -p payload
+    bsdtar -xf "$_package" -C payload usr/bin/pi usr/lib/pi usr/share/licenses/pi-dnr usr/share/doc/pi-dnr
+}
+
+package() {
+    cd "$srcdir/payload"
+    [[ -L usr/bin/pi && $(readlink usr/bin/pi) == ../lib/pi/pi.dnp ]]
+    [[ -f usr/lib/pi/pi.dnp && -d usr/lib/pi/pi.dnp.unpacked ]]
+    install -d "$pkgdir/usr/bin" "$pkgdir/usr/lib/pi"
+    cp -a --no-preserve=ownership usr/lib/pi/. "$pkgdir/usr/lib/pi/"
+    ln -s ../lib/pi/pi.dnp "$pkgdir/usr/bin/pi"
+    install -d "$pkgdir/usr/share/licenses/$pkgname" "$pkgdir/usr/share/doc/$pkgname"
+    cp -r --no-preserve=ownership usr/share/licenses/pi-dnr/. "$pkgdir/usr/share/licenses/$pkgname/"
+    cp -r --no-preserve=ownership usr/share/doc/pi-dnr/. "$pkgdir/usr/share/doc/$pkgname/"
+}
+
+# Pinned by fansion314/aur after verifying the published release bytes.
+sha256sums=('92569217873bbad31108d3092a216c9c3fa5fb3cabcdb9a204ca64c399b8c7f6' '19c107c8ec176da91a1ba30458834033e1b284f8a8160bcd2494b24433bc352f')

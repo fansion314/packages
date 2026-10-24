@@ -1,0 +1,88 @@
+{
+  "projects": [
+    {
+      "id": "dnr",
+      "repository": "fansion314/dnr",
+      "packages": {
+        "dnr": "packaging/aur/dnr",
+        "dnr-bin": "packaging/aur/dnr-bin",
+        "dnr-cef": "packaging/aur/dnr-cef",
+        "dnr-cef-bin": "packaging/aur/dnr-cef-bin",
+        "dnr-webview": "packaging/aur/dnr-webview",
+        "dnr-webview-bin": "packaging/aur/dnr-webview-bin",
+        "dnc": "packaging/aur/dnc",
+        "dnc-bin": "packaging/aur/dnc-bin"
+      }
+    },
+    {
+      "id": "pi",
+      "repository": "fansion314/pi",
+      "packages": {
+        "pi-dnr": "packaging/aur/pi-dnr",
+        "pi-dnr-bin": "packaging/aur/pi-dnr-bin"
+      }
+    },
+    {
+      "id": "etcher",
+      "repository": "fansion314/etcher",
+      "packages": {
+        "etcher-dnr": "packaging/aur/etcher-dnr",
+        "etcher-dnr-bin": "packaging/aur/etcher-dnr-bin"
+      }
+    },
+    {
+      "id": "motrix",
+      "repository": "fansion314/packages",
+      "release_bundle": {
+        "tag_pattern": "^motrix-v([0-9]+)\\.([0-9]+)\\.([0-9]+)(?:-(alpha|beta|rc)\\.([0-9]+))?-([1-9][0-9]*)$",
+        "asset_suffix": "-aur.tar.gz"
+      },
+      "packages": {
+        "motrix-electron": "aur/motrix-electron",
+        "motrix-electron-bin": "aur/motrix-electron-bin"
+      }
+    },
+    {
+      "id": "deepseek-harness",
+      "repository": "fansion314/packages",
+      "packages": {
+        "dsh-electron": "aur/dsh-electron",
+        "dsh-electron-bin": "aur/dsh-electron-bin"
+      },
+      "release_bundle": {
+        "tag_pattern": "^deepseek-harness-v([0-9]+)\\.([0-9]+)\\.([0-9]+)(?:-(alpha|beta|rc)\\.([0-9]+))?-([1-9][0-9]*)$",
+        "asset_suffix": "-aur.tar.gz"
+      }
+    },
+    {
+      "id": "bitwarden",
+      "repository": "fansion314/packages",
+      "packages": {
+        "bitwarden-electron": "aur/bitwarden-electron",
+        "bitwarden-electron-bin": "aur/bitwarden-electron-bin"
+      },
+      "release_bundle": {
+        "tag_pattern": "^bitwarden-v([0-9]+)\\.([0-9]+)\\.([0-9]+)(?:-(alpha|beta|rc)\\.([0-9]+))?-([1-9][0-9]*)$",
+        "asset_suffix": "-aur.tar.gz"
+      }
+    },
+    {
+      "id": "obsidian",
+      "repository": "fansion314/packages",
+      "packages": {
+        "obsidian-electron": "aur/obsidian-electron",
+        "obsidian-electron-bin": "aur/obsidian-electron-bin"
+      },
+      "release_bundle": {
+        "tag_pattern": "^obsidian-v([0-9]+)\\.([0-9]+)\\.([0-9]+)(?:-(alpha|beta|rc)\\.([0-9]+))?-([1-9][0-9]*)$",
+        "asset_suffix": "-aur.tar.gz"
+      }
+    }
+  ],
+  "excluded": [
+    {
+      "id": "songjian",
+      "reason": "Local installation only; no public source, recipe or release synchronization."
+    }
+  ]
+}

@@ -1,0 +1,67 @@
+name: Build one Arch package
+on:
+  workflow_call:
+    inputs:
+      package:
+        required: true
+        type: string
+      publish:
+        default: false
+        type: boolean
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    container: archlinux:base
+    timeout-minutes: 120
+    steps:
+      - name: Initialize native Arch builder
+        run: |
+          pacman -Syu --noconfirm --needed base-devel git python
+          useradd --create-home builder
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Install package dependencies
+        env:
+          PACKAGE: ${{ inputs.package }}
+        run: bash scripts/arch-dependencies.sh "$PACKAGE"
+      - name: Build and verify as an unprivileged user
+        env:
+          PACKAGE: ${{ inputs.package }}
+          CI: 'true'
+          RUSTC_WRAPPER: /usr/bin/sccache
+        run: |
+          chown -R builder:builder "$GITHUB_WORKSPACE"
+          runuser -u builder -- bash scripts/build.sh "$PACKAGE"
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: arch-${{ inputs.package }}
+          path: dist/${{ inputs.package }}/
+          if-no-files-found: error
+          include-hidden-files: true
+          retention-days: 14
+  publish:
+    if: inputs.publish
+    needs: build
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: arch-${{ inputs.package }}
+          path: dist/${{ inputs.package }}
+      - name: Publish exact verified package inputs
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PACKAGE: ${{ inputs.package }}
+        run: |
+          git merge-base --is-ancestor HEAD origin/main
+          python3 scripts/publish.py "$PACKAGE" "$GITHUB_SHA"

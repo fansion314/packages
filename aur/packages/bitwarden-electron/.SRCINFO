@@ -1,0 +1,31 @@
+pkgbase = bitwarden-electron
+	pkgdesc = Bitwarden official binaries using the latest system Electron
+	pkgver = 2026.10.0
+	pkgrel = 1
+	url = https://github.com/bitwarden/clients
+	arch = x86_64
+	license = GPL-3.0-only
+	makedepends = asar
+	makedepends = nodejs
+	depends = electron
+	depends = bash
+	depends = glibc
+	depends = libgcc
+	depends = hicolor-icon-theme
+	depends = libnotify
+	depends = org.freedesktop.secrets
+	depends = libxtst
+	depends = libxss
+	depends = libnss_nis
+	provides = bitwarden=2026.10.0
+	conflicts = bitwarden
+	conflicts = bitwarden-bin
+	conflicts = bitwarden-electron-bin
+	options = !strip
+	options = !debug
+	source = https://github.com/bitwarden/clients/releases/download/desktop-v2026.10.0/Bitwarden-2026.10.0-amd64.deb
+	source = bitwarden.sh
+	sha256sums = fcabfc7da3c327e2625b105e951cee4e60703bb8e256f0aac9cc9bc83ec7063f
+	sha256sums = d13e5137334dfda41999aeabff4c29cfe4b1a15bb7d14e5c9ebe7bed7fc8c829
+
+pkgname = bitwarden-electron

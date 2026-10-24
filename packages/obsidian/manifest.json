@@ -1,0 +1,10 @@
+{
+  "id": "obsidian",
+  "version": "1.14.4",
+  "pkgrel": 2,
+  "package": "obsidian-electron",
+  "import": {
+    "repository": "fansion314/obsidian",
+    "commit": "52f2e494e33eeb8ab646f874d7d069b3da3846b3"
+  }
+}

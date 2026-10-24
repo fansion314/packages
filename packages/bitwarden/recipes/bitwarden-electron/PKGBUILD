@@ -1,0 +1,79 @@
+# Repackage the official release; do not rebuild Bitwarden or bundle Electron.
+# References:
+# https://gitlab.archlinux.org/archlinux/packaging/packages/bitwarden/-/blob/main/PKGBUILD
+# https://aur.archlinux.org/cgit/aur.git/tree/PKGBUILD?h=bitwarden-bin
+pkgname=bitwarden-electron
+pkgver=@PKGVER@
+pkgrel=@PKGREL@
+pkgdesc='Bitwarden official binaries using the latest system Electron'
+arch=('x86_64')
+url='https://github.com/bitwarden/clients'
+license=('GPL-3.0-only')
+depends=('electron' 'bash' 'glibc' 'libgcc' 'hicolor-icon-theme'
+         'libnotify' 'org.freedesktop.secrets' 'libxtst' 'libxss' 'libnss_nis')
+makedepends=('asar' 'nodejs')
+provides=("bitwarden=$pkgver")
+conflicts=('bitwarden' 'bitwarden-bin' 'bitwarden-electron-bin')
+options=('!strip' '!debug')
+source=("https://github.com/bitwarden/clients/releases/download/desktop-v${pkgver}/Bitwarden-${pkgver}-amd64.deb"
+        'bitwarden.sh')
+sha256sums=('fcabfc7da3c327e2625b105e951cee4e60703bb8e256f0aac9cc9bc83ec7063f'
+            'd13e5137334dfda41999aeabff4c29cfe4b1a15bb7d14e5c9ebe7bed7fc8c829')
+
+prepare() {
+  mkdir -p upstream
+  # Extract only application content and desktop integration, never Chromium.
+  bsdtar -xf data.tar.xz -C upstream \
+    ./opt/Bitwarden/resources/app.asar \
+    ./opt/Bitwarden/resources/app.asar.unpacked \
+    ./opt/Bitwarden/desktop_proxy \
+    ./opt/Bitwarden/libprocess_isolation.so \
+    ./usr/share/applications/bitwarden.desktop \
+    ./usr/share/icons
+  asar extract upstream/opt/Bitwarden/resources/app.asar app
+  # Arch's two system-Electron path fixes. Keep upstream window/SSH behavior.
+  node - "$srcdir/app" "$pkgver" <<'NODE'
+const fs = require('node:fs');
+const path = require('node:path');
+const [dir, version] = process.argv.slice(2);
+if (JSON.parse(fs.readFileSync(path.join(dir, 'package.json'), 'utf8')).version !== version) {
+  throw new Error('Unexpected upstream application version');
+}
+const file = path.join(dir, 'main.js');
+let text = fs.readFileSync(file, 'utf8');
+for (const [from, to] of [
+  ['execPath: electron_1.app.getPath("exe"),', 'execPath: "/usr/lib/bitwarden-electron/bitwarden",'],
+  ['return path.join(path.dirname(this.exePath), `desktop_proxy${ext}`);',
+   'return "/usr/lib/bitwarden-electron/desktop_proxy";'],
+]) {
+  if (text.split(from).length !== 2) throw new Error(`Review upstream integration: ${from}`);
+  text = text.replace(from, to);
+}
+fs.writeFileSync(file, text);
+NODE
+}
+
+build() {
+  asar pack app app.asar --unpack-dir 'node_modules/@bitwarden/desktop-napi'
+}
+
+check() {
+  node --check app/main.js
+  node --check app/app/main.js
+}
+
+package() {
+  local dest="$pkgdir/usr/lib/bitwarden-electron"
+  install -Dm644 app.asar "$dest/app.asar"
+  cp -a app.asar.unpacked "$dest/"
+  install -Dm755 upstream/opt/Bitwarden/desktop_proxy "$dest/desktop_proxy"
+  install -Dm755 upstream/opt/Bitwarden/libprocess_isolation.so "$dest/libprocess_isolation.so"
+  install -Dm755 "$srcdir/bitwarden.sh" "$dest/bitwarden"
+  install -d "$pkgdir/usr/bin"
+  ln -s /usr/lib/bitwarden-electron/bitwarden "$pkgdir/usr/bin/bitwarden"
+  ln -s /usr/lib/bitwarden-electron/bitwarden "$pkgdir/usr/bin/bitwarden-desktop"
+  install -Dm644 upstream/usr/share/applications/bitwarden.desktop \
+    "$pkgdir/usr/share/applications/bitwarden.desktop"
+  sed -i 's|^Exec=.*|Exec=/usr/bin/bitwarden %U|' "$pkgdir/usr/share/applications/bitwarden.desktop"
+  cp -a upstream/usr/share/icons "$pkgdir/usr/share/"
+}

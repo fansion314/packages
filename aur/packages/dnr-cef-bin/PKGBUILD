@@ -1,0 +1,42 @@
+# Maintainer: Peilin Fan <peilin.fan@foxmail.com>
+pkgname=dnr-cef-bin
+pkgver=0.5.5
+pkgrel=1
+pkgdesc='Shared Deno runtime (system CEF, prebuilt)'
+arch=('x86_64')
+url='https://github.com/fansion314/dnr'
+license=('MIT' 'Apache-2.0' 'BSD-3-Clause')
+depends=('glibc' 'gcc-libs' 'gtk3' 'glib2' 'cairo' 'zlib' 'libx11' 'libxi' 'cef')
+optdepends=('libxss: X11 session idle time monitoring'
+            'libayatana-appindicator: system tray support'
+            'libnotify: desktop notifications via notify-send')
+provides=("dnr=$pkgver" "dnr-cef=$pkgver")
+conflicts=('dnr' 'dnr-bin' 'dnr-cef' 'dnr-webview' 'dnr-webview-bin')
+options=('!strip' '!debug')
+_package="dnr-cef-$pkgver-1-x86_64.pkg.tar.zst"
+_release="$url/releases/download/v$pkgver"
+source=("$_release/$_package" "$_release/$_package.sha256")
+noextract=("$_package")
+# CI creates the archive after this tag exists. Verify its release checksum below.
+sha256sums=('SKIP' 'SKIP')
+
+prepare() {
+    cd "$srcdir"
+    local digest filename extra
+    read -r digest filename extra < "$_package.sha256"
+    [[ $digest =~ ^[0-9a-f]{64}$ && $filename == "$_package" && -z $extra ]] || return 1
+    printf '%s  %s\n' "$digest" "$_package" | sha256sum --check --status || return 1
+    mkdir -p payload
+    bsdtar -xf "$_package" -C payload usr/bin/dnr usr/share/licenses/dnr-cef usr/share/doc/dnr-cef
+}
+
+package() {
+    cd "$srcdir/payload"
+    install -Dm755 usr/bin/dnr "$pkgdir/usr/bin/dnr"
+    install -d "$pkgdir/usr/share/licenses/$pkgname" "$pkgdir/usr/share/doc/$pkgname"
+    cp -r --no-preserve=ownership usr/share/licenses/dnr-cef/. "$pkgdir/usr/share/licenses/$pkgname/"
+    cp -r --no-preserve=ownership usr/share/doc/dnr-cef/. "$pkgdir/usr/share/doc/$pkgname/"
+}
+
+# Pinned by fansion314/aur after verifying the published release bytes.
+sha256sums=('b8a1d28000a0c98659d451112b21231ec6d296579b3807b295380d320361e65a' 'adae5ed47e3db32ba014e726f56c6b7a1244cd948017156948e8693b9f267cd8')

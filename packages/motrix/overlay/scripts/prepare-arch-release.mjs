@@ -1,0 +1,113 @@
+#!/usr/bin/env node
+import assert from 'node:assert/strict'
+import { execFileSync } from 'node:child_process'
+import { createHash } from 'node:crypto'
+import { mkdir, readFile, rm, writeFile } from 'node:fs/promises'
+import path from 'node:path'
+import { pathToFileURL } from 'node:url'
+
+export function parseArchTag(tag, version) {
+  const match = /^motrix-v(\d+\.\d+\.\d+(?:-beta\.\d+)?)-([1-9]\d*)$/.exec(tag)
+  assert(
+    match && match[1] === version,
+    'Arch tag must match motrix-v<package.json version>-<pkgrel>'
+  )
+  return { version, pkgver: version.replace('-', ''), pkgrel: match[2] }
+}
+
+export function renderArchPkgbuild(template, metadata, digest) {
+  let result = template
+    .replace(/^pkgver=.*$/m, `pkgver=${metadata.pkgver}`)
+    .replace(/^pkgrel=.*$/m, `pkgrel=${metadata.pkgrel}`)
+    .replace(/^_version=.*$/m, `_version=${metadata.version}`)
+  if (digest) {
+    assert(/^[a-f0-9]{64}$/.test(digest), 'Invalid release SHA-256')
+    result = result.replace(/^sha256sums=.*$/m, `sha256sums=('${digest}')`)
+  } else if (
+    result !== template &&
+    /^pkgname=motrix-electron-bin$/m.test(template)
+  ) {
+    result = result.replace(/^sha256sums=.*$/m, "sha256sums=('SKIP')")
+  }
+  return result
+}
+
+async function main() {
+  const pkg = JSON.parse(await readFile('package.json', 'utf8'))
+  const metadata = parseArchTag(process.env.ARCH_TAG, pkg.version)
+  const archive = process.argv[2]
+  if (!archive) {
+    for (const name of ['motrix-electron', 'motrix-electron-bin']) {
+      const file = `aur/${name}/PKGBUILD`
+      await writeFile(
+        file,
+        renderArchPkgbuild(await readFile(file, 'utf8'), metadata)
+      )
+    }
+    return
+  }
+  const packagePath = process.argv[3]
+  assert(packagePath, 'Expected verified pacman package')
+  const bytes = await readFile(packagePath)
+  const { extractFile } = await import('@electron/asar')
+  const digest = createHash('sha256').update(bytes).digest('hex')
+  // Read the build metadata from the staged app matching the verified payload.
+  const appBytes = extractFile(archive, 'usr/lib/motrix-electron/app.asar')
+  await mkdir('release', { recursive: true })
+  const inner = 'release/metadata-app.asar'
+  await writeFile(inner, appBytes)
+  const build = JSON.parse(extractFile(inner, 'arch-build.json'))
+  await rm(inner)
+  assert.equal(build.version, metadata.version)
+  assert.equal(build.pkgrel, metadata.pkgrel)
+  await rm('release/aur', { recursive: true, force: true })
+  for (const name of ['motrix-electron', 'motrix-electron-bin']) {
+    const directory = `release/aur/${name}`
+    await mkdir(directory, { recursive: true })
+    await writeFile(
+      `${directory}/PKGBUILD`,
+      renderArchPkgbuild(
+        await readFile(`aur/${name}/PKGBUILD`, 'utf8'),
+        metadata,
+        name.endsWith('-bin') ? digest : undefined
+      )
+    )
+    const srcinfo = execFileSync('makepkg', ['--printsrcinfo'], {
+      cwd: directory,
+      encoding: 'utf8',
+    })
+    await writeFile(`${directory}/.SRCINFO`, srcinfo)
+  }
+  execFileSync(
+    'tar',
+    [
+      '-czf',
+      `motrix-electron-${metadata.version}-${metadata.pkgrel}-aur.tar.gz`,
+      'aur',
+    ],
+    { cwd: 'release' }
+  )
+  const aurName = `motrix-electron-${metadata.version}-${metadata.pkgrel}-aur.tar.gz`
+  const aurDigest = createHash('sha256')
+    .update(await readFile(`release/${aurName}`))
+    .digest('hex')
+  await writeFile(
+    'release/SHA256SUMS',
+    `${digest}  ${path.basename(packagePath)}\n${aurDigest}  ${aurName}\n`
+  )
+  await writeFile(
+    'release/notes.md',
+    `Arch Linux x86_64 package based on Motrix ${metadata.version}.\n\n` +
+      `Uses system Electron ${build.electron} (ABI ${build.electronAbi}) and the pinned Motrix aria2 fork. ` +
+      'No Electron runtime is bundled. The pacman package contains the application, its native helpers and desktop resources.\n\n' +
+      'Settings → Appearance supports custom interface scaling and light/dark Linux tray icons. Changes apply immediately and persist across restarts.\n\n' +
+      'Download the .pkg.tar.zst asset and install with pacman -U, or use the motrix-electron-bin PKGBUILD through an AUR helper. ' +
+      'The AUR path still uses makepkg to create a local package.\n'
+  )
+}
+
+if (
+  process.argv[1] &&
+  import.meta.url === pathToFileURL(path.resolve(process.argv[1])).href
+)
+  await main()

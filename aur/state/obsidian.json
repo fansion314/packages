@@ -1,0 +1,31 @@
+{
+  "repository": "fansion314/obsidian",
+  "reference": "52f2e494e33eeb8ab646f874d7d069b3da3846b3",
+  "packages": {
+    "obsidian-electron": {
+      "version": "0:1.14.4-1",
+      "files": {
+        ".SRCINFO": "048fb66dbe0a3e675258b2f7dc0877609ee1cf4bfb9167e853e25ba42edef188",
+        "LICENSE-Obsidian": "d9fdc14f9c2fb95bb38310281268fdad413c1b49fa93213df3184f9b0ca1175c",
+        "PKGBUILD": "51728d5eed3c778079099fd12365daed3c655f77b01c766b94ac76212259e7a9",
+        "md.obsidian.Obsidian.desktop": "0251425a4f4efdc5efb0384eaee38dd2430107c5a43094877a4fa75b48e43020",
+        "obsidian.sh": "5cab5220361350abc9f8faae746366f98f0db97ce9623736e1623f871e2000b9"
+      },
+      "assets": []
+    },
+    "obsidian-electron-bin": {
+      "version": "0:1.14.4-1",
+      "files": {
+        ".SRCINFO": "6cbe2027d9229811562305a3f0070ba2a63f46d41af0397816a06fa1fba3279b",
+        "PKGBUILD": "110ef5e30b4b5f9c12977e6ffcdbe176cd05bb62101146270a69ccd25537fdb8"
+      },
+      "assets": [
+        {
+          "url": "https://github.com/fansion314/obsidian/releases/download/v1.14.4-1/obsidian-electron-1.14.4-1-x86_64.pkg.tar.zst",
+          "sha256": "20603c3710cd3b2df7546702003d13af53ea846e854c2dfe374e31e47f5be7bc",
+          "size": 8731391
+        }
+      ]
+    }
+  }
+}

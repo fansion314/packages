@@ -1,0 +1,6 @@
+/src/
+/pkg/
+/pi/
+/*.pkg.tar.*
+/*.src.tar.*
+/*.log

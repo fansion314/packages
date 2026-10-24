@@ -1,0 +1,6 @@
+#!/bin/bash
+# Run the bundled public CLI with Electron Node and the package-owned pnpm.
+set -euo pipefail
+app=$(realpath -- "$(dirname -- "${BASH_SOURCE[0]}")/../lib/dsh-electron")
+export PATH="$app/runtime/bin:$PATH"
+exec "$app/runtime/bin/node" "$app/app.asar/dsh/node_modules/@deepseek-ai/dsh/lib/bin.js" "$@"

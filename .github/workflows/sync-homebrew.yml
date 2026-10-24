@@ -1,0 +1,31 @@
+name: Sync and test Homebrew
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '17,47 * * * *'
+  push:
+    branches: [main]
+    paths: ['homebrew/scripts/**', 'homebrew/templates/**', 'scripts/commit-generated.sh', 'scripts/sync.sh', '.github/workflows/sync-homebrew.yml']
+permissions:
+  contents: read
+concurrency:
+  group: homebrew-sync
+  cancel-in-progress: false
+jobs:
+  sync:
+    runs-on: macos-15
+    timeout-minutes: 45
+    permissions:
+      contents: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+      HOMEBREW_NO_AUTO_UPDATE: '1'
+      HOMEBREW_NO_INSTALL_CLEANUP: '1'
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: main
+          fetch-depth: 0
+          persist-credentials: false
+      - run: python3 -m unittest discover -s homebrew/scripts -p 'test_*.py' -v
+      - run: bash scripts/sync.sh homebrew
