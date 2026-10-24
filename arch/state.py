@@ -20,7 +20,12 @@ def active_snapshot():
     except urllib.error.HTTPError as error:
         if error.code == 404:
             return ''
-        raise
+        raise RuntimeError(
+            f'Public repository status returned HTTP {error.code}; '
+            f'CF-Ray={error.headers.get("cf-ray", "")}; '
+            f'CF-Mitigated={error.headers.get("cf-mitigated", "")}; '
+            f'body={error.read(500).decode("utf-8", errors="replace")!r}'
+        ) from error
 
 
 def checkout(directory):
