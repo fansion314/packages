@@ -32,6 +32,8 @@ Gitea 账号的对应旧 DSH 仓库是 https://git.fansionia.world/fansion/dsh �
   deepseek-harness.bundle
   bitwarden.bundle
   obsidian.bundle
+  bitwarden-upstream-clients.bundle
+  bitwarden-upstream-sdk-internal.bundle
   cleanup-local.json
   cloudflare-rule-before-packages.json
 ```
@@ -42,9 +44,10 @@ Gitea 账号的对应旧 DSH 仓库是 https://git.fansionia.world/fansion/dsh �
 git clone ~/.local/share/fansionia-packages/retired-repositories/20261024/Motrix.bundle /path/to/restored-Motrix
 ```
 
-本机移除了六个旧检出、仍维护项目中的忽略依赖/构建输出，以及此次迁移的专用
+本机移除了六个旧检出、已不用于成品打包的两个干净 Bitwarden 上游检出、
+仍维护项目中的忽略依赖/构建输出，以及此次迁移的专用
 临时检出、npm/pnpm 缓存和临时凭据副本。精确清单在 `cleanup-local.json`；
-首轮共 63 个删除入口，删除前分配量合计 13,245,342,233 bytes（约 12.3 GiB）。
+共 65 个删除入口，删除前分配量合计 13,493,105,177 bytes（约 12.6 GiB）。
 此统计不是对磁盘空闲量变化的承诺，硬链接、克隆和文件系统统计可能影响回收量。
 
 `../dnr`、`../pi`、`../etcher`、本仓库源码保留；DNR 用户的
