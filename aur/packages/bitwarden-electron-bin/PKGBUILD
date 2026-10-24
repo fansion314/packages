@@ -1,8 +1,8 @@
 # Download this repository's preprocessed system-Electron application archive.
 # No upstream DEB extraction, ASAR processing, or application build is performed.
 pkgname=bitwarden-electron-bin
-pkgver=2026.10.0
-pkgrel=2
+pkgver=2026.10.1
+pkgrel=1
 pkgdesc='Bitwarden using system Electron (prebuilt application)'
 arch=('x86_64')
 url='https://github.com/fansion314/packages'
@@ -13,11 +13,11 @@ provides=("bitwarden=$pkgver" "bitwarden-electron=$pkgver")
 conflicts=('bitwarden' 'bitwarden-bin' 'bitwarden-electron')
 options=('!strip' '!debug')
 # Independently pin the published input: pkgrel can change without rebuilding it.
-_release='2026.10.0-2'
-_archive='bitwarden-electron-2026.10.0-2-x86_64.pkg.tar.zst'
-source=("https://github.com/fansion314/packages/releases/download/bitwarden-v2026.10.0-2/${_archive}")
+_release='2026.10.1-1'
+_archive='bitwarden-electron-2026.10.1-1-x86_64.pkg.tar.zst'
+source=("https://github.com/fansion314/packages/releases/download/bitwarden-v2026.10.1-1/${_archive}")
 noextract=("$_archive")
-sha256sums=('bba7f7d77144a8c85f8817d193b1259401b4a56f54d076fe70c4190d29048415')
+sha256sums=('d8e41d124edf5b1d19f7dd83dd34feb6e2878e2bb9aa91f6abf30577831aa7d9')
 
 package() {
   # The release asset can also be installed directly with pacman -U.
