@@ -51,7 +51,9 @@ def select_release(project, releases):
     assets = {a['name']: a for a in release['assets']}
     result = []
     for name in project['packages']:
-        pattern = re.compile(re.escape(name)+r'-(.+)-(\d+)-(x86_64|any)\.pkg\.tar\.zst')
+        # Arch pkgver cannot contain '-'. Requiring a numeric version start
+        # prevents dnr from also matching dnr-cef and dnr-webview archives.
+        pattern = re.compile(re.escape(name)+r'-([0-9][A-Za-z0-9.+_~]*)-(\d+)-(x86_64|any)\.pkg\.tar\.zst')
         packages = [(asset, pattern.fullmatch(asset['name'])) for asset in assets.values()]
         packages = [(asset, match) for asset, match in packages if match]
         if len(packages) != 1:

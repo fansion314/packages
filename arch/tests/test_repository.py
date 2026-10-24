@@ -33,6 +33,17 @@ class RepositoryTests(unittest.TestCase):
         self.assertEqual(sorted(reversed(tags), key=repository.version_key), tags)
         self.assertLess(repository.version_key('v0.5.5'), repository.version_key('v0.5.6'))
 
+    def test_package_prefix_does_not_match_backend_variants(self):
+        release = self.release()
+        for variant in ['foo-cef', 'foo-webview']:
+            for asset in list(release['assets'][:2]):
+                copy = dict(asset)
+                copy['name'] = copy['name'].replace('foo-1', variant+'-1')
+                copy['browser_download_url'] = copy['browser_download_url'].replace('/foo-1', '/'+variant+'-1')
+                release['assets'].append(copy)
+        packages = repository.select_release(self.project, [release])
+        self.assertEqual([p['filename'] for p in packages], ['foo-1.0.0-1-x86_64.pkg.tar.zst'])
+
     def test_foreign_download_url_and_missing_digest_are_rejected(self):
         for bad in ['url', 'digest']:
             release = self.release()
