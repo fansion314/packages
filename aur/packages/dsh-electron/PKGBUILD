@@ -1,24 +1,27 @@
 # Maintainer: fansion314 <https://github.com/fansion314>
 pkgname=dsh-electron
 pkgver=0.2.1rc.2
-pkgrel=1
+pkgrel=3
 _version=0.2.1-rc.2
-_tag=arch-v${_version}-${pkgrel}
+_tag=deepseek-harness-v0.2.1-rc.2-3
 pkgdesc='DeepSeek Harness desktop using system Electron'
 arch=('x86_64')
-url='https://github.com/fansion314/deepseek-harness'
+url='https://github.com/fansion314/packages'
 license=('MIT')
 depends=('electron' 'libvips' 'python' 'python-numpy' 'python-pandas'
          'python-docx' 'python-pptx' 'python-openpyxl' 'python-pillow' 'python-lxml'
          'python-xlsxwriter' 'python-tzdata' 'python-dateutil' 'python-six'
-         'python-typing_extensions' 'python-et-xmlfile' 'ripgrep' 'gcc-libs' 'glibc' 'xdg-utils')
-makedepends=('git' 'rust' 'clang' 'cmake' 'nodejs>=24' 'pnpm' 'node-gyp' 'pkgconf')
+         'python-typing_extensions' 'python-et-xmlfile' 'ripgrep' 'gcc-libs' 'glibc' 'xdg-utils' 'xdg-user-dirs')
+makedepends=('git' 'python' 'rust' 'clang' 'cmake' 'nodejs>=24' 'pnpm' 'node-gyp' 'pkgconf')
 conflicts=('dsh-electron-bin')
 options=('!strip')
-source=("deepseek-harness::git+${url}.git#tag=${_tag}")
-sha256sums=('SKIP')
+_packaging_ref='tag=deepseek-harness-v0.2.1-rc.2-3'
+source=("deepseek-harness::git+https://github.com/deepseek-ai/deepseek-harness.git#commit=687f282e8625c6b8d11ff58211a90524be2e4317"
+        "packaging::git+https://github.com/fansion314/packages.git#${_packaging_ref}")
+sha256sums=('SKIP' 'SKIP')
 
 prepare() {
+  python "$srcdir/packaging/scripts/package.py" apply deepseek-harness "$srcdir/deepseek-harness"
   cd deepseek-harness
   export ELECTRON_SKIP_BINARY_DOWNLOAD=1
   pnpm install --frozen-lockfile
