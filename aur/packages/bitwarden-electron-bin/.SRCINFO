@@ -1,8 +1,8 @@
 pkgbase = bitwarden-electron-bin
 	pkgdesc = Bitwarden using system Electron (prebuilt application)
 	pkgver = 2026.10.0
-	pkgrel = 1
-	url = https://github.com/fansion314/bitwarden
+	pkgrel = 2
+	url = https://github.com/fansion314/packages
 	arch = x86_64
 	license = GPL-3.0-only
 	depends = electron
@@ -20,10 +20,10 @@ pkgbase = bitwarden-electron-bin
 	conflicts = bitwarden
 	conflicts = bitwarden-bin
 	conflicts = bitwarden-electron
-	noextract = bitwarden-electron-2026.10.0-1-x86_64.pkg.tar.zst
+	noextract = bitwarden-electron-2026.10.0-2-x86_64.pkg.tar.zst
 	options = !strip
 	options = !debug
-	source = https://github.com/fansion314/bitwarden/releases/download/v2026.10.0-1/bitwarden-electron-2026.10.0-1-x86_64.pkg.tar.zst
-	sha256sums = 8e37de6a26408437c442424e321dcba5ff36b68e7f854f3c34affc15b11297f1
+	source = https://github.com/fansion314/packages/releases/download/bitwarden-v2026.10.0-2/bitwarden-electron-2026.10.0-2-x86_64.pkg.tar.zst
+	sha256sums = bba7f7d77144a8c85f8817d193b1259401b4a56f54d076fe70c4190d29048415
 
 pkgname = bitwarden-electron-bin

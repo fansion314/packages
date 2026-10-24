@@ -4,7 +4,7 @@
 # https://aur.archlinux.org/cgit/aur.git/tree/PKGBUILD?h=bitwarden-bin
 pkgname=bitwarden-electron
 pkgver=2026.10.0
-pkgrel=1
+pkgrel=2
 pkgdesc='Bitwarden official binaries using the latest system Electron'
 arch=('x86_64')
 url='https://github.com/bitwarden/clients'
