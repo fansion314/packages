@@ -2,8 +2,8 @@
 # Gennadiy Mykhailiuta and Xuanwo.
 
 pkgname=obsidian-electron
-pkgver=1.14.4
-pkgrel=2
+pkgver=1.14.5
+pkgrel=1
 pkgdesc='A powerful knowledge base on top of local Markdown files (official app, latest system Electron)'
 # Only the verified x86_64 payload is supported by this recipe and CI.
 arch=('x86_64')
@@ -22,7 +22,7 @@ source=('obsidian.sh'
         'LICENSE-Obsidian')
 source_x86_64=("https://github.com/obsidianmd/obsidian-releases/releases/download/v${pkgver}/obsidian-${pkgver}.tar.gz")
 sha256sums=('5cab5220361350abc9f8faae746366f98f0db97ce9623736e1623f871e2000b9' '0251425a4f4efdc5efb0384eaee38dd2430107c5a43094877a4fa75b48e43020' 'd9fdc14f9c2fb95bb38310281268fdad413c1b49fa93213df3184f9b0ca1175c')
-sha256sums_x86_64=('e70b7cd63787e7f798a84fec453f5c446b91877bd3f612e8fb98e9b76cc81120')
+sha256sums_x86_64=('1bc6547c889d7d02c3f2c5b55884cba14980bfac4ada32c0bdc6ec6db542aaf8')
 
 package() {
     local resources="$srcdir/obsidian-${pkgver}/resources"

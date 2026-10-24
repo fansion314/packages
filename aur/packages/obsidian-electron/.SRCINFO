@@ -1,7 +1,7 @@
 pkgbase = obsidian-electron
 	pkgdesc = A powerful knowledge base on top of local Markdown files (official app, latest system Electron)
-	pkgver = 1.14.4
-	pkgrel = 2
+	pkgver = 1.14.5
+	pkgrel = 1
 	url = https://obsidian.md
 	arch = x86_64
 	license = LicenseRef-Obsidian
@@ -10,7 +10,7 @@ pkgbase = obsidian-electron
 	depends = fontconfig
 	depends = zlib
 	depends = hicolor-icon-theme
-	provides = obsidian=1.14.4
+	provides = obsidian=1.14.5
 	conflicts = obsidian
 	conflicts = obsidian-electron-bin
 	options = !strip
@@ -21,7 +21,7 @@ pkgbase = obsidian-electron
 	sha256sums = 5cab5220361350abc9f8faae746366f98f0db97ce9623736e1623f871e2000b9
 	sha256sums = 0251425a4f4efdc5efb0384eaee38dd2430107c5a43094877a4fa75b48e43020
 	sha256sums = d9fdc14f9c2fb95bb38310281268fdad413c1b49fa93213df3184f9b0ca1175c
-	source_x86_64 = https://github.com/obsidianmd/obsidian-releases/releases/download/v1.14.4/obsidian-1.14.4.tar.gz
-	sha256sums_x86_64 = e70b7cd63787e7f798a84fec453f5c446b91877bd3f612e8fb98e9b76cc81120
+	source_x86_64 = https://github.com/obsidianmd/obsidian-releases/releases/download/v1.14.5/obsidian-1.14.5.tar.gz
+	sha256sums_x86_64 = 1bc6547c889d7d02c3f2c5b55884cba14980bfac4ada32c0bdc6ec6db542aaf8
 
 pkgname = obsidian-electron
