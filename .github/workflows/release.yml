@@ -1,4 +1,5 @@
 name: Release one application
+run-name: Release ${{ inputs.release_tag || github.ref_name }}
 on:
   push:
     tags: ['bitwarden-v*', 'obsidian-v*', 'motrix-v*', 'deepseek-harness-v*']
@@ -62,7 +63,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           PACKAGE: ${{ needs.resolve.outputs.package }}
           SOURCE_COMMIT: ${{ needs.resolve.outputs.commit }}
-          GITHUB_REF_NAME: ${{ needs.resolve.outputs.tag }}
+          RELEASE_TAG: ${{ needs.resolve.outputs.tag }}
         run: |
           git merge-base --is-ancestor "$SOURCE_COMMIT" origin/main
           python3 scripts/publish.py "$PACKAGE" "$SOURCE_COMMIT"

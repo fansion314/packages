@@ -22,7 +22,7 @@ def publish(project, commit):
     release_tag = tag(info)
     if project not in IDS or info['id'] != project or build['packaging_commit'] != commit:
         raise ValueError('Artifact does not belong to the requested source commit')
-    if os.environ['GITHUB_REF_NAME'] != release_tag:
+    if os.environ.get('RELEASE_TAG', os.environ['GITHUB_REF_NAME']) != release_tag:
         raise ValueError('Publish requires the exact package tag')
     resolved = json.loads(gh('api', f'repos/{os.environ["GITHUB_REPOSITORY"]}/commits/{release_tag}'))['sha']
     if resolved != commit:

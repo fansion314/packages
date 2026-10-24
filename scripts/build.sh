@@ -9,9 +9,12 @@ export ELECTRON_SKIP_BINARY_DOWNLOAD=1
 export MOTRIX_SKIP_ELECTRON_REBUILD=1
 export MOTRIX_SKIP_ENGINE_FETCH=1
 packaging_ref="commit=$(git rev-parse HEAD)"
-if [[ ${GITHUB_REF_TYPE:-} == tag ]]; then
-  [[ $(python scripts/package.py resolve "$GITHUB_REF_NAME") == "$project" ]]
-  packaging_ref="tag=$GITHUB_REF_NAME"
+release_tag=${RELEASE_TAG:-}
+if [[ -z $release_tag && ${GITHUB_REF_TYPE:-} == tag ]]; then release_tag=$GITHUB_REF_NAME; fi
+if [[ -n $release_tag ]]; then
+  [[ $(python scripts/package.py resolve "$release_tag") == "$project" ]]
+  [[ $(git rev-parse "refs/tags/$release_tag^{commit}") == $(git rev-parse HEAD) ]]
+  packaging_ref="tag=$release_tag"
 fi
 work="$root/.work/$project"
 mkdir -p "$work"

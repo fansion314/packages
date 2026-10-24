@@ -54,7 +54,7 @@ class PublicationTests(unittest.TestCase):
                     if args[:2] == ('release', 'view'):
                         return 'https://example.invalid/release'
                     self.fail(args)
-                with patch.dict(os.environ, {'GITHUB_REF_NAME': release['tag_name'], 'GITHUB_REPOSITORY': 'fansion314/packages'}), patch.object(publish, 'gh', side_effect=fake_gh):
+                with patch.dict(os.environ, {'GITHUB_REF_NAME': 'main', 'RELEASE_TAG': release['tag_name'], 'GITHUB_REPOSITORY': 'fansion314/packages'}), patch.object(publish, 'gh', side_effect=fake_gh):
                     if mismatch:
                         with self.assertRaisesRegex(ValueError, 'bytes differ'):
                             publish.publish('bitwarden', commit)

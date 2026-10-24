@@ -33,8 +33,7 @@ jobs:
         env:
           PACKAGE: ${{ inputs.package }}
           CI: 'true'
-          GITHUB_REF_TYPE: ${{ inputs.release_tag != '' && 'tag' || github.ref_type }}
-          GITHUB_REF_NAME: ${{ inputs.release_tag || github.ref_name }}
+          RELEASE_TAG: ${{ inputs.release_tag }}
           RUSTC_WRAPPER: /usr/bin/sccache
         run: |
           chown -R builder:builder "$GITHUB_WORKSPACE"
