@@ -81,7 +81,8 @@ export async function verifyArchPackage(archive, { smoke = false } = {}) {
     assert(
       existsSync(
         `${appArchive}.unpacked/node_modules/better-sqlite3/prebuilds/linux-x64.node`
-      )
+      ),
+      `Missing SQLite prebuild; outer entries: ${JSON.stringify(listPackage(archive).filter((name) => name.includes('better-sqlite3')))}; inner entries: ${JSON.stringify(listPackage(appArchive).filter((name) => name.includes('better-sqlite3')))}`
     )
     const seeds = await readdir(path.join(resources, 'builtin-plugins'))
     assert(seeds.length > 0, 'No builtin plugins')
