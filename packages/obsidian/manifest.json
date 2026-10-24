@@ -1,7 +1,7 @@
 {
   "id": "obsidian",
-  "version": "1.14.4",
-  "pkgrel": 2,
+  "version": "1.14.5",
+  "pkgrel": 1,
   "package": "obsidian-electron",
   "import": {
     "repository": "fansion314/obsidian",

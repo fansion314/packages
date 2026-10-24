@@ -65,10 +65,10 @@ index 0000000000000000000000000000000000000000..b2e27689818a3deec9b730396cf8654f
 +  - menuitem "175%"
 +  - menuitem "200%"
 diff --git a/apps/web/tsconfig.json b/apps/web/tsconfig.json
-index e135be295f3cfd8a1895ce34d2b3387a098d6fe6..f9a20360cc921adbd185b25d4dac3fc10076ce31 100644
+index b2911605b37ba593f80f1e70310c52f447320ee3..cce235293c945caa415ccd0e537dd4272a71d395 100644
 --- a/apps/web/tsconfig.json
 +++ b/apps/web/tsconfig.json
-@@ -104,6 +104,7 @@
+@@ -105,6 +105,7 @@
      "tests/desktop-locale.e2e.ts",
      "tests/settings-import.e2e.ts",
      "tests/desktop-updates.e2e.ts",
@@ -77,22 +77,22 @@ index e135be295f3cfd8a1895ce34d2b3387a098d6fe6..f9a20360cc921adbd185b25d4dac3fc1
      "tests/models-settings.e2e.ts",
      "tests/deepseek-messages-settings.e2e.ts",
 diff --git a/packages/client/ui-settings-general/README.i18n.yaml b/packages/client/ui-settings-general/README.i18n.yaml
-index a458bb8cf072d91ee40a90a31888440344ea75e0..1beba901fc4a2e05f120082d6b78e42091939251 100644
+index 0046781c3aeefc2d89fa2e661bcf383a374cf647..b3ea5805560ed56c011e99121e60b7dacb8c058f 100644
 --- a/packages/client/ui-settings-general/README.i18n.yaml
 +++ b/packages/client/ui-settings-general/README.i18n.yaml
 @@ -18,8 +18,8 @@
    en: 2bc21e57fe17eab9
    zh: e441cd313f747b22
  /deepseek-ai-dsh-client-ui-settings-general/use-this-package/the-general-section:
--  en: 8b8a7c6287bb303b
--  zh: 19535112531aedd5
-+  en: be02d54ae3e30430
-+  zh: 197fbef478f91cca
+-  en: de35e867b2a56d73
+-  zh: 6d4e5c912636f889
++  en: cd7790eed01f0855
++  zh: aed4786852a2da96
  /deepseek-ai-dsh-client-ui-settings-general/use-this-package/opening-the-configuration-file:
    en: 597df68b5913e8d7
    zh: bc9114f3e877679a
 diff --git a/packages/client/ui-settings-general/README.md b/packages/client/ui-settings-general/README.md
-index b005515ea409486cbc1cdef525863e3bcbcb67e0..adca9c7fd4058102d451bbc2a61072ddede3f756 100644
+index 768614288e9887427eb8e534ab36032023e7dd96..1ed1b2540b361570704e29b47bb09e345be8270a 100644
 --- a/packages/client/ui-settings-general/README.md
 +++ b/packages/client/ui-settings-general/README.md
 @@ -41,6 +41,8 @@ Settings visibility and section selection live in the shell owner store. The she
@@ -103,9 +103,9 @@ index b005515ea409486cbc1cdef525863e3bcbcb67e0..adca9c7fd4058102d451bbc2a61072dd
 +
  The current release version appears at the bottom of General Settings in Web and Desktop, using the build’s `DSH_CLIENT_VERSION` metadata and the active language. Partial builds without version metadata omit the row.
  
- The Coding Tools switch controls the shared `ui-settings.enabled` preference described by [ui-settings](../ui-settings/README.md#use-this-package). It is available in both Web and desktop, follows accepted changes immediately, and disables duplicate input while a write settles. A failed write displays localized retry guidance.
+ The Coding Tools switch controls the shared `ui-settings.enabled` preference described by [ui-settings](../ui-settings/README.md#use-this-package). It is available in both Web and desktop, follows accepted changes immediately, and disables duplicate input while a write settles. A failed write displays localized retry guidance. On Desktop, a change made with this switch reports `code_work_view_toggle` with the new value through the optional [product analytics](../product-analytics/README.md) service, timestamped at the click. Only a write that changes a known value and leaves the preference at the requested value reports; requesting the current value, an unknown previous value, a failed write, and preference updates made elsewhere report nothing.
 diff --git a/packages/client/ui-settings-general/README.zh.md b/packages/client/ui-settings-general/README.zh.md
-index 8628916c7b577df1e9ad001132ebb407ae58f7a0..6acfc50f4898e7d474d7f36aa5bd6ded14a2baef 100644
+index 8dfef6c858118483a85b142a8e7444160170abc7..000f02829353130cad103eab17cd2ef4797566cf 100644
 --- a/packages/client/ui-settings-general/README.zh.md
 +++ b/packages/client/ui-settings-general/README.zh.md
 @@ -41,6 +41,8 @@ kind: "package-reference"
@@ -116,7 +116,7 @@ index 8628916c7b577df1e9ad001132ebb407ae58f7a0..6acfc50f4898e7d474d7f36aa5bd6ded
 +
  Web 与桌面端的通用设置底部显示当前发布版本，使用构建注入的 `DSH_CLIENT_VERSION` 元数据和当前语言。缺少版本元数据的局部构建不显示该行。
  
- 代码工作工具开关控制 [ui-settings](../ui-settings/README.zh.md#use-this-package) 定义的共享偏好 `ui-settings.enabled`。Web 和桌面端均提供此开关，立即跟随已接受的变更，并在写入完成前禁用重复输入。写入失败时显示本地化的重试提示。
+ 代码工作工具开关控制 [ui-settings](../ui-settings/README.zh.md#use-this-package) 定义的共享偏好 `ui-settings.enabled`。Web 和桌面端均提供此开关，立即跟随已接受的变更，并在写入完成前禁用重复输入。写入失败时显示本地化的重试提示。在桌面端，通过此开关做出的变更会经可选的[产品埋点](../product-analytics/README.zh.md)服务报告携带新值的 `code_work_view_toggle`，时间戳取点击时刻。只有改变已知值、且写入后偏好等于所请求值的写入才会报告；请求当前值、原值未知、写入失败以及在其他位置修改偏好均不报告。
 diff --git a/packages/client/ui-settings-general/src/client/DesktopScaleRow.module.css b/packages/client/ui-settings-general/src/client/DesktopScaleRow.module.css
 new file mode 100644
 index 0000000000000000000000000000000000000000..f39d46087475b18f13df2bd44fbd19df459318e9
@@ -302,10 +302,10 @@ index 0000000000000000000000000000000000000000..440d7daf679c22fd78b6d30af791f7e4
 +  dispose(): void { this.live = false; this.unsubscribe() }
 +}
 diff --git a/packages/client/ui-settings-general/src/client/index.ts b/packages/client/ui-settings-general/src/client/index.ts
-index 561174f90be2d053f7d9a30195a3c2097935d31f..7e2194742f79922a0e3c7b8ac23236b9fc34e1d9 100644
+index 218f5c3cc8f2e34bb6cff9f237704ed6da0ba793..f619ecb12a260591def277caeb1a6bf15e607c0e 100644
 --- a/packages/client/ui-settings-general/src/client/index.ts
 +++ b/packages/client/ui-settings-general/src/client/index.ts
-@@ -31,7 +31,9 @@ import type { ShortcutCommandId } from '@deepseek-ai/dsh-client-shortcuts/client
+@@ -32,7 +32,9 @@ import type { ShortcutCommandId } from '@deepseek-ai/dsh-client-shortcuts/client
  import { createSettingsShellStore } from './shell-store.ts'
  import { SettingsRoot } from './SettingsRoot.tsx'
  import { DesktopUpdateBadge } from './DesktopUpdateIndicator.tsx'
@@ -316,7 +316,7 @@ index 561174f90be2d053f7d9a30195a3c2097935d31f..7e2194742f79922a0e3c7b8ac23236b9
  import { DesktopUpdateSource } from './desktop-update-source.ts'
  import { CloseLabel, HeaderContent, TriggerContent } from './chrome.tsx'
  import { GeneralSection } from './GeneralSection.tsx'
-@@ -90,7 +92,23 @@ export function apply(ctx: ClientContext): void {
+@@ -99,7 +101,23 @@ export function apply(ctx: ClientContext): void {
    }, CurrentVersionRow))
    ctx.effect(() => ctx.locale.register(NS, { zh, en }), 'ui-settings-general: dictionaries')
    const connection = ctx.get('connection') as ConnectionHandle
@@ -504,7 +504,7 @@ index 0000000000000000000000000000000000000000..91fab0b17f84f5957283939276bb846f
 +  } finally { f.source.dispose() }
 +})
 diff --git a/packages/client/ui-sidebar/README.i18n.yaml b/packages/client/ui-sidebar/README.i18n.yaml
-index da1a7525e4610fa8d5a85c0d31244ca87d828580..4a327fe0d348d4f8b2c0354ec5551fed97400e00 100644
+index d10c5fa113bfb20f4b42d8868a6db45203f0436f..33207dcfaf84d3c80fa5916fb371de52ecde2de5 100644
 --- a/packages/client/ui-sidebar/README.i18n.yaml
 +++ b/packages/client/ui-sidebar/README.i18n.yaml
 @@ -18,8 +18,8 @@
@@ -516,10 +516,10 @@ index da1a7525e4610fa8d5a85c0d31244ca87d828580..4a327fe0d348d4f8b2c0354ec5551fed
 +  en: 333435aca3ef3694
 +  zh: 960cfab1a1d457a6
  /deepseek-ai-dsh-client-ui-sidebar/use-this-package/global-panel-entries:
-   en: 5d3300d3506254c5
-   zh: 541ae1ee1e10b921
+   en: e7f316023445511b
+   zh: 6271c8c011533877
 diff --git a/packages/client/ui-sidebar/README.md b/packages/client/ui-sidebar/README.md
-index 927ee4deaa59b688b0954177369d441c7fbaffab..09b82b336f20a00248785d6de0e0b31b4cccf6da 100644
+index ce59c01d4521788520710a086999fcca22ba3a9d..bfd5cda3ceeca2baf174f8c1e6c9464451f44922 100644
 --- a/packages/client/ui-sidebar/README.md
 +++ b/packages/client/ui-sidebar/README.md
 @@ -31,7 +31,7 @@ The sidebar is the navigation shell: users see the brand, start new sessions, co
@@ -532,7 +532,7 @@ index 927ee4deaa59b688b0954177369d441c7fbaffab..09b82b336f20a00248785d6de0e0b31b
  ### Global panel entries
  
 diff --git a/packages/client/ui-sidebar/README.zh.md b/packages/client/ui-sidebar/README.zh.md
-index 95f7c5eab7b06f2bf5b9153196107eaab5b58df2..cea2f35a7bf13493702abbe140799449235910da 100644
+index a5d6610fb9d76a3fbe522d71804da933094a4414..956620a0309ee58915325d099bdd74e97664ba62 100644
 --- a/packages/client/ui-sidebar/README.zh.md
 +++ b/packages/client/ui-sidebar/README.zh.md
 @@ -31,7 +31,7 @@ dsh Web 客户端的侧边栏让用户识别当前构建、启动新会话、将
@@ -545,10 +545,10 @@ index 95f7c5eab7b06f2bf5b9153196107eaab5b58df2..cea2f35a7bf13493702abbe140799449
  ### 全局面板入口
  
 diff --git a/packages/client/ui-sidebar/src/client/SidebarRoot.tsx b/packages/client/ui-sidebar/src/client/SidebarRoot.tsx
-index 46c019305f2012f55c86f8e167824687c23b5b50..f61e617e058d6aaded0317be08f59ba3aaf57996 100644
+index 3f136913452cd572ce32eb17fc90382c421580df..d927b0a0a82bcf72ccd94ff60df55fc8b3cdcb11 100644
 --- a/packages/client/ui-sidebar/src/client/SidebarRoot.tsx
 +++ b/packages/client/ui-sidebar/src/client/SidebarRoot.tsx
-@@ -227,10 +227,10 @@ export function SidebarRoot({
+@@ -281,10 +281,10 @@ export function SidebarRoot({
                <span className={css.brandName}>
                  {renderSlot('sidebar.brand.name', {}, {
                    fallback: buildVersion === undefined
@@ -734,10 +734,10 @@ index 1b7ef3003e863c97e5c8d22cf84b4832695b943c..64674c259b5c5ba005fee268d1674dd8
      const { runtime } = await bench()
      const slot = runtime.renderSlot('sidebar', { collapsed: false, width: 300 })
 diff --git a/packages/extensions/cordis-client-runner/src/client/slot-catalog.ts b/packages/extensions/cordis-client-runner/src/client/slot-catalog.ts
-index 50bcbe529a7fd300d65688e8854e5da93d8250d4..bef011df77c896fb831ca52e6a338e1ce3c736ed 100644
+index 33794f1a7168d48bc364e38fe1d55005635fde1c..0a7c1ea8e58439fa1b93afda036e5c589644acd8 100644
 --- a/packages/extensions/cordis-client-runner/src/client/slot-catalog.ts
 +++ b/packages/extensions/cordis-client-runner/src/client/slot-catalog.ts
-@@ -2892,6 +2892,7 @@ export const CLIENT_SLOT_API: readonly ClientSlotEntry[] = [
+@@ -2946,6 +2946,7 @@ export const CLIENT_SLOT_API: readonly ClientSlotEntry[] = [
        'client-ui-permission-presets PermissionRow id \'permission\'',
        'client-ui-settings-general DeveloperToolsRow id \'developer-tools\'',
        'client-ui-settings-general CurrentVersionRow id \'current-version\'',
@@ -745,7 +745,7 @@ index 50bcbe529a7fd300d65688e8854e5da93d8250d4..bef011df77c896fb831ca52e6a338e1c
        'client-ui-settings-session-log UploadRow',
        'client-ui-shortcuts ShortcutsRow id \'shortcuts\'',
        'client-ui-theme AppearanceRow id \'appearance\'',
-@@ -3393,6 +3394,7 @@ export const CLIENT_SLOT_API: readonly ClientSlotEntry[] = [
+@@ -3447,6 +3448,7 @@ export const CLIENT_SLOT_API: readonly ClientSlotEntry[] = [
        'client-ui-schedule ScheduleDeleteToast id \'schedule.delete-toast\'',
        'client-ui-settings-account DesktopOnboardingEntry id \'desktop-onboarding\'',
        'client-ui-settings-account AccountPlatformHost id \'account.platform-page\'',

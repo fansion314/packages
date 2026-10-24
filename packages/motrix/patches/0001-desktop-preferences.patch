@@ -902,7 +902,7 @@ index 538f61ef3116caaf5e32a4a9577379b97f538928..b1328d23ce38e1476f29a30127b2f1eb
 +  uiScale: z.number().int().min(UI_SCALE_MIN).max(UI_SCALE_MAX).catch(100),
    sidebarColor: sidebarColorSchema.catch('cyan'),
    reduceMotion: z.boolean().catch(false),
-   language: languagePreferenceSchema.catch(DEFAULT_LOCALE),
+   language: languagePreferenceSchema.catch('system'),
 diff --git a/src/shared/types/settings.ts b/src/shared/types/settings.ts
 index b70715670a9d49f6da697c78d3f95ae96d56eae3..2588b48bde5e89c4d1303298a424b65fb9f8391b 100644
 --- a/src/shared/types/settings.ts
