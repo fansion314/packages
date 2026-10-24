@@ -1,0 +1,63 @@
+name: Update package distribution
+on:
+  workflow_call:
+    inputs:
+      project:
+        type: string
+        default: ''
+      platform:
+        type: string
+        default: all
+  workflow_dispatch:
+    inputs:
+      project:
+        description: Optional project ID (empty checks all)
+        type: string
+        default: ''
+      platform:
+        type: choice
+        options: [all, arch, macos]
+        default: all
+  schedule:
+    - cron: '4,19,34,49 * * * *'
+permissions:
+  contents: read
+jobs:
+  validate:
+    runs-on: ubuntu-24.04
+    outputs:
+      aur: ${{ steps.inputs.outputs.aur }}
+      homebrew: ${{ steps.inputs.outputs.homebrew }}
+    steps:
+      - id: inputs
+        env:
+          PROJECT: ${{ inputs.project }}
+          PLATFORM: ${{ inputs.platform || 'all' }}
+        run: |
+          case "$PROJECT" in ''|dnr|pi|etcher|motrix|deepseek-harness|bitwarden|obsidian|python-pptx|fansionia-keyring) ;; *) exit 2;; esac
+          case "$PLATFORM" in all|arch|macos) ;; *) exit 2;; esac
+          echo "aur=$([[ $PLATFORM != macos && $PROJECT != python-pptx && $PROJECT != fansionia-keyring ]] && echo true || echo false)" >> "$GITHUB_OUTPUT"
+          echo "homebrew=$([[ $PLATFORM != arch && ( -z $PROJECT || $PROJECT == dnr || $PROJECT == pi || $PROJECT == etcher ) ]] && echo true || echo false)" >> "$GITHUB_OUTPUT"
+  aur:
+    needs: validate
+    if: needs.validate.outputs.aur == 'true'
+    permissions:
+      contents: write
+    uses: ./.github/workflows/sync-aur.yml
+    with:
+      project: ${{ inputs.project }}
+  homebrew:
+    needs: validate
+    if: needs.validate.outputs.homebrew == 'true'
+    permissions:
+      contents: write
+    uses: ./.github/workflows/sync-homebrew.yml
+  pacman:
+    needs: validate
+    if: inputs.platform != 'macos'
+    permissions:
+      contents: write
+      pages: write
+      id-token: write
+    uses: ./.github/workflows/publish-pacman.yml
+    secrets: inherit

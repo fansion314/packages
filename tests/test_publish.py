@@ -70,7 +70,7 @@ class PublicationTests(unittest.TestCase):
                     else:
                         publish.publish('bitwarden', commit)
                 writes = [call for call in calls if call[:2] in [('release', 'upload'), ('release', 'edit')]]
-                self.assertEqual(len(writes), 2 if draft else 0)
+                self.assertEqual(len(writes), 1 if draft else 0)
                 self.assertEqual(sum(call[:2] == ('release', 'create') for call in calls), 1 if newly_created else 0)
             finally:
                 os.chdir(before)

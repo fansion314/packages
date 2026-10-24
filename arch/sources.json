@@ -1,0 +1,18 @@
+{
+  "repository": "fansionia",
+  "architecture": "x86_64",
+  "pages_url": "https://fansion314.github.io/packages",
+  "public_url": "https://packages.fansionia.world",
+  "keep_snapshots": 32,
+  "projects": [
+    {"id":"dnr","repository":"fansion314/dnr","tag_pattern":"^v([0-9]+)\\.([0-9]+)\\.([0-9]+)$","packages":["dnr","dnr-cef","dnr-webview","dnc"]},
+    {"id":"pi","repository":"fansion314/pi","tag_pattern":"^pi-dnr-v([0-9]+)\\.([0-9]+)\\.([0-9]+)-([0-9]+)$","packages":["pi-dnr"]},
+    {"id":"etcher","repository":"fansion314/etcher","tag_pattern":"^v([0-9]+)\\.([0-9]+)\\.([0-9]+)-dnr\\.([0-9]+)$","packages":["etcher-dnr"]},
+    {"id":"motrix","repository":"fansion314/packages","tag_pattern":"^motrix-v([0-9]+)\\.([0-9]+)\\.([0-9]+)(?:-(alpha|beta|rc)\\.([0-9]+))?-([0-9]+)$","packages":["motrix-electron"]},
+    {"id":"deepseek-harness","repository":"fansion314/packages","tag_pattern":"^deepseek-harness-v([0-9]+)\\.([0-9]+)\\.([0-9]+)(?:-(alpha|beta|rc)\\.([0-9]+))?-([0-9]+)$","packages":["dsh-electron"]},
+    {"id":"bitwarden","repository":"fansion314/packages","tag_pattern":"^bitwarden-v([0-9]+)\\.([0-9]+)\\.([0-9]+)-([0-9]+)$","packages":["bitwarden-electron"]},
+    {"id":"obsidian","repository":"fansion314/packages","tag_pattern":"^obsidian-v([0-9]+)\\.([0-9]+)\\.([0-9]+)-([0-9]+)$","packages":["obsidian-electron"]},
+    {"id":"python-pptx","repository":"fansion314/packages","tag_pattern":"^python-pptx-v([0-9]+)\\.([0-9]+)\\.([0-9]+)-([0-9]+)$","packages":["python-pptx"]},
+    {"id":"fansionia-keyring","repository":"fansion314/packages","tag_pattern":"^fansionia-keyring-v([0-9]+)-([0-9]+)$","packages":["fansionia-keyring"]}
+  ]
+}

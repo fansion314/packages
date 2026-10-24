@@ -35,6 +35,8 @@ def publish(project, commit):
             raise ValueError('Release checksum mismatch')
         expected[name] = checksum
     expected['SHA256SUMS'] = digest(directory/'SHA256SUMS')
+    for signature in directory.glob('*.pkg.tar.zst.sig'):
+        expected[signature.name] = digest(signature)
     assets = [directory/name for name in expected]
     def find_release():
         # GitHub's by-tag endpoint does not return drafts. The authenticated
@@ -61,7 +63,13 @@ def publish(project, commit):
     if release['draft']:
         if release['target_commitish'] not in [commit, 'main']:
             raise ValueError('Draft belongs to a different build')
-        gh('release', 'upload', release_tag, *map(str, assets), '--clobber')
+        present = {a['name']: a.get('digest') for a in release['assets']}
+        for asset in assets:
+            if asset.name in present:
+                if present[asset.name] != 'sha256:'+expected[asset.name]:
+                    raise ValueError('Published asset set or bytes differ; increment pkgrel')
+            else:
+                gh('release', 'upload', release_tag, str(asset))
     # Verify draft/public bytes through GitHub digests before publication or idempotent success.
     release = json.loads(gh('api', f'repos/{os.environ["GITHUB_REPOSITORY"]}/releases/{release["id"]}'))
     actual = {a['name']: a.get('digest') for a in release['assets']}

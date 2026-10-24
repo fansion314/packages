@@ -1,0 +1,149 @@
+name: Publish signed pacman repository
+on:
+  workflow_call:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: pacman-publication
+  cancel-in-progress: false
+jobs:
+  probe:
+    runs-on: ubuntu-24.04
+    outputs:
+      changed: ${{ steps.probe.outputs.changed }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: main
+          persist-credentials: false
+      - id: probe
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 arch/repository.py probe
+  snapshot:
+    needs: probe
+    if: needs.probe.outputs.changed == 'true'
+    runs-on: ubuntu-24.04
+    container: archlinux:base
+    permissions:
+      contents: write
+    outputs:
+      active: ${{ steps.state.outputs.active }}
+      candidate: ${{ steps.snapshot.outputs.candidate }}
+    steps:
+      - run: pacman -Syu --noconfirm --needed git python gnupg libarchive github-cli
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: main
+          persist-credentials: false
+      - id: state
+        run: python arch/state.py checkout .work/pacman-site
+      - uses: actions/cache@caa296126883cff596d87d8935842f9db880ef25
+        with:
+          path: .cache/pacman-downloads
+          key: pacman-inputs-${{ github.run_id }}
+          restore-keys: pacman-inputs-
+      - id: snapshot
+        name: Verify exact release bytes and sign a complete database
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ARCH_SIGNING_PRIVATE_KEY: ${{ secrets.ARCH_SIGNING_PRIVATE_KEY }}
+          ARCH_SIGNING_PASSPHRASE: ${{ secrets.ARCH_SIGNING_PASSPHRASE }}
+          ARCH_SIGNING_KEY_ID: ${{ secrets.ARCH_SIGNING_KEY_ID }}
+          ACTIVE: ${{ steps.state.outputs.active }}
+        run: python arch/repository.py build --active "$ACTIVE"
+      - name: Persist the complete candidate before deployment
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python arch/state.py commit .work/pacman-site
+      - uses: actions/upload-pages-artifact@7b1f4a764d45c48632c6b24a0339c27f5614fb0b
+        with:
+          path: .work/pacman-site
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: pacman-state
+          path: |
+            .work/pacman-site/snapshots/
+            .work/pacman-site/snapshots.json
+            .work/pacman-site/keys/
+          retention-days: 7
+  pages:
+    needs: snapshot
+    runs-on: ubuntu-24.04
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - id: deploy
+        uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e
+  candidate:
+    needs: [snapshot, pages]
+    runs-on: ubuntu-24.04
+    container: archlinux:base
+    steps:
+      - run: pacman -Syu --noconfirm --needed git python gnupg libarchive nodejs
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: main
+          persist-credentials: false
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+        with:
+          name: pacman-state
+          path: .work/pacman-site
+      - name: Verify Pages bytes and the candidate Worker with real pacman
+        env:
+          CANDIDATE: ${{ needs.snapshot.outputs.candidate }}
+          CI: 'true'
+        run: |
+          python arch/repository.py verify-pages --candidate "$CANDIDATE"
+          python arch/repository.py worker --candidate "$CANDIDATE" --phase active
+          node arch/serve.mjs > /tmp/candidate-worker.log 2>&1 &
+          server_pid=$!
+          trap 'kill "$server_pid" || true' EXIT
+          bash arch/test-install.sh http://127.0.0.1:8765/x86_64
+  worker:
+    needs: [snapshot, candidate]
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: main
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1
+        with:
+          node-version: '24'
+      - run: npm install --global --ignore-scripts pnpm@12.15.0
+      - run: pnpm --dir arch install --frozen-lockfile --ignore-scripts
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+        with:
+          name: pacman-state
+          path: .work/pacman-site
+      - name: Prepare compatibility mappings, then activate the snapshot
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          ACTIVE: ${{ needs.snapshot.outputs.active }}
+          CANDIDATE: ${{ needs.snapshot.outputs.candidate }}
+        run: |
+          python3 arch/repository.py worker --active "$ACTIVE" --candidate "$CANDIDATE" --phase prepare
+          prepared=${ACTIVE:-$CANDIDATE}
+          python3 arch/deploy.py prepare "$CANDIDATE" "$prepared"
+          python3 arch/repository.py worker --active "$ACTIVE" --candidate "$CANDIDATE" --phase active
+          python3 arch/deploy.py active "$CANDIDATE" "$CANDIDATE"
+  public:
+    needs: worker
+    runs-on: ubuntu-24.04
+    container: archlinux:base
+    steps:
+      - run: pacman -Syu --noconfirm --needed git python gnupg
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: main
+          persist-credentials: false
+      - name: Install from the public Worker origin
+        env:
+          CI: 'true'
+        run: bash arch/test-install.sh https://fansionia-packages.fansionia.workers.dev/x86_64

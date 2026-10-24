@@ -1,0 +1,6 @@
+post_install() {
+  pacman-key --populate fansionia
+}
+post_upgrade() {
+  post_install
+}

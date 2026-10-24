@@ -58,6 +58,15 @@ jobs:
         with:
           name: arch-${{ needs.resolve.outputs.package }}
           path: dist/${{ needs.resolve.outputs.package }}
+      - name: Sign the verified pacman archive
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ARCH_SIGNING_PRIVATE_KEY: ${{ secrets.ARCH_SIGNING_PRIVATE_KEY }}
+          ARCH_SIGNING_PASSPHRASE: ${{ secrets.ARCH_SIGNING_PASSPHRASE }}
+          ARCH_SIGNING_KEY_ID: ${{ secrets.ARCH_SIGNING_KEY_ID }}
+          PACKAGE: ${{ needs.resolve.outputs.package }}
+          RELEASE_TAG: ${{ needs.resolve.outputs.tag }}
+        run: python3 arch/sign.py directory "dist/$PACKAGE" --tag "$RELEASE_TAG"
       - name: Publish exact verified package inputs
         env:
           GH_TOKEN: ${{ github.token }}
@@ -71,6 +80,10 @@ jobs:
     needs: [publish, resolve]
     permissions:
       contents: write
-    uses: ./.github/workflows/sync-aur.yml
+      pages: write
+      id-token: write
+    uses: ./.github/workflows/downstream.yml
     with:
       project: ${{ needs.resolve.outputs.package }}
+      platform: arch
+    secrets: inherit

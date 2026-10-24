@@ -1,0 +1,18 @@
+pkgname=fansionia-keyring
+pkgver=20261024
+pkgrel=1
+pkgdesc='Fansionia repository signing keys'
+arch=('any')
+url='https://github.com/fansion314/packages'
+license=('CC0-1.0')
+depends=('pacman')
+install=fansionia-keyring.install
+source=('fansionia.gpg' 'fansionia-trusted' 'fansionia-revoked')
+# These local inputs are part of the pinned packaging commit, never network input.
+sha256sums=('SKIP' 'SKIP' 'SKIP')
+
+package() {
+  install -Dm644 fansionia.gpg "$pkgdir/usr/share/pacman/keyrings/fansionia.gpg"
+  install -Dm644 fansionia-trusted "$pkgdir/usr/share/pacman/keyrings/fansionia-trusted"
+  install -Dm644 fansionia-revoked "$pkgdir/usr/share/pacman/keyrings/fansionia-revoked"
+}

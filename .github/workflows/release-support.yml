@@ -1,0 +1,98 @@
+name: Release repository support package
+on:
+  push:
+    tags: ['python-pptx-v*', 'fansionia-keyring-v*']
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        required: true
+        type: string
+permissions:
+  contents: read
+concurrency:
+  group: support-release-${{ inputs.release_tag || github.ref_name }}
+  cancel-in-progress: false
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    container: archlinux:base
+    outputs:
+      project: ${{ steps.resolve.outputs.project }}
+      tag: ${{ steps.resolve.outputs.tag }}
+    steps:
+      - run: pacman -Syu --noconfirm --needed base-devel git python python-build python-installer python-setuptools python-wheel python-pillow python-xlsxwriter python-lxml python-typing_extensions
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ inputs.release_tag || github.ref }}
+          persist-credentials: false
+          fetch-depth: 0
+      - id: resolve
+        env:
+          RELEASE_TAG: ${{ inputs.release_tag || github.ref_name }}
+        run: |
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          case "$RELEASE_TAG" in python-pptx-v*) project=python-pptx;; fansionia-keyring-v*) project=fansionia-keyring;; *) exit 2;; esac
+          source "arch/support/$project/PKGBUILD"
+          test "$RELEASE_TAG" = "$project-v$pkgver-$pkgrel"
+          test "$(git rev-parse HEAD)" = "$(git rev-parse "refs/tags/$RELEASE_TAG^{commit}")"
+          git merge-base --is-ancestor HEAD origin/main
+          echo "project=$project" >> "$GITHUB_OUTPUT"
+          echo "tag=$RELEASE_TAG" >> "$GITHUB_OUTPUT"
+      - name: Build support package as an ordinary user
+        env:
+          PROJECT: ${{ steps.resolve.outputs.project }}
+        run: |
+          useradd --create-home builder
+          chown -R builder:builder "$GITHUB_WORKSPACE"
+          runuser -u builder -- bash -c 'cd "arch/support/$1" && makepkg --noconfirm --nodeps' -- "$PROJECT"
+          mkdir -p dist/support
+          cp arch/support/"$PROJECT"/*.pkg.tar.zst dist/support/
+          (cd dist/support && sha256sum ./*.pkg.tar.zst > SHA256SUMS)
+      - name: Install and exercise the dependency or keyring
+        env:
+          PROJECT: ${{ steps.resolve.outputs.project }}
+        run: |
+          pacman -U --noconfirm dist/support/*.pkg.tar.zst
+          if [[ $PROJECT == python-pptx ]]; then
+            python -c 'from pptx import Presentation; import io; p=Presentation(); p.slides.add_slide(p.slide_layouts[6]); b=io.BytesIO(); p.save(b); b.seek(0); assert len(Presentation(b).slides)==1'
+          else
+            test -s /usr/share/pacman/keyrings/fansionia.gpg
+          fi
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: support-package
+          path: dist/support/*
+  publish:
+    needs: build
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+        with:
+          name: support-package
+          path: dist/support
+      - name: Sign and publish exact support package
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ARCH_SIGNING_PRIVATE_KEY: ${{ secrets.ARCH_SIGNING_PRIVATE_KEY }}
+          ARCH_SIGNING_PASSPHRASE: ${{ secrets.ARCH_SIGNING_PASSPHRASE }}
+          ARCH_SIGNING_KEY_ID: ${{ secrets.ARCH_SIGNING_KEY_ID }}
+          RELEASE_TAG: ${{ needs.build.outputs.tag }}
+        run: |
+          python3 arch/sign.py directory dist/support --tag "$RELEASE_TAG"
+          python3 arch/publish-support.py "$RELEASE_TAG"
+  sync:
+    needs: [build, publish]
+    permissions:
+      contents: write
+      pages: write
+      id-token: write
+    uses: ./.github/workflows/downstream.yml
+    with:
+      project: ${{ needs.build.outputs.project }}
+      platform: arch
+    secrets: inherit
