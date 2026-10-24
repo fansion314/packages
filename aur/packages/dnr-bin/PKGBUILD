@@ -1,6 +1,6 @@
 # Maintainer: Peilin Fan <peilin.fan@foxmail.com>
 pkgname=dnr-bin
-pkgver=0.5.5
+pkgver=0.5.6
 pkgrel=1
 pkgdesc='Shared Deno runtime (system CEF + WebView, prebuilt)'
 arch=('x86_64')
@@ -8,7 +8,7 @@ url='https://github.com/fansion314/dnr'
 license=('MIT' 'Apache-2.0' 'BSD-3-Clause')
 depends=('glibc' 'gcc-libs' 'zlib')
 optdepends=('libxss: X11 session idle time monitoring'
-            'cef: system CEF desktop backend (also requires gtk3)'
+            'cef>=154: system CEF desktop backend (also requires gtk3)'
             'gtk3: native desktop UI for the CEF backend'
             'webkit2gtk-4.1: WebView desktop backend (auto fallback)'
             'libayatana-appindicator: system tray support'
@@ -42,4 +42,4 @@ package() {
 }
 
 # Pinned by fansion314/packages after verifying the published release bytes.
-sha256sums=('81c41362d9155f85cf1226dabf3b1f0502a980541459461b34041f39a3f26e74' '8e52cf165500f048305162a1a15adc82c697fc24f442e652cd6afb4072f01b77')
+sha256sums=('16b10c2abbf38f947254f3ec6267535f1e422bea652d459437469639f061e14e' '8ec1b444d6e63e6e2d55b3a6b960c342cd7a4d9361dc9ced97faf4068219fc26')

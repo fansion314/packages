@@ -1,6 +1,6 @@
 pkgbase = dnr-bin
 	pkgdesc = Shared Deno runtime (system CEF + WebView, prebuilt)
-	pkgver = 0.5.5
+	pkgver = 0.5.6
 	pkgrel = 1
 	url = https://github.com/fansion314/dnr
 	arch = x86_64
@@ -11,23 +11,23 @@ pkgbase = dnr-bin
 	depends = gcc-libs
 	depends = zlib
 	optdepends = libxss: X11 session idle time monitoring
-	optdepends = cef: system CEF desktop backend (also requires gtk3)
+	optdepends = cef>=154: system CEF desktop backend (also requires gtk3)
 	optdepends = gtk3: native desktop UI for the CEF backend
 	optdepends = webkit2gtk-4.1: WebView desktop backend (auto fallback)
 	optdepends = libayatana-appindicator: system tray support
 	optdepends = libnotify: desktop notifications via notify-send
-	provides = dnr=0.5.5
+	provides = dnr=0.5.6
 	conflicts = dnr
 	conflicts = dnr-cef
 	conflicts = dnr-cef-bin
 	conflicts = dnr-webview
 	conflicts = dnr-webview-bin
-	noextract = dnr-0.5.5-1-x86_64.pkg.tar.zst
+	noextract = dnr-0.5.6-1-x86_64.pkg.tar.zst
 	options = !strip
 	options = !debug
-	source = https://github.com/fansion314/dnr/releases/download/v0.5.5/dnr-0.5.5-1-x86_64.pkg.tar.zst
-	source = https://github.com/fansion314/dnr/releases/download/v0.5.5/dnr-0.5.5-1-x86_64.pkg.tar.zst.sha256
-	sha256sums = 81c41362d9155f85cf1226dabf3b1f0502a980541459461b34041f39a3f26e74
-	sha256sums = 8e52cf165500f048305162a1a15adc82c697fc24f442e652cd6afb4072f01b77
+	source = https://github.com/fansion314/dnr/releases/download/v0.5.6/dnr-0.5.6-1-x86_64.pkg.tar.zst
+	source = https://github.com/fansion314/dnr/releases/download/v0.5.6/dnr-0.5.6-1-x86_64.pkg.tar.zst.sha256
+	sha256sums = 16b10c2abbf38f947254f3ec6267535f1e422bea652d459437469639f061e14e
+	sha256sums = 8ec1b444d6e63e6e2d55b3a6b960c342cd7a4d9361dc9ced97faf4068219fc26
 
 pkgname = dnr-bin

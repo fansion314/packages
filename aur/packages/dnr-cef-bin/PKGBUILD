@@ -1,12 +1,12 @@
 # Maintainer: Peilin Fan <peilin.fan@foxmail.com>
 pkgname=dnr-cef-bin
-pkgver=0.5.5
+pkgver=0.5.6
 pkgrel=1
 pkgdesc='Shared Deno runtime (system CEF, prebuilt)'
 arch=('x86_64')
 url='https://github.com/fansion314/dnr'
 license=('MIT' 'Apache-2.0' 'BSD-3-Clause')
-depends=('glibc' 'gcc-libs' 'gtk3' 'glib2' 'cairo' 'zlib' 'libx11' 'libxi' 'cef')
+depends=('glibc' 'gcc-libs' 'gtk3' 'glib2' 'cairo' 'zlib' 'libx11' 'libxi' 'cef>=154')
 optdepends=('libxss: X11 session idle time monitoring'
             'libayatana-appindicator: system tray support'
             'libnotify: desktop notifications via notify-send')
@@ -39,4 +39,4 @@ package() {
 }
 
 # Pinned by fansion314/packages after verifying the published release bytes.
-sha256sums=('b8a1d28000a0c98659d451112b21231ec6d296579b3807b295380d320361e65a' 'adae5ed47e3db32ba014e726f56c6b7a1244cd948017156948e8693b9f267cd8')
+sha256sums=('8f36fa1ffd15daad1a05c1fa14fe87c480b97556e84c87e277cc770bf244551c' '42ea0c0ff55fd543676ed1d434b5b0259915d5ef58da26b24996710db5ce5c36')

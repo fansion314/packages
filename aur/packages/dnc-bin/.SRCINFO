@@ -1,6 +1,6 @@
 pkgbase = dnc-bin
 	pkgdesc = Lightweight application packager for the shared dnr runtime (prebuilt)
-	pkgver = 0.5.5
+	pkgver = 0.5.6
 	pkgrel = 1
 	url = https://github.com/fansion314/dnr
 	arch = x86_64
@@ -8,14 +8,14 @@ pkgbase = dnc-bin
 	depends = glibc
 	depends = gcc-libs
 	optdepends = base-devel: build Arch application packages with dnc
-	provides = dnc=0.5.5
+	provides = dnc=0.5.6
 	conflicts = dnc
-	noextract = dnc-0.5.5-1-x86_64.pkg.tar.zst
+	noextract = dnc-0.5.6-1-x86_64.pkg.tar.zst
 	options = !strip
 	options = !debug
-	source = https://github.com/fansion314/dnr/releases/download/v0.5.5/dnc-0.5.5-1-x86_64.pkg.tar.zst
-	source = https://github.com/fansion314/dnr/releases/download/v0.5.5/dnc-0.5.5-1-x86_64.pkg.tar.zst.sha256
-	sha256sums = 5819ec72d27a0a19375cb0ad60bdb57e3a28f1fe91e6c1a068bdb649144a9bdb
-	sha256sums = abb72a9d3ad2cca05e3706f4824330a95802c97d11a42844295c2a7dc22337bc
+	source = https://github.com/fansion314/dnr/releases/download/v0.5.6/dnc-0.5.6-1-x86_64.pkg.tar.zst
+	source = https://github.com/fansion314/dnr/releases/download/v0.5.6/dnc-0.5.6-1-x86_64.pkg.tar.zst.sha256
+	sha256sums = 9b249298578bd24a544adb790562be2f4f7f0faea1a1e470794b4e00cbd7548f
+	sha256sums = 2c3e0893f5accdbb70b47154ba1d35c472b56cbe08029951b6b934f466c4ed6e
 
 pkgname = dnc-bin

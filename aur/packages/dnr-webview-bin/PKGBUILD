@@ -1,6 +1,6 @@
 # Maintainer: Peilin Fan <peilin.fan@foxmail.com>
 pkgname=dnr-webview-bin
-pkgver=0.5.5
+pkgver=0.5.6
 pkgrel=1
 pkgdesc='Shared Deno runtime (WebView, prebuilt)'
 arch=('x86_64')
@@ -39,4 +39,4 @@ package() {
 }
 
 # Pinned by fansion314/packages after verifying the published release bytes.
-sha256sums=('db25ae9978c7894b63bb7dce7748cc0911ac858bb44fcc0ecc8696674c45df82' '154607704fa1c19b4cda278639bc60f5899cecd914cd6bc65185919c214cefdb')
+sha256sums=('15cb8b4c3eef0a4215785a4495676f003cf842043ee4976877b86d84c6ceb320' 'a9f0e73c5918b34d58d4b5900d833923557b9da7751f00d2969b9e5fab0d785c')
