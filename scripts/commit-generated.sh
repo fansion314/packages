@@ -20,7 +20,7 @@ for attempt in 1 2 3 4 5; do
       echo 'Synchronization inputs or outputs advanced; regenerate against latest main.' >&2
       exit 75
     fi
-    git rebase origin/main
+    git -c user.name='github-actions[bot]' -c user.email='41898282+github-actions[bot]@users.noreply.github.com' rebase origin/main
     base=$remote
   fi
   auth=$(printf 'x-access-token:%s' "$GH_TOKEN" | base64 | tr -d '\n')

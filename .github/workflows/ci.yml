@@ -7,6 +7,9 @@ on:
   workflow_dispatch:
 permissions:
   contents: read
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
 jobs:
   static:
     runs-on: ubuntu-24.04
@@ -16,7 +19,7 @@ jobs:
       - run: python3 -m unittest discover -s homebrew/scripts -p 'test_*.py' -v
       - run: python3 -m unittest discover -s aur/tests -v
       - name: Check shell syntax
-        run: find scripts homebrew/scripts aur/scripts packages -type f -name '*.sh' -exec bash -n {} +
+        run: find scripts homebrew/scripts aur/scripts packages -type f -name '*.sh' -exec bash -n {} \;
   packages:
     needs: static
     strategy:
