@@ -9,7 +9,7 @@ import urllib.error
 import urllib.request
 
 REPOSITORY = 'https://github.com/fansion314/packages.git'
-STATUS = 'https://fansionia-packages.fansionia.workers.dev/status.json'
+STATUS = 'https://packages.fansionia.world/status.json'
 
 
 def active_snapshot():
