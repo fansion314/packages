@@ -1,26 +1,26 @@
 {
-  "repository": "fansion314/Motrix",
-  "reference": "arch-v2.0.0-beta.52-1",
+  "repository": "fansion314/packages",
+  "reference": "motrix-v2.0.0-beta.52-2",
   "packages": {
     "motrix-electron": {
-      "version": "0:2.0.0beta.52-1",
+      "version": "0:2.0.0beta.52-2",
       "files": {
-        ".SRCINFO": "8f8cc332fab6e2269a3ca758289f560210c1e203c1a3531d89fe7ae711c2c513",
-        "PKGBUILD": "4e91e0437237b830a7c7276a2e550cd05ef1e77c7911201a73e2dc4ed2e14126"
+        ".SRCINFO": "feefd9a1a365f290eb674c30d5285a9528e9e61bd231245038371ff49a63cd0c",
+        "PKGBUILD": "caf415882fe87048101ef973ae687066bd32b4a19fa01fcfea8f47ed3f448eee"
       },
       "assets": []
     },
     "motrix-electron-bin": {
-      "version": "0:2.0.0beta.52-1",
+      "version": "0:2.0.0beta.52-2",
       "files": {
-        ".SRCINFO": "0cc87ba72978691a10b16570103d1be64b9e5c539f55e598d94fa5811a10dada",
-        "PKGBUILD": "ce861899a4dd3a07f89f634f8139544d6920924c873592893cc2ed9c64204a12"
+        ".SRCINFO": "2e6af2ffb0d78367638010e694f00e1f0bfaaa16852009abb85c11befd5eebde",
+        "PKGBUILD": "a54cd9fc3f6ca036b211febda517a8d4620bc75d453a6c5607acf956e4cc06b2"
       },
       "assets": [
         {
-          "url": "https://github.com/fansion314/Motrix/releases/download/arch-v2.0.0-beta.52-1/motrix-electron-2.0.0beta.52-1-x86_64.pkg.tar.zst",
-          "sha256": "5fed5c82ba78d1b5ae02752ea6a1c9a08af06aad983110dfab70c8a964a36f17",
-          "size": 19425017
+          "url": "https://github.com/fansion314/packages/releases/download/motrix-v2.0.0-beta.52-2/motrix-electron-2.0.0beta.52-2-x86_64.pkg.tar.zst",
+          "sha256": "0422a7a07389aa4ddf3983da6d9ce8485ed4af2e59e99e12587a9ef0d9f7d091",
+          "size": 19422849
         }
       ]
     }

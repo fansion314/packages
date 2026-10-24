@@ -1,8 +1,8 @@
 pkgbase = motrix-electron-bin
 	pkgdesc = Motrix download manager using system Electron (prebuilt Arch package)
 	pkgver = 2.0.0beta.52
-	pkgrel = 1
-	url = https://github.com/fansion314/Motrix
+	pkgrel = 2
+	url = https://github.com/fansion314/packages
 	arch = x86_64
 	license = MIT
 	license = GPL-2.0-or-later
@@ -22,9 +22,9 @@ pkgbase = motrix-electron-bin
 	conflicts = motrix2
 	conflicts = motrix2-bin
 	conflicts = motrix-electron
-	noextract = motrix-electron-2.0.0beta.52-1-x86_64.pkg.tar.zst
+	noextract = motrix-electron-2.0.0beta.52-2-x86_64.pkg.tar.zst
 	options = !strip
-	source = https://github.com/fansion314/Motrix/releases/download/arch-v2.0.0-beta.52-1/motrix-electron-2.0.0beta.52-1-x86_64.pkg.tar.zst
-	sha256sums = 5fed5c82ba78d1b5ae02752ea6a1c9a08af06aad983110dfab70c8a964a36f17
+	source = https://github.com/fansion314/packages/releases/download/motrix-v2.0.0-beta.52-2/motrix-electron-2.0.0beta.52-2-x86_64.pkg.tar.zst
+	sha256sums = 0422a7a07389aa4ddf3983da6d9ce8485ed4af2e59e99e12587a9ef0d9f7d091
 
 pkgname = motrix-electron-bin
