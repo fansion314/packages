@@ -7,6 +7,7 @@ import { mkdir, mkdtemp, readFile, readlink, realpath, rm, writeFile } from 'nod
 import { createRequire } from 'node:module'
 import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
+import { waitForWindowVisibility } from './smoke-window.mjs'
 
 const { _electron: electron } = createRequire(new URL('../apps/web/package.json', import.meta.url))('playwright')
 const appRoot = resolve(process.argv[2] ?? '.arch-build/root/usr/lib/dsh-electron')
@@ -36,11 +37,16 @@ async function launch() {
       predicate: async page => { await page.waitForURL('**/renderer/welcome.html', { timeout: 60_000 }); return true },
       timeout: 60_000,
     })
+  // A matching URL precedes loadFile completion and Linux close-handler setup.
+  // Exercise hiding only after the welcome page and its initial show have settled.
+  await welcome.waitForLoadState('load', { timeout: 60_000 })
+  await welcome.locator('#api-key').waitFor({ state: 'visible', timeout: 60_000 })
   const welcomeWindow = await application.browserWindow(welcome)
+  await waitForWindowVisibility(welcomeWindow, true)
   await welcomeWindow.evaluate(owner => { owner.close() })
-  assert.equal(await welcomeWindow.evaluate(owner => owner.isVisible()), false)
+  await waitForWindowVisibility(welcomeWindow, false)
   await application.evaluate(({ app }) => { app.emit('activate', {}, false) })
-  assert.equal(await welcomeWindow.evaluate(owner => owner.isVisible()), true)
+  await waitForWindowVisibility(welcomeWindow, true)
   await welcome.locator('#api-key').click()
   await welcome.locator('#skip-key').click()
   const main = application.windows().find(page => page.url().startsWith('dsh-app://app/'))
@@ -137,10 +143,10 @@ try {
   })
   assert.ok(savedSize.width < 1280 && savedSize.height < 820, 'Resize changed the default dimensions')
   await window.evaluate(owner => { owner.close() })
-  assert.equal(await window.evaluate(owner => owner.isVisible()), false)
+  await waitForWindowVisibility(window, false)
   for (const pid of hosts) assert.equal(existsSync(`/proc/${pid}`), true, 'Host survives hiding the window')
   await application.evaluate(({ app }) => { app.emit('activate', {}, false) })
-  assert.equal(await window.evaluate(owner => owner.isVisible()), true)
+  await waitForWindowVisibility(window, true)
   await application.evaluate(({ app }) => { app.quit() })
   await waitForExit()
   assert.deepEqual(JSON.parse(await readFile(join(scratch, 'chromium/window-state.json'), 'utf8')), { ...savedSize, maximized: false })

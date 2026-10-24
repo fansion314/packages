@@ -56,6 +56,8 @@ Initialize the Worker once with `initialize-worker.yml`, then bind
 `packages.fansionia.world` as its Custom Domain. CI uses version upload/deploy, so
 routine publication does not alter the domain binding. Its account token only
 requires Workers script deployment access; domain configuration is separate.
+The package hostname must allow non-browser downloads. Exclude it from any
+site-wide browser-challenge rule; pacman cannot solve JavaScript challenges.
 
 ## Signing-key operations
 
@@ -82,4 +84,6 @@ git diff --check
 `test-install.sh`, support builds and Worker deployment run only in CI. The
 scheduled downstream workflow checks for updates every 15 minutes; unchanged
 pacman inputs skip download, signing and deployment. Source releases dispatch it
-immediately, with schedules covering missed notifications.
+immediately, with schedules covering missed notifications. Notification restores
+`downstream.yml` only if GitHub marked it `disabled_inactivity`; an intentional
+manual disable remains respected.
