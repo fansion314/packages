@@ -33,14 +33,32 @@ jobs:
           echo "package=$(python3 scripts/package.py resolve "$GITHUB_REF_NAME")" >> "$GITHUB_OUTPUT"
   package:
     needs: resolve
-    permissions:
-      contents: write
     uses: ./.github/workflows/build-package.yml
     with:
       package: ${{ needs.resolve.outputs.package }}
-      publish: true
-  sync:
+  publish:
     needs: [package, resolve]
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: arch-${{ needs.resolve.outputs.package }}
+          path: dist/${{ needs.resolve.outputs.package }}
+      - name: Publish exact verified package inputs
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PACKAGE: ${{ needs.resolve.outputs.package }}
+        run: |
+          git merge-base --is-ancestor HEAD origin/main
+          python3 scripts/publish.py "$PACKAGE" "$GITHUB_SHA"
+  sync:
+    needs: [publish, resolve]
     permissions:
       contents: write
     uses: ./.github/workflows/sync-aur.yml
