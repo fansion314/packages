@@ -108,10 +108,10 @@ index 0000000000000000000000000000000000000000..af476a5765246cf038314556ba9f672d
 +  }
 +})
 diff --git a/src/core/settings/settings-manager.test.ts b/src/core/settings/settings-manager.test.ts
-index 54b5326c4803f60659eda42942ff5f104a48173c..eff3d8e836fe9c230573678fb9f683949b5738a3 100644
+index b270788febee597cc9347716f60681611dbfe942..901cc52ea7cfbde267edc4f5978ef00350f12a7a 100644
 --- a/src/core/settings/settings-manager.test.ts
 +++ b/src/core/settings/settings-manager.test.ts
-@@ -444,6 +444,25 @@ describe('SettingsManager', () => {
+@@ -469,6 +469,25 @@ describe('SettingsManager', () => {
    })
  
    describe('load', () => {
@@ -184,12 +184,12 @@ index c246a40e5b8cfbeb52eff7309ad4561bde82a418..30e7b86f138102787d1c1bcda9e42210
      }
    }
 diff --git a/src/main/index.ts b/src/main/index.ts
-index bd9a1433845af098f9a13b82c27fce28b47ad759..e57701ff4b56f3a7e38121bec4761fd4c980da12 100644
+index 592f6167a1764a9f87efea7536eff79d4f65d90d..d6df70c465bd227d1d9e7e24a9f0d399d9fde908 100644
 --- a/src/main/index.ts
 +++ b/src/main/index.ts
-@@ -372,6 +372,9 @@ const settingsManager = new SettingsManager(settingsPath, {
-   ...defaultSaveDirOptions,
-   onChange: (old, updated) => {
+@@ -380,6 +380,9 @@ const settingsManager = new SettingsManager(settingsPath, {
+       )
+     }
      eventBus.emit(Events.SettingsChanged, { old, updated })
 +    if (old.app.uiScale !== updated.app.uiScale) {
 +      windowManager?.applyUiScale()
@@ -243,7 +243,7 @@ index f15f3fbae2a1ba3c0fab1540bd9f91890c5d0b8b..bdad8fafcb68914323e04ada7a23aa1f
      { dark: true, theme: 'dark', color: 'white' },
      { dark: false, theme: 'light', color: 'dark blue' },
 diff --git a/src/main/window/window-manager.test.ts b/src/main/window/window-manager.test.ts
-index ce52f38eb1cdd5fe7f87a2d9641ed5e52160cf0c..a14115188019f0c87689b37a37eb35d15426c9c7 100644
+index c713b1ff04fc7f0fc012079fdd388596dfce2322..674529b0e002ce2113e58a7caf0b417253311798 100644
 --- a/src/main/window/window-manager.test.ts
 +++ b/src/main/window/window-manager.test.ts
 @@ -12,6 +12,7 @@ vi.mock('electron', () => {
@@ -313,7 +313,7 @@ index ce52f38eb1cdd5fe7f87a2d9641ed5e52160cf0c..a14115188019f0c87689b37a37eb35d1
        nodeIntegration: false,
        contextIsolation: true,
 diff --git a/src/main/window/window-manager.ts b/src/main/window/window-manager.ts
-index ba232d6d5ad21690e1af22603a17e5f1f7f1ecec..74f032f48c0f9aca60178b9c770bae8910936e98 100644
+index 3c4a2e56cb0c6d3b40bc2ffe484363841fe8fc36..a78fc285ff33dd614dca3a8bb48874258a79775e 100644
 --- a/src/main/window/window-manager.ts
 +++ b/src/main/window/window-manager.ts
 @@ -330,6 +330,14 @@ export class WindowManager {
@@ -331,7 +331,7 @@ index ba232d6d5ad21690e1af22603a17e5f1f7f1ecec..74f032f48c0f9aca60178b9c770bae89
    // ─── Private ──────────────────────────────────────────
  
    private focusWindow(id: WindowId, win: BrowserWindow): void {
-@@ -484,6 +492,9 @@ export class WindowManager {
+@@ -485,6 +493,9 @@ export class WindowManager {
        show: false,
        ...platformOpts,
        webPreferences: {
@@ -341,7 +341,7 @@ index ba232d6d5ad21690e1af22603a17e5f1f7f1ecec..74f032f48c0f9aca60178b9c770bae89
          preload: this.deps.preloadPath,
          nodeIntegration: false,
          contextIsolation: true,
-@@ -635,7 +646,13 @@ export class WindowManager {
+@@ -637,7 +648,13 @@ export class WindowManager {
      // publishing the same stale native value over the transition.
      // Cocoa can leave the maximized state via a manual resize without emitting
      // unmaximize, so reconcile once the resize gesture finishes as well.
@@ -357,7 +357,7 @@ index ba232d6d5ad21690e1af22603a17e5f1f7f1ecec..74f032f48c0f9aca60178b9c770bae89
      win.on('unmaximize', publish)
      win.on('enter-full-screen', () => {
 diff --git a/src/renderer/routes/settings/cards/appearance-dialog.test.tsx b/src/renderer/routes/settings/cards/appearance-dialog.test.tsx
-index 4c02e1e73f1d7ab6dd42041e296fb9edf09c0382..3e609bc5948026a6aad6171762668ac77f17164d 100644
+index 90bf9c9cf06d267ddfb8eee9ba4bb36980af601d..97c430dc981aa8ec4ae8d6552eb6f510872f6255 100644
 --- a/src/renderer/routes/settings/cards/appearance-dialog.test.tsx
 +++ b/src/renderer/routes/settings/cards/appearance-dialog.test.tsx
 @@ -71,6 +71,55 @@ beforeEach(async () => {
@@ -413,11 +413,11 @@ index 4c02e1e73f1d7ab6dd42041e296fb9edf09c0382..3e609bc5948026a6aad6171762668ac7
 +    expect(scale).toHaveAttribute('aria-invalid', 'true')
 +  })
 +
-   it('pins Follow system first and saves the preference only after confirmation', async () => {
+   it('keeps acceleration changes in the draft until Save', async () => {
      render(
        <AppearanceDialog
 diff --git a/src/renderer/routes/settings/cards/appearance-dialog.tsx b/src/renderer/routes/settings/cards/appearance-dialog.tsx
-index 32b45cd1fb1c83215d8cecf89f86266fef90c30a..25c6f7ea00dd2a4a4882c1ac0c2c880655d89557 100644
+index 986eb5950833c3f8c110277e86377ff0050939f5..f5bd9bc8171ca5ec0bd806ee4299d8ab800e8318 100644
 --- a/src/renderer/routes/settings/cards/appearance-dialog.tsx
 +++ b/src/renderer/routes/settings/cards/appearance-dialog.tsx
 @@ -23,7 +23,9 @@ import {
@@ -445,24 +445,24 @@ index 32b45cd1fb1c83215d8cecf89f86266fef90c30a..25c6f7ea00dd2a4a4882c1ac0c2c8806
 +  | 'uiScale'
    | 'sidebarColor'
    | 'reduceMotion'
-   | 'language'
-@@ -74,6 +78,7 @@ type AppearanceFields = Pick<
+   | 'hardwareAcceleration'
+@@ -75,6 +79,7 @@ type AppearanceFields = Pick<
  // fields it edits. Keep this Pick<> in sync if the schema fields change.
  const DEFAULTS: AppearanceFields = {
    theme: DEFAULT_APP_SETTINGS.theme,
 +  uiScale: DEFAULT_APP_SETTINGS.uiScale,
    sidebarColor: DEFAULT_APP_SETTINGS.sidebarColor,
    reduceMotion: DEFAULT_APP_SETTINGS.reduceMotion,
-   language: DEFAULT_APP_SETTINGS.language,
-@@ -108,6 +113,7 @@ export function AppearanceDialog({
+   hardwareAcceleration: DEFAULT_APP_SETTINGS.hardwareAcceleration,
+@@ -110,6 +115,7 @@ export function AppearanceDialog({
      if (all?.app) {
        form.reset({
          theme: all.app.theme,
 +        uiScale: all.app.uiScale ?? DEFAULTS.uiScale,
          sidebarColor: all.app.sidebarColor ?? DEFAULTS.sidebarColor,
          reduceMotion: all.app.reduceMotion ?? DEFAULTS.reduceMotion,
-         language: all.app.language,
-@@ -430,6 +436,43 @@ export function AppearanceDialog({
+         hardwareAcceleration:
+@@ -460,6 +466,43 @@ export function AppearanceDialog({
                          </SettingsFormRow>
                        )}
                      />
@@ -507,7 +507,7 @@ index 32b45cd1fb1c83215d8cecf89f86266fef90c30a..25c6f7ea00dd2a4a4882c1ac0c2c8806
                        <>
                          <Separator className="my-4" />
 diff --git a/src/renderer/routes/settings/cards/settings-form-schemas.ts b/src/renderer/routes/settings/cards/settings-form-schemas.ts
-index db53b1cc8962e94773d9a39542b52e4530aab23b..80b5cbd25e22f45dc95a194de43c91770fae084b 100644
+index 8a3d557276ff1b66bfb8854ede527018c755b8b0..4a7d8ef326fbaf7f0b2276d4e349ab479ed41cbe 100644
 --- a/src/renderer/routes/settings/cards/settings-form-schemas.ts
 +++ b/src/renderer/routes/settings/cards/settings-form-schemas.ts
 @@ -22,6 +22,7 @@ export const generalFormSchema = appSettingsInputSchema.pick({
@@ -517,12 +517,12 @@ index db53b1cc8962e94773d9a39542b52e4530aab23b..80b5cbd25e22f45dc95a194de43c9177
 +  uiScale: true,
    sidebarColor: true,
    reduceMotion: true,
-   language: true,
+   hardwareAcceleration: true,
 diff --git a/src/shared/locales/ar.json b/src/shared/locales/ar.json
-index 0577dabc5bffb7137879be3b16154b4930852e57..235c0b3cd8bd539d48319d0c54a91c0c81f57c18 100644
+index 0ac5c0aea633a28245ca998632ebd03ed89d26d4..8d2e34502cc2ce8acb3db474237413d07c52dbd0 100644
 --- a/src/shared/locales/ar.json
 +++ b/src/shared/locales/ar.json
-@@ -1979,6 +1979,8 @@
+@@ -1983,6 +1983,8 @@
        "themeAuto": "النظام",
        "themeDark": "داكنة",
        "themeLight": "فاتحة",
@@ -532,10 +532,10 @@ index 0577dabc5bffb7137879be3b16154b4930852e57..235c0b3cd8bd539d48319d0c54a91c0c
        "trayIconColorAuto": "اتباع سمة التطبيق",
        "trayIconColorDark": "أيقونة داكنة (لوحة فاتحة)",
 diff --git a/src/shared/locales/bg.json b/src/shared/locales/bg.json
-index 3746e78fb098f1663d37fee5a910bc86239936a1..e1c7befe609b56ab7def9e86859bd3d9af2db9e1 100644
+index 32fcd77f89192d6d4e4ee1f7d790cdda18ba04be..8a177631df7f4a7a45764999af0d4fd63d49f32d 100644
 --- a/src/shared/locales/bg.json
 +++ b/src/shared/locales/bg.json
-@@ -1903,6 +1903,8 @@
+@@ -1907,6 +1907,8 @@
        "themeAuto": "Системна",
        "themeDark": "Тъмна",
        "themeLight": "Светла",
@@ -545,10 +545,10 @@ index 3746e78fb098f1663d37fee5a910bc86239936a1..e1c7befe609b56ab7def9e86859bd3d9
        "trayIconColorAuto": "Според темата на приложението",
        "trayIconColorDark": "Тъмна икона (светъл панел)",
 diff --git a/src/shared/locales/ca.json b/src/shared/locales/ca.json
-index aa599058a12354c818ffe38ad3011a72a09edce9..c5ed4269d0e964f419c11efc263e7b666b967805 100644
+index 892b7f0f9dfa48b62be60aeef0d162b73bd7b9e4..985ca77a5d2e380d8a48e007b23aee4b850e8926 100644
 --- a/src/shared/locales/ca.json
 +++ b/src/shared/locales/ca.json
-@@ -1922,6 +1922,8 @@
+@@ -1926,6 +1926,8 @@
        "themeAuto": "Del sistema",
        "themeDark": "Fosc",
        "themeLight": "Clar",
@@ -558,10 +558,10 @@ index aa599058a12354c818ffe38ad3011a72a09edce9..c5ed4269d0e964f419c11efc263e7b66
        "trayIconColorAuto": "Seguir el tema de l'aplicació",
        "trayIconColorDark": "Icona fosca (tauler clar)",
 diff --git a/src/shared/locales/de.json b/src/shared/locales/de.json
-index 02980ea708d87397b3c78e3fcdf66cc2eb363e62..de5b78a8135b76997c2109f3e0062fd7b4d30eb7 100644
+index c6ee76de12b5c08dd42555e6781d3a2b9f0cda88..6d886c46d0b3684d4b58074bd7f56ab3443e0f81 100644
 --- a/src/shared/locales/de.json
 +++ b/src/shared/locales/de.json
-@@ -1303,6 +1303,8 @@
+@@ -1309,6 +1309,8 @@
        "language": "Sprache",
        "traySpeedometer": "Geschwindigkeit in der Menüleiste anzeigen",
        "traySpeedometerDesc": "Download- und Upload-Geschwindigkeit neben dem Anwendungssymbol anzeigen.",
@@ -571,10 +571,10 @@ index 02980ea708d87397b3c78e3fcdf66cc2eb363e62..de5b78a8135b76997c2109f3e0062fd7
        "trayIconColorDesc": "Wählen Sie eine Farbe, die sich von Ihrer Systemleiste abhebt.",
        "trayIconColorAuto": "Anwendungsdesign folgen",
 diff --git a/src/shared/locales/el.json b/src/shared/locales/el.json
-index 77586548ad3a57a2eaf898cb2f73aa916ddde40a..ea8d080de11a67cc4300aee5e6418403e3b19664 100644
+index 93d71ac9ecc2a94f49e23459743b450f702b6a7c..ea3816096520684637a7583ced99ca9b42876816 100644
 --- a/src/shared/locales/el.json
 +++ b/src/shared/locales/el.json
-@@ -1903,6 +1903,8 @@
+@@ -1907,6 +1907,8 @@
        "themeAuto": "Συστήματος",
        "themeDark": "Σκοτεινό",
        "themeLight": "Φωτεινό",
@@ -584,10 +584,10 @@ index 77586548ad3a57a2eaf898cb2f73aa916ddde40a..ea8d080de11a67cc4300aee5e6418403
        "trayIconColorAuto": "Σύμφωνα με το θέμα της εφαρμογής",
        "trayIconColorDark": "Σκοτεινό εικονίδιο (φωτεινή γραμμή)",
 diff --git a/src/shared/locales/en-US.json b/src/shared/locales/en-US.json
-index 49dd3cc48acef652572a8d282ac7dde355ddc137..138c3530f23483007fc56eaa86197b7585250071 100644
+index 7f412c793b4fb1026f8cb7f0d7d58c6a68efd369..7c3ce915ff4927f68a15f194b9252803de1d8c16 100644
 --- a/src/shared/locales/en-US.json
 +++ b/src/shared/locales/en-US.json
-@@ -1297,6 +1297,8 @@
+@@ -1303,6 +1303,8 @@
      },
      "appearance": {
        "theme": "Theme",
@@ -597,10 +597,10 @@ index 49dd3cc48acef652572a8d282ac7dde355ddc137..138c3530f23483007fc56eaa86197b75
        "themeLight": "Light",
        "themeDark": "Dark",
 diff --git a/src/shared/locales/es.json b/src/shared/locales/es.json
-index 2220359021dbe9e495ac7861188fc723029097f8..1278c5f4eb2def800a35ff169c5d248d8b0c0975 100644
+index f47f9cbc292227d09e3088f3494acf2e2e51a450..a4ef4124ffb3ed2bf958986e30620881acc74df6 100644
 --- a/src/shared/locales/es.json
 +++ b/src/shared/locales/es.json
-@@ -1317,6 +1317,8 @@
+@@ -1323,6 +1323,8 @@
        "language": "Idioma",
        "traySpeedometer": "Mostrar velocidad en la barra de menús",
        "traySpeedometerDesc": "Muestra la velocidad de descarga y subida junto al icono de la aplicación.",
@@ -610,10 +610,10 @@ index 2220359021dbe9e495ac7861188fc723029097f8..1278c5f4eb2def800a35ff169c5d248d
        "trayIconColorDesc": "Elige un color que destaque en el panel del sistema.",
        "trayIconColorAuto": "Usar el tema de la aplicación",
 diff --git a/src/shared/locales/fa.json b/src/shared/locales/fa.json
-index 21ddffa177a5ce2c68701e7b7671266ca4987225..b9075b933edb8699ea1208cdece24c8cc6eb2ccb 100644
+index 3922c0257a89092a27fa3de531fc743258bd9404..7fb741f5393608e786e75e6b5097efa6e07e5617 100644
 --- a/src/shared/locales/fa.json
 +++ b/src/shared/locales/fa.json
-@@ -1903,6 +1903,8 @@
+@@ -1907,6 +1907,8 @@
        "themeAuto": "سیستم",
        "themeDark": "تیره",
        "themeLight": "روشن",
@@ -623,10 +623,10 @@ index 21ddffa177a5ce2c68701e7b7671266ca4987225..b9075b933edb8699ea1208cdece24c8c
        "trayIconColorAuto": "پیروی از پوستهٔ برنامه",
        "trayIconColorDark": "آیکون تیره (پنل روشن)",
 diff --git a/src/shared/locales/fr.json b/src/shared/locales/fr.json
-index b2cc3a08f72b0e493772c28f04ce3840699dc291..9bbb6a80eba80cdcbc7edd0298ce772456650d7f 100644
+index b08aed44b25b8a0be6199603b27f1f47acc79ffa..f7580ba6398610a025f3ed5dffeb959125ba04aa 100644
 --- a/src/shared/locales/fr.json
 +++ b/src/shared/locales/fr.json
-@@ -1921,6 +1921,8 @@
+@@ -1925,6 +1925,8 @@
        "themeAuto": "Système",
        "themeDark": "Sombre",
        "themeLight": "Clair",
@@ -636,10 +636,10 @@ index b2cc3a08f72b0e493772c28f04ce3840699dc291..9bbb6a80eba80cdcbc7edd0298ce7724
        "trayIconColorAuto": "Suivre le thème de l’application",
        "trayIconColorDark": "Icône sombre (panneau clair)",
 diff --git a/src/shared/locales/hu.json b/src/shared/locales/hu.json
-index bfc8a1d4f94dfa64b90f89e9446c2f9784bc2310..1a8a0ce7ebf7f428b9531cd21fa40253ff5f3a68 100644
+index 3c3167526262236b76345b95c55973bd71bb1bc9..7c0d6e9b774eb61914a2b3c23731137b400ea99b 100644
 --- a/src/shared/locales/hu.json
 +++ b/src/shared/locales/hu.json
-@@ -1297,6 +1297,8 @@
+@@ -1303,6 +1303,8 @@
      },
      "appearance": {
        "theme": "Téma",
@@ -649,10 +649,10 @@ index bfc8a1d4f94dfa64b90f89e9446c2f9784bc2310..1a8a0ce7ebf7f428b9531cd21fa40253
        "themeLight": "Világos",
        "themeDark": "Sötét",
 diff --git a/src/shared/locales/id.json b/src/shared/locales/id.json
-index d23215c65fc5e53cd2b4ffd49bb3c766caa20e2a..d8916371ffa2042160bbcaa0b8cee4d3b9d37e4d 100644
+index 4f874d93ee27f16a76c680c1c25ed5eaa29f857c..332033c84fb16f22c2a01419f4bd7c9c890ca697 100644
 --- a/src/shared/locales/id.json
 +++ b/src/shared/locales/id.json
-@@ -1289,6 +1289,8 @@
+@@ -1295,6 +1295,8 @@
        "language": "Bahasa",
        "traySpeedometer": "Tampilkan kecepatan di bar menu",
        "traySpeedometerDesc": "Lihat kecepatan unduh dan unggah di samping ikon aplikasi.",
@@ -662,10 +662,10 @@ index d23215c65fc5e53cd2b4ffd49bb3c766caa20e2a..d8916371ffa2042160bbcaa0b8cee4d3
        "trayIconColorDesc": "Pilih warna yang terlihat jelas pada panel sistem.",
        "trayIconColorAuto": "Ikuti tema aplikasi",
 diff --git a/src/shared/locales/it.json b/src/shared/locales/it.json
-index f535b4cbe3d8a985af3ad7041f4670cb206c5af4..65340fe2f3f70d2ac5c890ffc50c090093b49d0f 100644
+index ba5b01d49116c544bb0bffdf9608ad88de2db306..d0a8af21696a38807c8b842f7f93b3cad25a6c4a 100644
 --- a/src/shared/locales/it.json
 +++ b/src/shared/locales/it.json
-@@ -1317,6 +1317,8 @@
+@@ -1323,6 +1323,8 @@
        "language": "Lingua",
        "traySpeedometer": "Mostra velocità nella barra dei menu",
        "traySpeedometerDesc": "Visualizza le velocità di download e caricamento accanto all’icona dell’app.",
@@ -675,10 +675,10 @@ index f535b4cbe3d8a985af3ad7041f4670cb206c5af4..65340fe2f3f70d2ac5c890ffc50c0900
        "trayIconColorDesc": "Scegli un colore ben visibile sul pannello di sistema.",
        "trayIconColorAuto": "Segui il tema dell’app",
 diff --git a/src/shared/locales/ja.json b/src/shared/locales/ja.json
-index 259b157b71c33951740986710e42fd86937d24a7..0669d7ae7dac580927b7d1ee02a93c0b636f3649 100644
+index 866f17fefa9bef72e493d111fd7ead734ce7e2a2..9a54f293e5947edb2603d9b20a76d5226ddfb703 100644
 --- a/src/shared/locales/ja.json
 +++ b/src/shared/locales/ja.json
-@@ -1289,6 +1289,8 @@
+@@ -1295,6 +1295,8 @@
        "language": "言語",
        "traySpeedometer": "メニューバーに速度を表示",
        "traySpeedometerDesc": "アプリのアイコンの横にダウンロード速度とアップロード速度を表示します。",
@@ -688,10 +688,10 @@ index 259b157b71c33951740986710e42fd86937d24a7..0669d7ae7dac580927b7d1ee02a93c0b
        "trayIconColorDesc": "システムパネル上で見やすい色を選択します。",
        "trayIconColorAuto": "アプリのテーマに合わせる",
 diff --git a/src/shared/locales/ko.json b/src/shared/locales/ko.json
-index 678f72bec7a83a9345f0d174bc193d638be7e048..088b209ab819ca87fc40d6557ad0070a404974a2 100644
+index 41a5ebcf066871f533b99ceeaa0d968d4d575bea..1d0e388b7dc75faee991aca7841b31cd25a2ebea 100644
 --- a/src/shared/locales/ko.json
 +++ b/src/shared/locales/ko.json
-@@ -1289,6 +1289,8 @@
+@@ -1295,6 +1295,8 @@
        "language": "언어",
        "traySpeedometer": "메뉴 막대에 속도 표시",
        "traySpeedometerDesc": "앱 아이콘 옆에 다운로드 및 업로드 속도를 표시합니다.",
@@ -701,10 +701,10 @@ index 678f72bec7a83a9345f0d174bc193d638be7e048..088b209ab819ca87fc40d6557ad0070a
        "trayIconColorDesc": "시스템 패널에서 잘 보이는 색상을 선택하세요.",
        "trayIconColorAuto": "앱 테마 따르기",
 diff --git a/src/shared/locales/nb.json b/src/shared/locales/nb.json
-index d7080879aaa348c8d4424ccc989503911082171e..9f39ddcdcdf9b4eceb7e0fa18faa18134a9ae2ad 100644
+index 5cdfd00bba2c0c5251eca52037ffbeb7edc13302..18fc3b7e0c39d5d2b7664f1370460aec382cf944 100644
 --- a/src/shared/locales/nb.json
 +++ b/src/shared/locales/nb.json
-@@ -1903,6 +1903,8 @@
+@@ -1907,6 +1907,8 @@
        "themeAuto": "System",
        "themeDark": "Mørkt",
        "themeLight": "Lyst",
@@ -714,10 +714,10 @@ index d7080879aaa348c8d4424ccc989503911082171e..9f39ddcdcdf9b4eceb7e0fa18faa1813
        "trayIconColorAuto": "Følg appens tema",
        "trayIconColorDark": "Mørkt ikon (lyst panel)",
 diff --git a/src/shared/locales/nl.json b/src/shared/locales/nl.json
-index 6528f6120187adee2dad672791432372335cd2c2..3c873644a5441e99b65ad3fa6bfc8a1203218e81 100644
+index 5e70785070f4a93287ea0ffbf746c68c94b978f1..0629fa9481be933f1e07ae4b72732cf5fad62ef9 100644
 --- a/src/shared/locales/nl.json
 +++ b/src/shared/locales/nl.json
-@@ -1903,6 +1903,8 @@
+@@ -1907,6 +1907,8 @@
        "themeAuto": "Systeem",
        "themeDark": "Donker",
        "themeLight": "Licht",
@@ -727,10 +727,10 @@ index 6528f6120187adee2dad672791432372335cd2c2..3c873644a5441e99b65ad3fa6bfc8a12
        "trayIconColorAuto": "Appthema volgen",
        "trayIconColorDark": "Donker pictogram (licht paneel)",
 diff --git a/src/shared/locales/pl.json b/src/shared/locales/pl.json
-index e3bb42f0fc9fc8f4391d639d9bcb637d86ba0617..efe71866313f3a486727aa2af58fd08308e05c27 100644
+index 4e94a90e228dcf485eb172509c27f984fd8f7bb4..ae47dc6c77fbcb1026a7945f31abe7d15a5604b1 100644
 --- a/src/shared/locales/pl.json
 +++ b/src/shared/locales/pl.json
-@@ -1331,6 +1331,8 @@
+@@ -1337,6 +1337,8 @@
        "language": "Język",
        "traySpeedometer": "Pokaż prędkość na pasku menu",
        "traySpeedometerDesc": "Wyświetlaj prędkość pobierania i wysyłania obok ikony aplikacji.",
@@ -740,10 +740,10 @@ index e3bb42f0fc9fc8f4391d639d9bcb637d86ba0617..efe71866313f3a486727aa2af58fd083
        "trayIconColorDesc": "Wybierz kolor widoczny na panelu systemowym.",
        "trayIconColorAuto": "Zgodnie z motywem aplikacji",
 diff --git a/src/shared/locales/pt-BR.json b/src/shared/locales/pt-BR.json
-index 40cf5e1006d893c937e874aac0ca531a3acdbb91..0b2f9330e5cdc7707840afb108fe6c8db5c69a03 100644
+index e3ca234f15eae1c342b40f2f3d2661f7b86ef295..c462442bbf63fc4bd22f895243ccb1d476e85b5a 100644
 --- a/src/shared/locales/pt-BR.json
 +++ b/src/shared/locales/pt-BR.json
-@@ -1317,6 +1317,8 @@
+@@ -1323,6 +1323,8 @@
        "language": "Idioma",
        "traySpeedometer": "Mostrar velocidade na barra de menus",
        "traySpeedometerDesc": "Mostra as velocidades de download e upload ao lado do ícone do aplicativo.",
@@ -753,10 +753,10 @@ index 40cf5e1006d893c937e874aac0ca531a3acdbb91..0b2f9330e5cdc7707840afb108fe6c8d
        "trayIconColorDesc": "Escolha uma cor que se destaque no painel do sistema.",
        "trayIconColorAuto": "Seguir o tema do aplicativo",
 diff --git a/src/shared/locales/ro.json b/src/shared/locales/ro.json
-index e2629584938b9ac93740783e4e43e954fd436fee..61367744e0af9d522aa4414f6294d0b382fa6286 100644
+index f64bbe2e1eaced017ea44f0e2893b02c3852e20e..90fc9e03ae1b15a9b6a163f364d400b48e4614d1 100644
 --- a/src/shared/locales/ro.json
 +++ b/src/shared/locales/ro.json
-@@ -1922,6 +1922,8 @@
+@@ -1926,6 +1926,8 @@
        "themeAuto": "Sistem",
        "themeDark": "Întunecată",
        "themeLight": "Luminoasă",
@@ -766,10 +766,10 @@ index e2629584938b9ac93740783e4e43e954fd436fee..61367744e0af9d522aa4414f6294d0b3
        "trayIconColorAuto": "Urmează tema aplicației",
        "trayIconColorDark": "Pictogramă de culoare închisă (panou luminos)",
 diff --git a/src/shared/locales/ru.json b/src/shared/locales/ru.json
-index 4003e65b2cbf05ec67d5e4f4904050c2d2bf60ee..3198d7bf45e82846afe12a738ac473dcdc0317dc 100644
+index 484095b5b82d67ffd8370660cf21231ef8cf5cfb..2ca41e39535a9cc3954b39f11c6240872f35bd58 100644
 --- a/src/shared/locales/ru.json
 +++ b/src/shared/locales/ru.json
-@@ -1331,6 +1331,8 @@
+@@ -1337,6 +1337,8 @@
        "language": "Язык",
        "traySpeedometer": "Показывать скорость в строке меню",
        "traySpeedometerDesc": "Отображать скорость загрузки и отдачи рядом со значком приложения.",
@@ -779,10 +779,10 @@ index 4003e65b2cbf05ec67d5e4f4904050c2d2bf60ee..3198d7bf45e82846afe12a738ac473dc
        "trayIconColorDesc": "Выберите цвет, который хорошо виден на системной панели.",
        "trayIconColorAuto": "Как в теме приложения",
 diff --git a/src/shared/locales/th.json b/src/shared/locales/th.json
-index ef195989ad7883f9529ab40f63eda0c4b3dcd49b..ccc87b0d6c8d72c90f371d66e775ffb1fd20827b 100644
+index 965e3b9c0a03c1c3001a91743503d2cd5bc54c2f..9058c8b2e1f683fbe2e92b29925e0b5f687af717 100644
 --- a/src/shared/locales/th.json
 +++ b/src/shared/locales/th.json
-@@ -1884,6 +1884,8 @@
+@@ -1888,6 +1888,8 @@
        "themeAuto": "ระบบ",
        "themeDark": "มืด",
        "themeLight": "สว่าง",
@@ -792,10 +792,10 @@ index ef195989ad7883f9529ab40f63eda0c4b3dcd49b..ccc87b0d6c8d72c90f371d66e775ffb1
        "trayIconColorAuto": "ตามธีมแอป",
        "trayIconColorDark": "ไอคอนสีเข้ม (แผงสีอ่อน)",
 diff --git a/src/shared/locales/tr.json b/src/shared/locales/tr.json
-index b22516839accbe1be96221d432bb41104ae0df7f..a26288c672040d2c52b9865e636e6f4c904fa211 100644
+index 2ae1c0ed307e1060d6f70643bd20397549580bd3..97a5d73b9efd7ea72723cb52dc1385d789323444 100644
 --- a/src/shared/locales/tr.json
 +++ b/src/shared/locales/tr.json
-@@ -1303,6 +1303,8 @@
+@@ -1309,6 +1309,8 @@
        "language": "Dil",
        "traySpeedometer": "Menü çubuğunda hızı göster",
        "traySpeedometerDesc": "Uygulama simgesinin yanında indirme ve gönderme hızlarını görün.",
@@ -805,10 +805,10 @@ index b22516839accbe1be96221d432bb41104ae0df7f..a26288c672040d2c52b9865e636e6f4c
        "trayIconColorDesc": "Sistem panelinizde belirgin görünen bir renk seçin.",
        "trayIconColorAuto": "Uygulama temasını kullan",
 diff --git a/src/shared/locales/uk.json b/src/shared/locales/uk.json
-index 61d8ead59bee1c6c6085f985657f93c50fa098b8..7141c3ece7dd0f7e364a32c609f82c58f3acedb5 100644
+index db38c4d28d828d0d98b9a1201e31153e1293e3a1..2168a3f186bfca2cb92068878a39a3c51a4ea9df 100644
 --- a/src/shared/locales/uk.json
 +++ b/src/shared/locales/uk.json
-@@ -1941,6 +1941,8 @@
+@@ -1945,6 +1945,8 @@
        "themeAuto": "Системна",
        "themeDark": "Темна",
        "themeLight": "Світла",
@@ -818,10 +818,10 @@ index 61d8ead59bee1c6c6085f985657f93c50fa098b8..7141c3ece7dd0f7e364a32c609f82c58
        "trayIconColorAuto": "За темою застосунку",
        "trayIconColorDark": "Темний значок (світла панель)",
 diff --git a/src/shared/locales/vi.json b/src/shared/locales/vi.json
-index 38386669f717782337793b575a359806d376e844..de163cf9981af9c7926019abe1a489be77d4baa1 100644
+index 9b3549f8ebefbd0b5e3697fbe541cbbcdf40eefa..cfd670b06e6d52c740407bf4b0d6effccab3108e 100644
 --- a/src/shared/locales/vi.json
 +++ b/src/shared/locales/vi.json
-@@ -1289,6 +1289,8 @@
+@@ -1295,6 +1295,8 @@
        "language": "Ngôn ngữ",
        "traySpeedometer": "Hiện tốc độ trên thanh menu",
        "traySpeedometerDesc": "Xem tốc độ tải xuống và tải lên bên cạnh biểu tượng ứng dụng.",
@@ -831,10 +831,10 @@ index 38386669f717782337793b575a359806d376e844..de163cf9981af9c7926019abe1a489be
        "trayIconColorDesc": "Chọn màu dễ nhìn trên thanh hệ thống.",
        "trayIconColorAuto": "Theo chủ đề ứng dụng",
 diff --git a/src/shared/locales/zh-CN.json b/src/shared/locales/zh-CN.json
-index bc9a2a820340198a03ac6a90cc108c7675f39a35..bec84826d8e2335ac853444f7bc44ec8f8d78ae2 100644
+index 3a1d2993677fc089e3b20f4c0cb25ffdd3bc3dca..7390e7970e82c36ccc3442f5e7b468fdbd99ef70 100644
 --- a/src/shared/locales/zh-CN.json
 +++ b/src/shared/locales/zh-CN.json
-@@ -1283,6 +1283,8 @@
+@@ -1289,6 +1289,8 @@
      },
      "appearance": {
        "theme": "主题",
@@ -844,10 +844,10 @@ index bc9a2a820340198a03ac6a90cc108c7675f39a35..bec84826d8e2335ac853444f7bc44ec8
        "themeLight": "浅色",
        "themeDark": "深色",
 diff --git a/src/shared/locales/zh-TW.json b/src/shared/locales/zh-TW.json
-index 8072705158ed14f938a4f6fcfa0e9be1d5628406..70ef4c9772f5dbb9125f6ce546da757704faf546 100644
+index 1efa998a37f9aa5ea560109207f55ca4d705b319..197ae718791dcce513a8b742cb3770c13e80e60e 100644
 --- a/src/shared/locales/zh-TW.json
 +++ b/src/shared/locales/zh-TW.json
-@@ -1283,6 +1283,8 @@
+@@ -1289,6 +1289,8 @@
      },
      "appearance": {
        "theme": "主題",
@@ -857,7 +857,7 @@ index 8072705158ed14f938a4f6fcfa0e9be1d5628406..70ef4c9772f5dbb9125f6ce546da7577
        "themeLight": "淺色",
        "themeDark": "深色",
 diff --git a/src/shared/schemas/app-settings.test.ts b/src/shared/schemas/app-settings.test.ts
-index c1300f5c169dc07a9dac68536624ba3ba3ea7f73..6c3d2444665cf62a157caabb365618a498fb8048 100644
+index cf176e318eaec6033140afb611372a2a1219f4ac..bb1fe68f1f9791c3aaf2a5b2954e0f75b0ab9c26 100644
 --- a/src/shared/schemas/app-settings.test.ts
 +++ b/src/shared/schemas/app-settings.test.ts
 @@ -6,6 +6,21 @@ import {
@@ -879,14 +879,14 @@ index c1300f5c169dc07a9dac68536624ba3ba3ea7f73..6c3d2444665cf62a157caabb365618a4
 +    }
 +  )
 +
-   it('recovers missing or damaged speed limit units without losing valid choices', () => {
-     expect(appSettingsSchema.parse({}).speedLimitUnits).toEqual({
-       baseUpload: 'kilo',
+   it('defaults acceleration on for existing profiles and strictly validates changes', () => {
+     expect(DEFAULT_APP_SETTINGS.hardwareAcceleration).toBe(true)
+     expect(
 diff --git a/src/shared/schemas/app-settings.ts b/src/shared/schemas/app-settings.ts
-index 538f61ef3116caaf5e32a4a9577379b97f538928..b1328d23ce38e1476f29a30127b2f1ebd45a58be 100644
+index a462f1da141962746ca8d6d89340b38ead401603..6e55c65bc2ca6d97915b67c474623b7dbba28181 100644
 --- a/src/shared/schemas/app-settings.ts
 +++ b/src/shared/schemas/app-settings.ts
-@@ -18,6 +18,8 @@ import { DEFAULT_TRAY_ICON_COLOR, trayIconColorSchema } from './tray-icon-color'
+@@ -17,6 +17,8 @@ import { DEFAULT_TRAY_ICON_COLOR, trayIconColorSchema } from './tray-icon-color'
  import { windowMinimumDimensionSchema } from './window-bounds'
  
  export const appUpdateChannelSchema = z.enum(['stable', 'beta'])
@@ -895,16 +895,16 @@ index 538f61ef3116caaf5e32a4a9577379b97f538928..b1328d23ce38e1476f29a30127b2f1eb
  export const fileDeletionModeSchema = z.enum(['trash', 'permanent'])
  export type FileDeletionMode = z.infer<typeof fileDeletionModeSchema>
  export const notificationBadgeStyleSchema = z.enum(['count', 'dot', 'hidden'])
-@@ -39,6 +41,7 @@ export const appSettingsSchema = z.object({
+@@ -38,6 +40,7 @@ export const appSettingsSchema = z.object({
    mainWindowMinWidth: windowMinimumDimensionSchema.catch(914),
    mainWindowMinHeight: windowMinimumDimensionSchema.catch(672),
    theme: z.enum(['system', 'light', 'dark']).catch('system'),
 +  uiScale: z.number().int().min(UI_SCALE_MIN).max(UI_SCALE_MAX).catch(100),
    sidebarColor: sidebarColorSchema.catch('cyan'),
    reduceMotion: z.boolean().catch(false),
-   language: languagePreferenceSchema.catch('system'),
+   hardwareAcceleration: z.boolean().catch(true),
 diff --git a/src/shared/types/settings.ts b/src/shared/types/settings.ts
-index b70715670a9d49f6da697c78d3f95ae96d56eae3..2588b48bde5e89c4d1303298a424b65fb9f8391b 100644
+index ef9d35452b72c74ccbcf5875941c9cfbd7c7eec8..8e958c743dba7cc88b552400d0000e0847c424f0 100644
 --- a/src/shared/types/settings.ts
 +++ b/src/shared/types/settings.ts
 @@ -229,6 +229,8 @@ export interface MotrixAppSettings {
@@ -915,4 +915,4 @@ index b70715670a9d49f6da697c78d3f95ae96d56eae3..2588b48bde5e89c4d1303298a424b65f
 +  uiScale: number
    sidebarColor: SidebarColor
    reduceMotion: boolean
-   byteUnitSystem: ByteUnitPreference
+   hardwareAcceleration: boolean

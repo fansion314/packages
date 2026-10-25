@@ -1,12 +1,12 @@
 {
   "id": "motrix",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "pkgrel": 1,
   "package": "motrix-electron",
   "upstream": {
     "repository": "agalwood/Motrix",
-    "tag": "v2.0.0",
-    "commit": "954e62cef4819ff56506412f513ab75ff019c079"
+    "tag": "v2.0.1",
+    "commit": "a7a7c9a8e36a9d5a50cc5b0a8b5e5ad6f3bb28b6"
   },
   "import": {
     "repository": "fansion314/Motrix",
