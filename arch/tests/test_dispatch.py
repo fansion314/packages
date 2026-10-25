@@ -1,5 +1,6 @@
 import importlib.util
 import json
+import os
 from pathlib import Path
 import unittest
 from unittest.mock import patch
@@ -21,6 +22,32 @@ class DispatchTests(unittest.TestCase):
              patch.object(dispatch.subprocess, 'run') as run:
             with self.assertRaisesRegex(RuntimeError, 'intentionally disabled'):
                 dispatch.dispatch('pi', 'arch')
+        run.assert_not_called()
+
+    def test_tag_caller_dispatches_main(self):
+        with patch.dict(os.environ, {'GITHUB_REF': 'refs/tags/motrix-v2.0.1-1',
+                                     'GITHUB_REF_TYPE': 'tag'}), \
+             patch.object(dispatch.subprocess, 'check_output', return_value=json.dumps({'state':'active'})), \
+             patch.object(dispatch.subprocess, 'run') as run:
+            dispatch.main(['motrix', 'arch'])
+        run.assert_called_once_with(
+            ['gh', 'workflow', 'run', 'downstream.yml', '-R', 'fansion314/packages',
+             '--ref', 'main', '-f', 'project=motrix', '-f', 'platform=arch'], check=True)
+
+    def test_internal_and_support_packages_are_accepted(self):
+        for project in ['motrix', 'deepseek-harness', 'bitwarden', 'obsidian',
+                        'python-pptx', 'fansionia-keyring']:
+            with self.subTest(project=project), \
+                 patch.object(dispatch.subprocess, 'check_output', return_value=json.dumps({'state':'active'})), \
+                 patch.object(dispatch.subprocess, 'run') as run:
+                dispatch.main([project, 'arch'])
+                self.assertIn('project='+project, run.call_args.args[0])
+
+    def test_internal_package_does_not_restore_manual_disable(self):
+        with patch.object(dispatch.subprocess, 'check_output', return_value=json.dumps({'state':'disabled_manually'})), \
+             patch.object(dispatch.subprocess, 'run') as run:
+            with self.assertRaisesRegex(RuntimeError, 'intentionally disabled'):
+                dispatch.main(['motrix', 'arch'])
         run.assert_not_called()
 
     def test_active_workflow_needs_only_dispatch(self):

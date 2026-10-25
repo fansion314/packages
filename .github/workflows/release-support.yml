@@ -87,12 +87,17 @@ jobs:
           python3 arch/publish-support.py "$RELEASE_TAG"
   sync:
     needs: [build, publish]
+    runs-on: ubuntu-24.04
     permissions:
-      contents: write
-      pages: write
-      id-token: write
-    uses: ./.github/workflows/downstream.yml
-    with:
-      project: ${{ needs.build.outputs.project }}
-      platform: arch
-    secrets: inherit
+      contents: read
+      actions: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: main
+          persist-credentials: false
+      - name: Dispatch distribution from main
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PROJECT: ${{ needs.build.outputs.project }}
+        run: python3 arch/dispatch.py "$PROJECT" arch

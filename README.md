@@ -145,6 +145,7 @@ Worker 嵌入映射配置，不使用 KV，不运行时拉 JSON。保留最近�
 - 网络失败：包会跳转至 GitHub Release，需要能访问相应下载地址；Worker 不代理包体。
 
 发布源主动通知下游，每 15 分钟另有定时兜底；GitHub 调度可能延迟。
+本仓库的标签发布会异步调度 `main` 上的 `downstream.yml`，须独立跟进该运行及正式域名安装结果。
 Homebrew 安装验证、原生 Arch 构建/包测试和正式域名 pacman 安装均在 CI 执行。
 CI 烟雾测试不代表手动 GUI 或物理 USB 设备已经验收。
 

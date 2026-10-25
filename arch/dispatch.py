@@ -19,9 +19,15 @@ def dispatch(project, platform):
                     '-f', 'project='+project, '-f', 'platform='+platform], check=True)
 
 
-if __name__ == '__main__':
+def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('project', choices=['dnr', 'pi', 'etcher'])
+    parser.add_argument('project', choices=['dnr', 'pi', 'etcher', 'motrix',
+                                          'deepseek-harness', 'bitwarden', 'obsidian',
+                                          'python-pptx', 'fansionia-keyring'])
     parser.add_argument('platform', choices=['arch', 'macos'])
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
     dispatch(args.project, args.platform)
+
+
+if __name__ == '__main__':
+    main()
