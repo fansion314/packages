@@ -1,5 +1,5 @@
 pkgname=fansionia-keyring
-pkgver=20261024
+pkgver=20261027
 pkgrel=1
 pkgdesc='Fansionia repository signing keys'
 arch=('any')
