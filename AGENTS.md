@@ -25,7 +25,10 @@
 | Bitwarden | `packages/bitwarden/` | `bitwarden-v<V>-<R>`；`release.yml` | paru + pacman |
 | Obsidian | `packages/obsidian/` | `obsidian-v<V>-<R>`；`release.yml` | paru + pacman |
 | python-pptx、fansionia-keyring | `arch/support/<id>/PKGBUILD` | `<id>-v<V>-<R>`；`release-support.yml` | pacman |
+| Clash Momo | `../clash/clash-momo`，`fansion314/momo` 的 `clash-momo` 分支 | `clash-momo-v<V>-<R>`；`release-arch.yml` | paru + pacman |
+| Mihomomo | `../clash/mihomomo`，`fansion314/momo` 的 `mihomomo` 分支 | `mihomomo-v<V>-<R>`；`release-arch.yml` | paru + pacman |
 
+- Clash Momo 与 Mihomomo 共用仓库，按各自标签族选择版本；先发布内核，再发布依赖该签名内核的客户端。上游来源记录在各分支 `UPSTREAM.json`，后续以补丁同步并追加提交。
 - 版本、打包号和准确上游提交以 `packages/<id>/manifest.json`、支持包 PKGBUILD 或外部源码仓库为准，不能依赖本文件中的历史版本。
 - 内部四项目的源码与 bin 配方共用一个 Release。Bitwarden/Obsidian 使用官方 Linux 成品和系统 Electron，不合并官方源码、不重复携带 Electron；必须验证原生模块、bootstrap、应用布局及 ABI。
 - Motrix/DSH 从 manifest 固定的准确上游提交构建。fork 修改存为有序 `patches/series`；`overlay/` 仅放新增文件，不能覆盖现有上游文件。补丁冲突必须审阅并修复，禁止失败后静默跳过。
