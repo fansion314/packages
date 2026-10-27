@@ -1,0 +1,15 @@
+{
+  "repository": "fansion314/momo",
+  "reference": "mihomomo-v0.1.0-2",
+  "packages": {
+    "mihomomo": {
+      "version": "0:0.1.0-2",
+      "files": {
+        ".SRCINFO": "0fb6499891e55df7754830b7e6a2294a6e934faec0022b5cfab0bd4f937b3f57",
+        "PKGBUILD": "a47615263981a89bbd96486e97be39887f7ebab63b24f4190c895813765ce60d",
+        "mihomomo.install": "b2eed56f6feafc8291adc22059ce37f27bb14464ae5b5bafa014acd85c8e02e6"
+      },
+      "assets": []
+    }
+  }
+}
