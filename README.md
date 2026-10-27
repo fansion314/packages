@@ -14,6 +14,8 @@ GitHub 源码与发布地址：**https://github.com/fansion314/packages**。
 | DeepSeek Harness | `dsh-electron` | `dsh-electron-bin` | — |
 | Bitwarden | `bitwarden-electron` | `bitwarden-electron-bin` | — |
 | Obsidian | `obsidian-electron` | `obsidian-electron-bin` | — |
+| Clash Momo | `clash-momo` | —（源码配方：`clash-momo`） | — |
+| Mihomomo | `mihomomo` | —（源码配方：`mihomomo`） | — |
 
 所有 DNR 后端包是互斥替代品。Arch 仓库还提供 DSH 需要的 `python-pptx`
 和签名公钥维护包 `fansionia-keyring`。Bitwarden/Obsidian 使用官方成品应用和
@@ -60,6 +62,7 @@ Server = https://packages.fansionia.world/$arch
 sudo pacman -Syu fansionia-keyring
 sudo pacman -S dnr dnc pi-dnr etcher-dnr
 sudo pacman -S motrix-electron dsh-electron bitwarden-electron obsidian-electron
+sudo pacman -S clash-momo  # 自动安装 mihomomo 和系统 Electron
 ```
 
 按需安装即可，不必安装上面所有应用。依赖由 pacman 自动解析。
@@ -92,6 +95,7 @@ paru -Syu
 paru -S dnr-bin pi-dnr-bin etcher-dnr-bin
 paru -S motrix-electron-bin dsh-electron-bin
 paru -S bitwarden-electron-bin obsidian-electron-bin
+paru -S clash-momo mihomomo
 ```
 
 可用 `paru -S fansionia/dnr-bin` 明确选择本配方仓库。保留 paru 的正常配方审阅。

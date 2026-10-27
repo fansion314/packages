@@ -36,12 +36,24 @@ class DispatchTests(unittest.TestCase):
 
     def test_internal_and_support_packages_are_accepted(self):
         for project in ['motrix', 'deepseek-harness', 'bitwarden', 'obsidian',
-                        'python-pptx', 'fansionia-keyring']:
+                        'python-pptx', 'fansionia-keyring', 'clash-momo', 'mihomomo']:
             with self.subTest(project=project), \
                  patch.object(dispatch.subprocess, 'check_output', return_value=json.dumps({'state':'active'})), \
                  patch.object(dispatch.subprocess, 'run') as run:
                 dispatch.main([project, 'arch'])
                 self.assertIn('project='+project, run.call_args.args[0])
+
+    def test_downstream_workflow_accepts_momo_project_ids(self):
+        import subprocess
+        workflow = (Path(__file__).resolve().parents[2]/'.github/workflows/downstream.yml').read_text()
+        project_case = next(line.strip() for line in workflow.splitlines()
+                            if line.strip().startswith('case "$PROJECT" in'))
+        for project in ['clash-momo', 'mihomomo']:
+            with self.subTest(project=project):
+                result = subprocess.run(['bash', '-c', project_case], env={'PROJECT': project})
+                self.assertEqual(result.returncode, 0)
+        result = subprocess.run(['bash', '-c', project_case], env={'PROJECT': 'unregistered'})
+        self.assertEqual(result.returncode, 2)
 
     def test_internal_package_does_not_restore_manual_disable(self):
         with patch.object(dispatch.subprocess, 'check_output', return_value=json.dumps({'state':'disabled_manually'})), \

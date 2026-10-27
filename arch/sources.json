@@ -12,6 +12,8 @@
     {"id":"deepseek-harness","repository":"fansion314/packages","tag_pattern":"^deepseek-harness-v([0-9]+)\\.([0-9]+)\\.([0-9]+)(?:-(alpha|beta|rc)\\.([0-9]+))?-([0-9]+)$","packages":["dsh-electron"]},
     {"id":"bitwarden","repository":"fansion314/packages","tag_pattern":"^bitwarden-v([0-9]+)\\.([0-9]+)\\.([0-9]+)-([0-9]+)$","packages":["bitwarden-electron"]},
     {"id":"obsidian","repository":"fansion314/packages","tag_pattern":"^obsidian-v([0-9]+)\\.([0-9]+)\\.([0-9]+)-([0-9]+)$","packages":["obsidian-electron"]},
+    {"id":"clash-momo","repository":"fansion314/momo","tag_pattern":"^clash-momo-v([0-9]+)\\.([0-9]+)\\.([0-9]+)(?:-(alpha|beta|rc)\\.([0-9]+))?-([0-9]+)$","packages":["clash-momo"]},
+    {"id":"mihomomo","repository":"fansion314/momo","tag_pattern":"^mihomomo-v([0-9]+)\\.([0-9]+)\\.([0-9]+)(?:-(alpha|beta|rc)\\.([0-9]+))?-([0-9]+)$","packages":["mihomomo"]},
     {"id":"python-pptx","repository":"fansion314/packages","tag_pattern":"^python-pptx-v([0-9]+)\\.([0-9]+)\\.([0-9]+)-([0-9]+)$","packages":["python-pptx"]},
     {"id":"fansionia-keyring","repository":"fansion314/packages","tag_pattern":"^fansionia-keyring-v([0-9]+)-([0-9]+)$","packages":["fansionia-keyring"]}
   ]

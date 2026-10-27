@@ -4,6 +4,7 @@ from pathlib import Path
 import sys
 import tempfile
 import unittest
+from unittest.mock import patch
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
@@ -23,6 +24,26 @@ class RepositoryTests(unittest.TestCase):
         return {'tag_name': 'v'+version, 'draft': False, 'assets': assets}
 
     project = {'id': 'foo', 'repository': 'test/foo', 'tag_pattern': r'^v\d+\.\d+\.\d+$', 'packages': ['foo']}
+
+    def test_shared_momo_repository_selects_each_tag_family(self):
+        settings = json.loads((ROOT/'sources.json').read_text())
+        projects = [p for p in settings['projects'] if p['id'] in ('clash-momo', 'mihomomo')]
+        self.assertEqual({p['id'] for p in projects}, {'clash-momo', 'mihomomo'})
+        releases = []
+        for name, version in [('mihomomo', '0.1.0'), ('clash-momo', '0.1.0'),
+                              ('clash-momo', '0.2.0')]:
+            tag = f'{name}-v{version}-1'
+            filename = f'{name}-{version}-1-x86_64.pkg.tar.zst'
+            url = f'https://github.com/fansion314/momo/releases/download/{tag}/{filename}'
+            assets = [{'name': filename, 'digest': 'sha256:'+'a'*64, 'browser_download_url': url},
+                      {'name': filename+'.sig', 'digest': 'sha256:'+'b'*64, 'browser_download_url': url+'.sig'}]
+            releases.append({'tag_name': tag, 'draft': False, 'assets': assets})
+        releases.append({'tag_name': 'mihomomo-v9.0.0-1', 'draft': True, 'assets': []})
+        with patch.object(repository, 'github', return_value=[releases]) as github:
+            selected = repository.discover({'projects': projects})
+        self.assertEqual(github.call_count, 1)
+        self.assertEqual([(p['name'], p['tag']) for p in selected],
+                         [('clash-momo', 'clash-momo-v0.2.0-1'), ('mihomomo', 'mihomomo-v0.1.0-1')])
 
     def test_incomplete_new_release_does_not_silently_fall_back(self):
         with self.assertRaisesRegex(ValueError, 'completely signed'):

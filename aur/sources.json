@@ -77,6 +77,28 @@
         "tag_pattern": "^obsidian-v([0-9]+)\\.([0-9]+)\\.([0-9]+)(?:-(alpha|beta|rc)\\.([0-9]+))?-([1-9][0-9]*)$",
         "asset_suffix": "-aur.tar.gz"
       }
+    },
+    {
+      "id": "clash-momo",
+      "repository": "fansion314/momo",
+      "release_bundle": {
+        "tag_pattern": "^clash-momo-v([0-9]+)\\.([0-9]+)\\.([0-9]+)(?:-(alpha|beta|rc)\\.([0-9]+))?-([1-9][0-9]*)$",
+        "asset_suffix": "-aur.tar.gz"
+      },
+      "packages": {
+        "clash-momo": "aur/clash-momo"
+      }
+    },
+    {
+      "id": "mihomomo",
+      "repository": "fansion314/momo",
+      "release_bundle": {
+        "tag_pattern": "^mihomomo-v([0-9]+)\\.([0-9]+)\\.([0-9]+)(?:-(alpha|beta|rc)\\.([0-9]+))?-([1-9][0-9]*)$",
+        "asset_suffix": "-aur.tar.gz"
+      },
+      "packages": {
+        "mihomomo": "aur/mihomomo"
+      }
     }
   ],
   "excluded": [

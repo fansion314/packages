@@ -15,13 +15,16 @@ Server = $server
 EOF
 pacman -Syu --noconfirm fansionia-keyring
 pacman -Fy --noconfirm
-pacman -Si dnr dnr-cef dnr-webview dnc pi-dnr etcher-dnr motrix-electron dsh-electron bitwarden-electron obsidian-electron python-pptx
+pacman -Si dnr dnr-cef dnr-webview dnc pi-dnr etcher-dnr motrix-electron dsh-electron bitwarden-electron obsidian-electron clash-momo mihomomo python-pptx
 # Download and verify every variant. Mutually conflicting runtime alternatives
 # cannot be installed together, but each must be a valid signed archive.
-pacman -Sw --noconfirm dnr dnc pi-dnr etcher-dnr motrix-electron dsh-electron bitwarden-electron obsidian-electron python-pptx
+pacman -Sw --noconfirm dnr dnc pi-dnr etcher-dnr motrix-electron dsh-electron bitwarden-electron obsidian-electron clash-momo mihomomo python-pptx
 pacman -Sw --noconfirm dnr-cef
 pacman -Sw --noconfirm dnr-webview
-pacman -S --noconfirm dnr dnc pi-dnr etcher-dnr motrix-electron dsh-electron bitwarden-electron obsidian-electron python-pptx
+pacman -S --noconfirm dnr dnc pi-dnr etcher-dnr motrix-electron dsh-electron bitwarden-electron obsidian-electron clash-momo mihomomo python-pptx
+mihomomo -v
+getcap /usr/bin/mihomomo | grep -F 'cap_net_bind_service,cap_net_admin,cap_net_raw=ep'
+test ! -u /usr/bin/mihomomo
 dnr --version
 dnc --version
 pi --help >/dev/null
@@ -35,7 +38,7 @@ presentation.save(stream)
 stream.seek(0)
 assert len(Presentation(stream).slides) == 1
 PY
-for package in dnr dnc pi-dnr etcher-dnr motrix-electron dsh-electron bitwarden-electron obsidian-electron python-pptx fansionia-keyring; do
+for package in dnr dnc pi-dnr etcher-dnr motrix-electron dsh-electron bitwarden-electron obsidian-electron clash-momo mihomomo python-pptx fansionia-keyring; do
   pacman -Q "$package"
   pacman -Qk "$package"
 done

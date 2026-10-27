@@ -64,7 +64,7 @@
 
 ## pacman、签名和 Cloudflare
 
-- 公共入口 `https://packages.fansionia.world`；仓库名 `fansionia`，x86_64（同时接收 any）。12 个包由 `arch/sources.json` 显式列出；直接索引准确 GitHub Release `.pkg.tar.zst`，不重新打包、不复制应用到 Pages。
+- 公共入口 `https://packages.fansionia.world`；仓库名 `fansionia`，x86_64（同时接收 any）。14 个包由 `arch/sources.json` 显式列出；直接索引准确 GitHub Release `.pkg.tar.zst`，不重新打包、不复制应用到 Pages。
 - 主公钥指纹 `338AEAB64ECF2EF69AAF3EEFDF31748072E5B972`，`arch/keys/` 仅公开材料。每个发布仓库各有签名子密钥；校验实际 `.PKGINFO`、摘要、签名和预期来源子密钥，不得只检查文件存在。
 - Actions secrets：`ARCH_SIGNING_PRIVATE_KEY`、`ARCH_SIGNING_PASSPHRASE`、`ARCH_SIGNING_KEY_ID`；只上传所属签名子密钥，主认证私钥绝不上传。`backfill-signatures.yml` 只为验证过的旧公开原字节补 `.sig`，不改包。
 - 离线恢复资料在维护机 `~/.local/share/fansionia-packages/signing/`，恢复密码位于登录 Keychain 的 service `world.fansionia.packages.signing` / account `primary-key-recovery`。不读出到日志，不在清理时删除。子密钥到期前 45 天拒绝发布；续期/吊销/轮换按 `arch/README.md`。

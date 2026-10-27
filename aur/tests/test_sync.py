@@ -1,5 +1,8 @@
 import importlib.util
 import hashlib
+import io
+import json
+import tarfile
 from pathlib import Path
 import tempfile
 import unittest
@@ -64,3 +67,44 @@ class MultiPackageReleaseTests(unittest.TestCase):
     def test_other_packages_are_not_candidates(self):
         with self.assertRaises(ValueError):
             sync.release_key(self.settings, 'obsidian-v2.0.0-1')
+
+class SharedMomoReleaseTests(unittest.TestCase):
+    def test_each_project_selects_its_own_release_bundle(self):
+        sources = json.loads((Path(__file__).parents[1]/'sources.json').read_text())
+        projects = [p for p in sources['projects'] if p['id'] in ('clash-momo', 'mihomomo')]
+        self.assertEqual({p['id'] for p in projects}, {'clash-momo', 'mihomomo'})
+        with tempfile.TemporaryDirectory() as temporary:
+            files = {}
+            releases = []
+            for name, version in [('clash-momo', '0.1.0'), ('mihomomo', '0.1.0'),
+                                  ('clash-momo', '0.2.0')]:
+                tag = f'{name}-v{version}-1'
+                archive = Path(temporary)/f'{tag}.tar.gz'
+                with tarfile.open(archive, 'w:gz') as bundle:
+                    content = f'pkgver={version}\n'.encode()
+                    info = tarfile.TarInfo(f'aur/{name}/PKGBUILD')
+                    info.size = len(content)
+                    bundle.addfile(info, io.BytesIO(content))
+                url = f'https://github.com/fansion314/momo/releases/download/{tag}/{name}-aur.tar.gz'
+                files[url] = archive
+                releases.append({'tag_name': tag, 'draft': False, 'assets': [{
+                    'name': f'{name}-aur.tar.gz', 'browser_download_url': url,
+                    'digest': 'sha256:'+hashlib.sha256(archive.read_bytes()).hexdigest()}]})
+            releases.append({'tag_name': 'mihomomo-v9.0.0-1', 'draft': True, 'assets': []})
+
+            class FakeGitHub:
+                def releases(self, repository):
+                    assert repository == 'fansion314/momo'
+                    return releases
+
+                def download(self, url, digest):
+                    file = files[url]
+                    assert hashlib.sha256(file.read_bytes()).hexdigest() == digest
+                    return file
+
+            selected = {p['id']: sync.recipe_files(p, FakeGitHub()) for p in projects}
+            self.assertEqual(selected['clash-momo'][0], 'clash-momo-v0.2.0-1')
+            self.assertEqual(selected['mihomomo'][0], 'mihomomo-v0.1.0-1')
+            for project in projects:
+                self.assertEqual(set(selected[project['id']][1]),
+                                 {f'aur/{project["id"]}/PKGBUILD'})

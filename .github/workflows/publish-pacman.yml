@@ -86,7 +86,9 @@ jobs:
   candidate:
     needs: [probe, snapshot, pages]
     runs-on: ubuntu-24.04
-    container: archlinux:base
+    container:
+      image: archlinux:base
+      options: --cap-add=NET_ADMIN --cap-add=NET_RAW --cap-add=NET_BIND_SERVICE
     steps:
       - run: pacman -Syu --noconfirm --needed git python gnupg libarchive nodejs
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
@@ -145,7 +147,9 @@ jobs:
       (needs.worker.result == 'success' ||
        (needs.probe.outputs.changed == 'false' && github.event_name == 'workflow_dispatch'))
     runs-on: ubuntu-24.04
-    container: archlinux:base
+    container:
+      image: archlinux:base
+      options: --cap-add=NET_ADMIN --cap-add=NET_RAW --cap-add=NET_BIND_SERVICE
     steps:
       - run: pacman -Syu --noconfirm --needed git python gnupg
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
