@@ -69,7 +69,7 @@ index 1b1f1af..7cb4ff5 100644
  	a.pal = paletteFor(&t)
  	p := a.pal
 diff --git a/internal/app/ui_settings.go b/internal/app/ui_settings.go
-index 6c2b701..0a0cf20 100644
+index 6c2b701..76342c7 100644
 --- a/internal/app/ui_settings.go
 +++ b/internal/app/ui_settings.go
 @@ -50,6 +50,7 @@ func (a *app) changed() {
@@ -80,7 +80,7 @@ index 6c2b701..0a0cf20 100644
  	t := *c.Theme()
  	p := paletteFor(&t)
  	t.Accent, t.AccentText = p.accent, p.onAccent
-@@ -186,6 +187,24 @@ func (a *app) settingsView(c *ui.Context) {
+@@ -186,6 +187,25 @@ func (a *app) settingsView(c *ui.Context) {
  		})
  
  		group("外观", func() {
@@ -99,7 +99,8 @@ index 6c2b701..0a0cf20 100644
 +							s.InterfaceScale = scale.value
 +						}
 +					}
-+					a.changed()
++					s.save()
++					a.redraw()
 +				}
 +			})
  			row("外观", "", func() {

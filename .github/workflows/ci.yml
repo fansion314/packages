@@ -13,8 +13,18 @@ concurrency:
 jobs:
   static:
     runs-on: ubuntu-24.04
+    outputs:
+      matrix: ${{ steps.scope.outputs.matrix }}
+      has_packages: ${{ steps.scope.outputs.has_packages }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+      - name: Select affected application builds
+        id: scope
+        env:
+          BASE_SHA: ${{ github.event.before || github.event.pull_request.base.sha }}
+        run: python3 scripts/ci-packages.py "$BASE_SHA" "$GITHUB_SHA" >> "$GITHUB_OUTPUT"
       - run: python3 -m unittest discover -s tests -v
       - run: python3 -m unittest discover -s homebrew/scripts -p 'test_*.py' -v
       - run: python3 -m unittest discover -s aur/tests -v
@@ -27,10 +37,10 @@ jobs:
         run: find scripts homebrew/scripts aur/scripts packages -type f -name '*.sh' -exec bash -n {} \;
   packages:
     needs: static
+    if: needs.static.outputs.has_packages == 'true'
     strategy:
       fail-fast: false
-      matrix:
-        package: [bitwarden, obsidian, motrix, deepseek-harness, mygo-cloudmusic]
+      matrix: ${{ fromJSON(needs.static.outputs.matrix) }}
     uses: ./.github/workflows/build-package.yml
     with:
       package: ${{ matrix.package }}
