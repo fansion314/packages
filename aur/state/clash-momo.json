@@ -11,6 +11,20 @@
         "clash-momo.desktop": "3f54e2bb92469c094252c2ebd7b0c587218d8333b4cfc22c0328b869a94799d8"
       },
       "assets": []
+    },
+    "clash-momo-bin": {
+      "version": "0:0.1.2-2",
+      "files": {
+        ".SRCINFO": "1086da865ed4676b5113975dd43cb0a8810cdb08adb4c54b274cbf2fc065236d",
+        "PKGBUILD": "8fbcc22724d87d811c86d4742a6c8ed48fc79fd68a55338104dfc0a4b8a10616"
+      },
+      "assets": [
+        {
+          "url": "https://github.com/fansion314/momo/releases/download/clash-momo-v0.1.2-2/clash-momo-0.1.2-2-x86_64.pkg.tar.zst",
+          "sha256": "ba6af1ce1af869d5823137843d87c93eee3e4a25ac90a916343a30d9294f12ed",
+          "size": 61367183
+        }
+      ]
     }
   }
 }
