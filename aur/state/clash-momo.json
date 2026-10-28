@@ -1,12 +1,12 @@
 {
   "repository": "fansion314/momo",
-  "reference": "clash-momo-v0.1.1-1",
+  "reference": "clash-momo-v0.1.2-1",
   "packages": {
     "clash-momo": {
-      "version": "0:0.1.1-1",
+      "version": "0:0.1.2-1",
       "files": {
-        ".SRCINFO": "9b0c8bfdc4caeefbfa501ab6604f69b69c8ffafc4e97fcb4249e97eefc54f02c",
-        "PKGBUILD": "cb741dc97faf0ca6073a18c33fd7448db40b987887eabc104b32543571ea8f7b",
+        ".SRCINFO": "2da5d1d6ffb856583b37056ece0da487fed2e655ac64a54b926eeb8b297fc202",
+        "PKGBUILD": "cc33e7d04b2163876ffc9944df714df5d4b6567d14e62f6bafb0b04563d17a58",
         "clash-momo": "4ad8796991a21e5008570fa0be46f981fa36e4068f4e0c017899c7a9817dfc6f",
         "clash-momo.desktop": "3f54e2bb92469c094252c2ebd7b0c587218d8333b4cfc22c0328b869a94799d8"
       },
