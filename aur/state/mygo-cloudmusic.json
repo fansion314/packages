@@ -1,0 +1,28 @@
+{
+  "repository": "fansion314/packages",
+  "reference": "mygo-cloudmusic-v0.1.20-1",
+  "packages": {
+    "mygo-cloudmusic": {
+      "version": "0:0.1.20-1",
+      "files": {
+        ".SRCINFO": "62213c136817471b0e2aafc897781bdd725e4ca44d5dcee82f077e3330163ae1",
+        "PKGBUILD": "82f6f76592350a6374202bdc7c1049017e38cc8eeaf078bbed303741afec3a42"
+      },
+      "assets": []
+    },
+    "mygo-cloudmusic-bin": {
+      "version": "0:0.1.20-1",
+      "files": {
+        ".SRCINFO": "1eeb3c4015a3ede2a08ba689f77084ba58ad8c33d2291372e947162f6a20b2a1",
+        "PKGBUILD": "31ff34e98cad8f455efaa578dca14054c16e6ec3ec92ea48d9378bf7e8ab0f68"
+      },
+      "assets": [
+        {
+          "url": "https://github.com/fansion314/packages/releases/download/mygo-cloudmusic-v0.1.20-1/mygo-cloudmusic-0.1.20-1-x86_64.pkg.tar.zst",
+          "sha256": "41800593aa48a7a94d461afcf11034048e40484f925795cf41ebd544ac6406c9",
+          "size": 7924855
+        }
+      ]
+    }
+  }
+}
