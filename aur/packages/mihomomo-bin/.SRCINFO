@@ -1,0 +1,19 @@
+pkgbase = mihomomo-bin
+	pkgdesc = Mihomo-based proxy core for Clash Momo (prebuilt)
+	pkgver = 0.1.0
+	pkgrel = 3
+	url = https://github.com/fansion314/momo
+	install = mihomomo.install
+	arch = x86_64
+	license = GPL-3.0-only
+	depends = glibc
+	depends = libcap
+	provides = mihomomo=0.1.0
+	conflicts = mihomomo
+	noextract = mihomomo-0.1.0-3-x86_64.pkg.tar.zst
+	options = !strip
+	options = !debug
+	source_x86_64 = https://github.com/fansion314/momo/releases/download/mihomomo-v0.1.0-3/mihomomo-0.1.0-3-x86_64.pkg.tar.zst
+	sha256sums_x86_64 = 7721f9a2d90d48c706ee1b37cf2870bf82b92fb6efce7ad962469b9de7ddc5ce
+
+pkgname = mihomomo-bin
