@@ -1,7 +1,7 @@
 {
   "id": "mygo-cloudmusic",
   "version": "0.1.20",
-  "pkgrel": 1,
+  "pkgrel": 2,
   "package": "mygo-cloudmusic",
   "runtime": "native-go",
   "version_file": "mygo.json",

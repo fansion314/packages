@@ -7,7 +7,7 @@ pkgdesc='MyGo CloudMusic native NetEase Music client with adjustable interface s
 arch=('x86_64')
 url='https://github.com/@REPOSITORY@'
 license=('AGPL-3.0-only')
-depends=('glibc' 'gtk3' 'libsecret' 'libpulse' 'alsa-lib')
+depends=('glibc' 'gtk3' 'libsecret' 'libpulse' 'alsa-lib' 'hicolor-icon-theme')
 optdepends=('gnome-keyring: store login credentials' 'libayatana-appindicator: system tray integration')
 provides=("mygo-cloudmusic=${pkgver}")
 conflicts=('mygo-cloudmusic' 'mygo-cloudmusic-git')

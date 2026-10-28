@@ -50,19 +50,19 @@ class PackageTests(unittest.TestCase):
 
     def test_native_app_version_comes_from_mygo_config_not_website(self):
         import json
-        with tempfile.TemporaryDirectory() as directory:
-            source = Path(directory)
-            (source/'package.json').write_text('{"private":true}')
-            (source/'mygo.json').write_text(json.dumps({'version': '0.1.20'}))
-            with patch.object(package, 'run', side_effect=[package.manifest('mygo-cloudmusic')['upstream']['commit'], '']), \
-                 patch.object(package.subprocess, 'run'):
-                package.apply('mygo-cloudmusic', source)
-            self.assertTrue((source/'aur/mygo-cloudmusic/PKGBUILD').is_file())
-            (source/'mygo.json').write_text('{"version":"0.0.0"}')
-            with patch.object(package, 'run', side_effect=[package.manifest('mygo-cloudmusic')['upstream']['commit'], '']), \
-                 patch.object(package.subprocess, 'run'):
-                with self.assertRaisesRegex(ValueError, 'application version'):
-                    package.apply('mygo-cloudmusic', source)
+        for version in ['0.1.20', '0.0.0']:
+            with self.subTest(version=version), tempfile.TemporaryDirectory() as directory:
+                source = Path(directory)
+                (source/'package.json').write_text('{"private":true}')
+                (source/'mygo.json').write_text(json.dumps({'version': version}))
+                with patch.object(package, 'run', side_effect=[package.manifest('mygo-cloudmusic')['upstream']['commit'], '']), \
+                     patch.object(package.subprocess, 'run'):
+                    if version == '0.1.20':
+                        package.apply('mygo-cloudmusic', source)
+                        self.assertTrue((source/'aur/mygo-cloudmusic/PKGBUILD').is_file())
+                    else:
+                        with self.assertRaisesRegex(ValueError, 'application version'):
+                            package.apply('mygo-cloudmusic', source)
 
     def test_wrong_upstream_and_dirty_checkout_fail_before_patching(self):
         for results in [['bad'], [package.manifest('motrix')['upstream']['commit'], ' M file']]:

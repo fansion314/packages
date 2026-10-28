@@ -1,0 +1,10 @@
+--- a/internal/app/app.go
++++ b/internal/app/app.go
+@@ -202,6 +202,7 @@
+ 	moveOldData()
+ 	a.useUpdater()
+ 	mygo.App.WhenReady(func() {
++		configureDesktopIcon()
+ 		a.settings = loadSettings()
+ 		a.settings.applyAppearance()
+ 		a.npPane = a.lyricsPaneChosen()
