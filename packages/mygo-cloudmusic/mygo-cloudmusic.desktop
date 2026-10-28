@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=MyGo 云音乐
+Comment=第三方网易云音乐桌面客户端
+Exec=mygo-cloudmusic
+Icon=mygo-cloudmusic
+Categories=AudioVideo;Audio;Player;
+Terminal=false
+StartupWMClass=dev.egoist.cloudmusic

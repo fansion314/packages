@@ -36,7 +36,7 @@ class DispatchTests(unittest.TestCase):
 
     def test_internal_and_support_packages_are_accepted(self):
         for project in ['motrix', 'deepseek-harness', 'bitwarden', 'obsidian',
-                        'python-pptx', 'fansionia-keyring', 'clash-momo', 'mihomomo']:
+                        'python-pptx', 'fansionia-keyring', 'clash-momo', 'mihomomo', 'mygo-cloudmusic']:
             with self.subTest(project=project), \
                  patch.object(dispatch.subprocess, 'check_output', return_value=json.dumps({'state':'active'})), \
                  patch.object(dispatch.subprocess, 'run') as run:
@@ -48,7 +48,7 @@ class DispatchTests(unittest.TestCase):
         workflow = (Path(__file__).resolve().parents[2]/'.github/workflows/downstream.yml').read_text()
         project_case = next(line.strip() for line in workflow.splitlines()
                             if line.strip().startswith('case "$PROJECT" in'))
-        for project in ['clash-momo', 'mihomomo']:
+        for project in ['clash-momo', 'mihomomo', 'mygo-cloudmusic']:
             with self.subTest(project=project):
                 result = subprocess.run(['bash', '-c', project_case], env={'PROJECT': project})
                 self.assertEqual(result.returncode, 0)

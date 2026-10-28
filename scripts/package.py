@@ -10,7 +10,7 @@ import subprocess
 import tarfile
 
 ROOT = Path(__file__).resolve().parents[1]
-IDS = ('bitwarden', 'obsidian', 'motrix', 'deepseek-harness')
+IDS = ('bitwarden', 'obsidian', 'motrix', 'deepseek-harness', 'mygo-cloudmusic')
 REPOSITORY = 'fansion314/packages'
 
 
@@ -99,7 +99,7 @@ def apply(project, source):
         target.parent.mkdir(parents=True, exist_ok=True)
         shutil.copy2(item, target)
     recipes(project, source/'aur')
-    if json.loads((source/'package.json').read_text())['version'] != info['version']:
+    if json.loads((source/info.get('version_file', 'package.json')).read_text())['version'] != info['version']:
         raise ValueError('Unexpected upstream application version')
 
 
@@ -143,16 +143,18 @@ def finalize(project, archive, destination):
     tracked = run('git', 'ls-files', 'packages/'+project, 'scripts/package.py', cwd=ROOT).splitlines()
     build = {'package': info, 'packaging_commit': run('git', 'rev-parse', 'HEAD', cwd=ROOT),
              'inputs': {name: digest(ROOT/name) for name in tracked},
-             'system_electron': run('pacman', '-Q', 'electron'),
+             'system_electron': None if info.get('runtime') == 'native-go' else run('pacman', '-Q', 'electron'),
+             'native_go': run('go', 'version') if info.get('runtime') == 'native-go' else None,
              'toolchain': {name: run(*cmd) for name, cmd in {
                  'node': ['node', '--version'], 'pnpm': ['pnpm', '--version'],
                  'python': ['python', '--version'], 'makepkg': ['makepkg', '--version']}.items()}}
     (destination/'build-info.json').write_text(json.dumps(build, indent=2)+'\n')
     assets = [destination/archive.name, bundle, destination/'build-info.json']
     (destination/'SHA256SUMS').write_text(''.join(f'{digest(p)}  {p.name}\n' for p in assets))
+    runtime_note = ('Native Go/GTK application; no Electron or WebView runtime. Includes the persistent interface scale setting. Updates use pacman/paru. ' if info.get('runtime') == 'native-go' else 'Uses system Electron; the Electron runtime is not bundled. ')
     (destination/'notes.md').write_text(
         f"{project} {info['version']} packaging revision {info['pkgrel']} for Arch Linux x86_64.\n\n"
-        'Uses system Electron; the Electron runtime is not bundled. Install the pacman package directly, '
+        + runtime_note + 'Install the pacman package directly, '
         'or use the source / -bin recipes from the fansionia PKGBUILD repository.\n\n'
         'Build inputs and toolchain versions are recorded in build-info.json. '
         'Published checks include metadata, binary repackaging and the package-specific smoke tests.\n')

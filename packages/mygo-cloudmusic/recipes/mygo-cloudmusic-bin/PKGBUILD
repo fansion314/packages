@@ -1,0 +1,23 @@
+# Maintainer: fansion314 <https://github.com/fansion314>
+pkgname=mygo-cloudmusic-bin
+pkgver=@PKGVER@
+pkgrel=@PKGREL@
+_tag=@TAG@
+pkgdesc='MyGo CloudMusic native NetEase Music client with adjustable interface scale (prebuilt Arch package)'
+arch=('x86_64')
+url='https://github.com/@REPOSITORY@'
+license=('AGPL-3.0-only')
+depends=('glibc' 'gtk3' 'libsecret' 'libpulse' 'alsa-lib')
+optdepends=('gnome-keyring: store login credentials' 'libayatana-appindicator: system tray integration')
+provides=("mygo-cloudmusic=${pkgver}")
+conflicts=('mygo-cloudmusic' 'mygo-cloudmusic-git')
+options=('!strip')
+_package="mygo-cloudmusic-${pkgver}-${pkgrel}-x86_64.pkg.tar.zst"
+source=("${url}/releases/download/${_tag}/${_package}")
+noextract=("${_package}")
+sha256sums=('@SHA256@')
+
+package() {
+  bsdtar -xf "$srcdir/$_package" -C "$pkgdir" usr
+  mv "$pkgdir/usr/share/licenses/mygo-cloudmusic" "$pkgdir/usr/share/licenses/$pkgname"
+}

@@ -2,7 +2,7 @@ name: Release one application
 run-name: Release ${{ inputs.release_tag || github.ref_name }}
 on:
   push:
-    tags: ['bitwarden-v*', 'obsidian-v*', 'motrix-v*', 'deepseek-harness-v*']
+    tags: ['bitwarden-v*', 'obsidian-v*', 'motrix-v*', 'deepseek-harness-v*', 'mygo-cloudmusic-v*']
   workflow_dispatch:
     inputs:
       release_tag:

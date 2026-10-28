@@ -13,13 +13,15 @@ GitHub 源码与发布地址：**https://github.com/fansion314/packages**。
 | Motrix | `motrix-electron` | `motrix-electron-bin` | — |
 | DeepSeek Harness | `dsh-electron` | `dsh-electron-bin` | — |
 | Bitwarden | `bitwarden-electron` | `bitwarden-electron-bin` | — |
+| MyGo 云音乐 | `mygo-cloudmusic` | `mygo-cloudmusic-bin` | — |
 | Obsidian | `obsidian-electron` | `obsidian-electron-bin` | — |
 | Clash Momo | `clash-momo` | —（源码配方：`clash-momo`） | — |
 | Mihomomo | `mihomomo` | —（源码配方：`mihomomo`） | — |
 
 所有 DNR 后端包是互斥替代品。Arch 仓库还提供 DSH 需要的 `python-pptx`
 和签名公钥维护包 `fansionia-keyring`。Bitwarden/Obsidian 使用官方成品应用和
-系统 Electron，包内不重复附带 Electron。
+系统 Electron，包内不重复附带 Electron。MyGo 云音乐使用 Go 原生界面，
+仅通过可重放补丁增加设置中的界面缩放（75%–200%，立即生效并保存）。
 
 ## Arch Linux / CachyOS：直接用 pacman
 
@@ -62,6 +64,7 @@ Server = https://packages.fansionia.world/$arch
 sudo pacman -Syu fansionia-keyring
 sudo pacman -S dnr dnc pi-dnr etcher-dnr
 sudo pacman -S motrix-electron dsh-electron bitwarden-electron obsidian-electron
+sudo pacman -S mygo-cloudmusic
 sudo pacman -S clash-momo  # 自动安装 mihomomo 和系统 Electron
 ```
 
@@ -95,11 +98,12 @@ paru -Syu
 paru -S dnr-bin pi-dnr-bin etcher-dnr-bin
 paru -S motrix-electron-bin dsh-electron-bin
 paru -S bitwarden-electron-bin obsidian-electron-bin
+paru -S mygo-cloudmusic-bin  # 源码构建可选 mygo-cloudmusic
 paru -S clash-momo mihomomo
 ```
 
 可用 `paru -S fansionia/dnr-bin` 明确选择本配方仓库。保留 paru 的正常配方审阅。
-20 个应用配方还提供去掉 `-bin` 的变体：Motrix/DSH 从源码构建，
+应用配方还提供去掉 `-bin` 的变体：Motrix/DSH/MyGo 云音乐从源码构建，
 Bitwarden/Obsidian 的配方重打包官方成品。源码与 bin 变体是替代关系。
 
 ## macOS：用 Homebrew
@@ -158,13 +162,13 @@ CI 烟雾测试不代表手动 GUI 或物理 USB 设备已经验收。
 后续 agent 和维护者首先阅读 [AGENTS.md](AGENTS.md)，签名、部署、回滚和密钥
 续期见 [arch/README.md](arch/README.md)。
 
-- `packages/<id>/manifest.json`：四个内部项目的版本、打包号与固定源。
+- `packages/<id>/manifest.json`：内部项目的版本、打包号与固定源。
 - `packages/<id>/recipes/`、`patches/`、`overlay/`：配方与最小兼容改动。
 - `homebrew/`、`aur/`：生成器、测试、配方来源及同步记录。
 - `Formula/`、`Casks/`、`aur/packages/` 是生成结果，应修源模板后由 CI 更新。
-- DNR/Pi/Etcher 仍从各自源码仓库发布；四个内部项目用
+- DNR/Pi/Etcher 仍从各自源码仓库发布；内部项目用
   `<id>-v<version>-<pkgrel>` 标签在本仓库发布。完整历史导入点见 `imports.json`。
-- 旧 `homebrew-dnr`、`aur` 及四个内部项目的用户 fork 退为历史归档；新版维护统一在本仓库，旧 Release 仍用于历史下载。
+- 旧 `homebrew-dnr`、`aur` 及内部项目的用户 fork 退为历史归档；新版维护统一在本仓库，旧 Release 仍用于历史下载。
 
 本地允许的逻辑检查：
 

@@ -30,7 +30,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        package: [bitwarden, obsidian, motrix, deepseek-harness]
+        package: [bitwarden, obsidian, motrix, deepseek-harness, mygo-cloudmusic]
     uses: ./.github/workflows/build-package.yml
     with:
       package: ${{ matrix.package }}

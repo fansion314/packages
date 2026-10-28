@@ -1,0 +1,178 @@
+diff --git a/internal/app/settings.go b/internal/app/settings.go
+index 9b23b6f..a9f3439 100644
+--- a/internal/app/settings.go
++++ b/internal/app/settings.go
+@@ -2,6 +2,7 @@ package app
+ 
+ import (
+ 	"encoding/json"
++	"math"
+ 	"os"
+ 	"path/filepath"
+ 
+@@ -28,6 +29,8 @@ type settings struct {
+ 	Quality string `json:"quality"`
+ 	// Appearance is light, dark, or system to follow the system.
+ 	Appearance string `json:"appearance"`
++	// InterfaceScale is the content zoom, independent of the display DPI.
++	InterfaceScale float32 `json:"interfaceScale"`
+ 	// Smoke makes the progress bars comets trailing smoke as music plays,
+ 	// for a few percent of a core: the listener turns it on.
+ 	Smoke bool `json:"smoke"`
+@@ -68,7 +71,7 @@ type settings struct {
+ }
+ 
+ func defaultSettings() settings {
+-	return settings{NotchActivity: true, Quality: "exhigh", Appearance: "system", Volume: 0.8, Normalize: true, AppIcon: "dock-and-menubar", CacheMB: 2048, Captions: true}
++	return settings{NotchActivity: true, Quality: "exhigh", Appearance: "system", InterfaceScale: 1, Volume: 0.8, Normalize: true, AppIcon: "dock-and-menubar", CacheMB: 2048, Captions: true}
+ }
+ 
+ func settingsPath() (string, error) {
+@@ -125,6 +128,7 @@ func loadSettings() settings {
+ 		}
+ 		s.path = path
+ 	}
++	s.InterfaceScale = validInterfaceScale(s.InterfaceScale)
+ 	return s
+ }
+ 
+@@ -177,3 +181,19 @@ var cacheLimits = []struct {
+ 	{5120, "5 GB"},
+ 	{10240, "10 GB"},
+ }
++
++// validInterfaceScale keeps old settings and invalid values usable.
++func validInterfaceScale(scale float32) float32 {
++	if math.IsNaN(float64(scale)) || math.IsInf(float64(scale), 0) || scale < 0.75 || scale > 2 {
++		return 1
++	}
++	return scale
++}
++
++var interfaceScales = []struct {
++	value float32
++	label string
++}{
++	{0.75, "75%"}, {0.9, "90%"}, {1, "100%"}, {1.1, "110%"},
++	{1.25, "125%"}, {1.5, "150%"}, {1.75, "175%"}, {2, "200%"},
++}
+diff --git a/internal/app/ui_main.go b/internal/app/ui_main.go
+index 1b1f1af..7cb4ff5 100644
+--- a/internal/app/ui_main.go
++++ b/internal/app/ui_main.go
+@@ -13,6 +13,7 @@ import (
+ const sidebarWidth = 232
+ 
+ func (a *app) view(c *ui.Context) {
++	c.SetZoom(validInterfaceScale(a.settings.InterfaceScale))
+ 	t := *c.Theme()
+ 	a.pal = paletteFor(&t)
+ 	p := a.pal
+diff --git a/internal/app/ui_settings.go b/internal/app/ui_settings.go
+index 6c2b701..0a0cf20 100644
+--- a/internal/app/ui_settings.go
++++ b/internal/app/ui_settings.go
+@@ -50,6 +50,7 @@ func (a *app) changed() {
+ }
+ 
+ func (a *app) settingsView(c *ui.Context) {
++	c.SetZoom(validInterfaceScale(a.settings.InterfaceScale))
+ 	t := *c.Theme()
+ 	p := paletteFor(&t)
+ 	t.Accent, t.AccentText = p.accent, p.onAccent
+@@ -186,6 +187,24 @@ func (a *app) settingsView(c *ui.Context) {
+ 		})
+ 
+ 		group("外观", func() {
++			row("界面缩放", "调整文字和控件的大小，立即生效；100% 跟随系统显示比例", func() {
++				labels := make([]string, len(interfaceScales))
++				chosen := "100%"
++				for i, scale := range interfaceScales {
++					labels[i] = scale.label
++					if scale.value == validInterfaceScale(s.InterfaceScale) {
++						chosen = scale.label
++					}
++				}
++				if ui.Select(c.Key("interface-scale"), &chosen, labels).Label("缩放比例").Width(110).Changed() {
++					for _, scale := range interfaceScales {
++						if scale.label == chosen {
++							s.InterfaceScale = scale.value
++						}
++					}
++					a.changed()
++				}
++			})
+ 			row("外观", "", func() {
+ 				modes := []string{"system", "light", "dark"}
+ 				i := 0
+diff --git a/internal/app/interface_scale_test.go b/internal/app/interface_scale_test.go
+new file mode 100644
+index 0000000..57fa9fe
+--- /dev/null
++++ b/internal/app/interface_scale_test.go
+@@ -0,0 +1,65 @@
++package app
++
++import (
++	"encoding/json"
++	"math"
++	"os"
++	"path/filepath"
++	"testing"
++
++	"github.com/egoist/mygo/ui"
++)
++
++// Selecting a scale zooms both views and persists the choice for the next launch.
++func TestInterfaceScaleSelection(t *testing.T) {
++	a := newTestApp()
++	a.settings = defaultSettings()
++	a.settings.path = filepath.Join(t.TempDir(), "settings.json")
++	var settingsZoom float32
++	tt := ui.NewTester(func(c *ui.Context) {
++		a.settingsView(c)
++		settingsZoom = c.Zoom()
++	}, 560, 2400)
++	tt.Frame()
++	if err := tt.Click("缩放比例"); err != nil {
++		t.Fatal(err)
++	}
++	tt.Key(0, ui.KeyEnd)
++	tt.Key(0, ui.KeyEnter)
++	tt.Frame()
++	if a.settings.InterfaceScale != 2 || settingsZoom != 2 {
++		t.Fatalf("selection %v, settings zoom %v", a.settings.InterfaceScale, settingsZoom)
++	}
++	b, err := os.ReadFile(a.settings.path)
++	if err != nil {
++		t.Fatal(err)
++	}
++	var restored settings
++	if err := json.Unmarshal(b, &restored); err != nil {
++		t.Fatal(err)
++	}
++	a.settings = restored
++	var mainZoom float32
++	main := ui.NewTester(func(c *ui.Context) {
++		a.view(c)
++		mainZoom = c.Zoom()
++	}, 1180, 780)
++	main.Frame()
++	if mainZoom != 2 {
++		t.Fatalf("restored main zoom %v", mainZoom)
++	}
++}
++
++// Old settings and corrupt scale values must not make the interface inaccessible.
++func TestInterfaceScaleValidation(t *testing.T) {
++	for _, scale := range []float32{0, -1, 0.5, 3, float32(math.NaN()), float32(math.Inf(1))} {
++		if got := validInterfaceScale(scale); got != 1 {
++			t.Errorf("invalid %v became %v", scale, got)
++		}
++	}
++	for _, scale := range []float32{0.75, 1, 1.25, 2} {
++		if got := validInterfaceScale(scale); got != scale {
++			t.Errorf("valid %v became %v", scale, got)
++		}
++	}
++}

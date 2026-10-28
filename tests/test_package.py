@@ -22,7 +22,7 @@ class PackageTests(unittest.TestCase):
 
     def test_source_recipes_pin_upstream_and_packaging_inputs(self):
         with tempfile.TemporaryDirectory() as directory:
-            for name in ['motrix', 'deepseek-harness']:
+            for name in ['motrix', 'deepseek-harness', 'mygo-cloudmusic']:
                 package.recipes(name, directory, 'a'*64)
                 info = package.manifest(name)
                 recipe = (Path(directory)/info['package']/'PKGBUILD').read_text()
@@ -47,6 +47,22 @@ class PackageTests(unittest.TestCase):
             for name in package.IDS:
                 with self.assertRaises(ValueError):
                     package.recipes(name, directory, 'SKIP')
+
+    def test_native_app_version_comes_from_mygo_config_not_website(self):
+        import json
+        with tempfile.TemporaryDirectory() as directory:
+            source = Path(directory)
+            (source/'package.json').write_text('{"private":true}')
+            (source/'mygo.json').write_text(json.dumps({'version': '0.1.20'}))
+            with patch.object(package, 'run', side_effect=[package.manifest('mygo-cloudmusic')['upstream']['commit'], '']), \
+                 patch.object(package.subprocess, 'run'):
+                package.apply('mygo-cloudmusic', source)
+            self.assertTrue((source/'aur/mygo-cloudmusic/PKGBUILD').is_file())
+            (source/'mygo.json').write_text('{"version":"0.0.0"}')
+            with patch.object(package, 'run', side_effect=[package.manifest('mygo-cloudmusic')['upstream']['commit'], '']), \
+                 patch.object(package.subprocess, 'run'):
+                with self.assertRaisesRegex(ValueError, 'application version'):
+                    package.apply('mygo-cloudmusic', source)
 
     def test_wrong_upstream_and_dirty_checkout_fail_before_patching(self):
         for results in [['bad'], [package.manifest('motrix')['upstream']['commit'], ' M file']]:

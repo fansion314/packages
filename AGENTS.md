@@ -20,6 +20,7 @@
 | dnr / dnc | `../dnr`，`fansion314/dnr` | `v<V>`；`release-arch.yml`、`release-macos.yml` | 三种渠道 |
 | Pi / Pi-dnr | `../pi`，`fansion314/pi` | `pi-dnr-v<V>-<R>`；`release-dnr.yml`、`release-dnr-macos.yml` | 三种渠道 |
 | Etcher | `../etcher`，`fansion314/etcher` | `v<V>-dnr.<R>`；`release-dnr-arch.yml`、`release-dnr-macos.yml` | 三种渠道 |
+| MyGo 云音乐 | `packages/mygo-cloudmusic/` | `mygo-cloudmusic-v<V>-<R>`；`release.yml` | paru + pacman |
 | Motrix | `packages/motrix/` | `motrix-v<V>-<R>`；`release.yml` | paru + pacman |
 | DeepSeek Harness / DSH | `packages/deepseek-harness/` | `deepseek-harness-v<V>-<R>`；`release.yml` | paru + pacman |
 | Bitwarden | `packages/bitwarden/` | `bitwarden-v<V>-<R>`；`release.yml` | paru + pacman |
@@ -30,8 +31,8 @@
 
 - Clash Momo 与 Mihomomo 共用仓库，按各自标签族选择版本；先发布内核，再发布依赖该签名内核的客户端。上游来源记录在各分支 `UPSTREAM.json`，后续以补丁同步并追加提交。
 - 版本、打包号和准确上游提交以 `packages/<id>/manifest.json`、支持包 PKGBUILD 或外部源码仓库为准，不能依赖本文件中的历史版本。
-- 内部四项目的源码与 bin 配方共用一个 Release。Bitwarden/Obsidian 使用官方 Linux 成品和系统 Electron，不合并官方源码、不重复携带 Electron；必须验证原生模块、bootstrap、应用布局及 ABI。
-- Motrix/DSH 从 manifest 固定的准确上游提交构建。fork 修改存为有序 `patches/series`；`overlay/` 仅放新增文件，不能覆盖现有上游文件。补丁冲突必须审阅并修复，禁止失败后静默跳过。
+- 内部项目的源码与 bin 配方共用一个 Release。Bitwarden/Obsidian 使用官方 Linux 成品和系统 Electron，不合并官方源码、不重复携带 Electron；必须验证原生模块、bootstrap、应用布局及 ABI。
+- Motrix/DSH/MyGo 云音乐从 manifest 固定的准确上游提交构建。fork 修改存为有序 `patches/series`；`overlay/` 仅放新增文件，不能覆盖现有上游文件。补丁冲突必须审阅并修复，禁止失败后静默跳过。
 - DNR/Pi/Etcher 进入后读各自 AGENTS.md 和发布文档。DNR 上游同步依 `docs/UPSTREAM.md`，保留可重放补丁和严格 CEF ABI/hash 检查；不要修改用户上游 mirror。CEF 默认跟随已验证稳定 API，显式新 API 需独立 CI 验证。
 - Pi 保留 DeepSeek/Azure 适配、DNR ESM 启动器、原生 groups、资源、worker；生成文件从生成器更新。Pi 维护提交和 DNR 标签同步 GitHub `github` 与 Gitea `origin`；DNR/Etcher 按其现有镜像政策，不把 `origin` 假设成 GitHub。
 - Pi 仅保留 `release-dnr.yml`、`release-dnr-macos.yml`、`backfill-signatures.yml`；合并上游后不得恢复其 npm/Nix/环境守护等工作流。其他项目也不启动上游 npm、PyPI、Snap 或官方多平台发布。
@@ -51,7 +52,7 @@
 2. 更新 manifest 或外部源仓库、必要补丁/锁文件/配方/资源与版本。新应用版本通常 pkgrel=1，同版本变更递增 pkgrel；macOS package_revision 与 pkgrel 分开。
 3. 源码/生成文件从真实源更新。依赖安装先禁生命周期，避免本地编译。Pi 可用 `PI_SKIP_BUILD_CHECKS=1 npm run check`，远端发布仍须完整检查。检查钩子，不静默禁钩子或伪造通过。
 4. 完成本地适用检查，提交推送 main，等待对应 SHA 的 `ci.yml` 门禁。CI 失败读具体 job 日志；产品相关失败须修复，不能忽略或弱化测试。无关平台失败也须说明影响。
-5. CI 通过后创建并推送准确发布标签。内部四项目亦可 `gh workflow run release.yml -R fansion314/packages --ref main -f release_tag=<tag>`；支持包用 `release-support.yml`。一次 push 超过 3 个标签可能不触发 GitHub 工作流，需逐个推送或用准确既有标签 dispatch，不能重新打标签。
+5. CI 通过后创建并推送准确发布标签。内部项目亦可 `gh workflow run release.yml -R fansion314/packages --ref main -f release_tag=<tag>`；支持包用 `release-support.yml`。一次 push 超过 3 个标签可能不触发 GitHub 工作流，需逐个推送或用准确既有标签 dispatch，不能重新打标签。
 6. 等待构建、烟雾测试、签名、公开 publish 全部完成；核对 tag SHA、实际资产 SHA-256、`.sha256` 和存在的 GitHub asset digest。公开同版本资产不得覆盖；重试已完成的资产必须复用准确原字节。
 7. 触发并跟进下游：`gh workflow run downstream.yml -R fansion314/packages --ref main`；可用 `-f project=<id> -f platform=arch`（或 macos）缩小同步。主动发布不以“等定时任务”为收尾。
 8. 检查公开 Release、远端配方版本、pacman `/status.json` 和正式域名安装 CI。工作区干净时再快进同步 CI 自动提交，避免与生成器抢提交。只报告完成证据，触发/运行中不是发布成功；GUI/物理设备未验收须明确。
@@ -67,7 +68,7 @@
 
 ## pacman、签名和 Cloudflare
 
-- 公共入口 `https://packages.fansionia.world`；仓库名 `fansionia`，x86_64（同时接收 any）。14 个包由 `arch/sources.json` 显式列出；直接索引准确 GitHub Release `.pkg.tar.zst`，不重新打包、不复制应用到 Pages。
+- 公共入口 `https://packages.fansionia.world`；仓库名 `fansionia`，x86_64（同时接收 any）。15 个包由 `arch/sources.json` 显式列出；直接索引准确 GitHub Release `.pkg.tar.zst`，不重新打包、不复制应用到 Pages。
 - 主公钥指纹 `338AEAB64ECF2EF69AAF3EEFDF31748072E5B972`，`arch/keys/` 仅公开材料。每个发布仓库各有签名子密钥；校验实际 `.PKGINFO`、摘要、签名和预期来源子密钥，不得只检查文件存在。
 - Actions secrets：`ARCH_SIGNING_PRIVATE_KEY`、`ARCH_SIGNING_PASSPHRASE`、`ARCH_SIGNING_KEY_ID`；只上传所属签名子密钥，主认证私钥绝不上传。`backfill-signatures.yml` 只为验证过的旧公开原字节补 `.sig`，不改包。
 - 离线恢复资料在维护机 `~/.local/share/fansionia-packages/signing/`，恢复密码位于登录 Keychain 的 service `world.fansionia.packages.signing` / account `primary-key-recovery`。不读出到日志，不在清理时删除。子密钥到期前 45 天拒绝发布；续期/吊销/轮换按 `arch/README.md`。
