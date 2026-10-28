@@ -98,7 +98,8 @@
         "asset_suffix": "-aur.tar.gz"
       },
       "packages": {
-        "clash-momo": "aur/clash-momo"
+        "clash-momo": "aur/clash-momo",
+        "clash-momo-bin": "aur/clash-momo-bin"
       }
     },
     {
@@ -109,7 +110,8 @@
         "asset_suffix": "-aur.tar.gz"
       },
       "packages": {
-        "mihomomo": "aur/mihomomo"
+        "mihomomo": "aur/mihomomo",
+        "mihomomo-bin": "aur/mihomomo-bin"
       }
     }
   ],
