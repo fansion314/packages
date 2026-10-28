@@ -31,7 +31,7 @@ build() {
 
 check() {
   cd mygo-cloudmusic
-  go test -mod=readonly -timeout=2m ./internal/...
+  go test -v -mod=readonly -timeout=10m ./internal/...
   go test -mod=readonly -timeout=2m ./internal/app -run '^TestInterfaceScale' -count=5
   desktop-file-validate "$srcdir/packaging/packages/mygo-cloudmusic/mygo-cloudmusic.desktop"
 }

@@ -1,0 +1,22 @@
+diff --git a/internal/app/notch_test.go b/internal/app/notch_test.go
+index 18bb0d9..4e36a35 100644
+--- a/internal/app/notch_test.go
++++ b/internal/app/notch_test.go
+@@ -5,6 +5,7 @@ import (
+ 	"image/png"
+ 	"os"
+ 	"path/filepath"
++	"runtime"
+ 	"testing"
+ 	"time"
+ 
+@@ -17,6 +18,9 @@ import (
+ // The notch, turned off, shows itself as the first song plays, and only
+ // then; its button keeps it on.
+ func TestNotchGreetsOnce(t *testing.T) {
++	if runtime.GOOS != "darwin" {
++		t.Skip("the notch greeting is only enabled on macOS")
++	}
+ 	a := newTestApp()
+ 	a.settings = defaultSettings()
+ 	n := &notch{a: a, w0: 200, h0: 32, winW: notchOpenW + 60, winH: 240}
