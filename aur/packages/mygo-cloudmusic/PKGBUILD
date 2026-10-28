@@ -1,18 +1,18 @@
 # Maintainer: fansion314 <https://github.com/fansion314>
 pkgname=mygo-cloudmusic
 pkgver=0.1.20
-pkgrel=1
-_tag=mygo-cloudmusic-v0.1.20-1
+pkgrel=2
+_tag=mygo-cloudmusic-v0.1.20-2
 pkgdesc='MyGo CloudMusic native NetEase Music client with adjustable interface scale'
 arch=('x86_64')
 url='https://github.com/fansion314/packages'
 license=('AGPL-3.0-only')
-depends=('glibc' 'gtk3' 'libsecret' 'libpulse' 'alsa-lib')
+depends=('glibc' 'gtk3' 'libsecret' 'libpulse' 'alsa-lib' 'hicolor-icon-theme')
 optdepends=('gnome-keyring: store login credentials' 'libayatana-appindicator: system tray integration')
-makedepends=('git' 'go>=1.27.3' 'python' 'desktop-file-utils')
+makedepends=('git' 'go>=1.27.3' 'python' 'desktop-file-utils' 'imagemagick' 'kiconthemes' 'xorg-xprop' 'xdotool')
 conflicts=('mygo-cloudmusic-bin' 'mygo-cloudmusic-git')
 options=('!lto' '!debug' '!strip')
-_packaging_ref='tag=mygo-cloudmusic-v0.1.20-1'
+_packaging_ref='tag=mygo-cloudmusic-v0.1.20-2'
 source=("mygo-cloudmusic::git+https://github.com/egoist/mygo-cloudmusic.git#commit=8d7386f8a42032d07ece3be330241daf5c9442a0"
         "packaging::git+https://github.com/fansion314/packages.git#${_packaging_ref}")
 sha256sums=('SKIP' 'SKIP')
@@ -27,6 +27,10 @@ build() {
   CGO_ENABLED=0 go build -mod=readonly -trimpath -tags mygo_noinspector \
     -ldflags "-s -w -X 'github.com/egoist/mygo.packageName=MyGo 云音乐' -X github.com/egoist/mygo.packageVersion=$pkgver -X github.com/egoist/mygo.packageIdentifier=dev.egoist.cloudmusic -X github.com/egoist/mygo.production=1" \
     -o mygo-cloudmusic .
+  mkdir -p build/arch-icons
+  for size in 16 22 24 32 48 64 128 256 512; do
+    magick resources/icon.png -resize "${size}x${size}" "build/arch-icons/${size}.png"
+  done
 }
 
 check() {
@@ -39,6 +43,9 @@ check() {
 package() {
   install -Dm755 mygo-cloudmusic/mygo-cloudmusic "$pkgdir/usr/bin/mygo-cloudmusic"
   install -Dm644 "$srcdir/packaging/packages/mygo-cloudmusic/mygo-cloudmusic.desktop" "$pkgdir/usr/share/applications/dev.egoist.cloudmusic.desktop"
-  install -Dm644 mygo-cloudmusic/resources/icon.png "$pkgdir/usr/share/icons/hicolor/1024x1024/apps/mygo-cloudmusic.png"
+  for size in 16 22 24 32 48 64 128 256 512; do
+    install -Dm644 "mygo-cloudmusic/build/arch-icons/${size}.png" "$pkgdir/usr/share/icons/hicolor/${size}x${size}/apps/mygo-cloudmusic.png"
+  done
+  install -Dm644 mygo-cloudmusic/build/arch-icons/512.png "$pkgdir/usr/share/pixmaps/mygo-cloudmusic.png"
   install -Dm644 mygo-cloudmusic/LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
 }
