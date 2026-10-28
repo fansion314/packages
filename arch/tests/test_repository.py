@@ -45,6 +45,20 @@ class RepositoryTests(unittest.TestCase):
         self.assertEqual([(p['name'], p['tag']) for p in selected],
                          [('clash-momo', 'clash-momo-v0.2.0-1'), ('mihomomo', 'mihomomo-v0.1.0-1')])
 
+    def test_version_only_momo_tag_is_first_package_revision(self):
+        settings = json.loads((ROOT/'sources.json').read_text())
+        project = next(p for p in settings['projects'] if p['id'] == 'clash-momo')
+        tag = 'clash-momo-v0.1.1'
+        filename = 'clash-momo-0.1.1-1-x86_64.pkg.tar.zst'
+        url = f'https://github.com/fansion314/momo/releases/download/{tag}/{filename}'
+        release = {'tag_name': tag, 'draft': False, 'assets': [
+            {'name': filename, 'digest': 'sha256:'+'a'*64, 'browser_download_url': url},
+            {'name': filename+'.sig', 'digest': 'sha256:'+'b'*64,
+             'browser_download_url': url+'.sig'}]}
+        package = repository.select_release(project, [release])[0]
+        self.assertEqual(package['tag'], tag)
+        self.assertEqual(package['version'], '0.1.1-1')
+
     def test_incomplete_new_release_does_not_silently_fall_back(self):
         with self.assertRaisesRegex(ValueError, 'completely signed'):
             repository.select_release(self.project, [self.release(), self.release('2.0.0', False)])

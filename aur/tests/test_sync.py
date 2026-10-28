@@ -108,3 +108,32 @@ class SharedMomoReleaseTests(unittest.TestCase):
             for project in projects:
                 self.assertEqual(set(selected[project['id']][1]),
                                  {f'aur/{project["id"]}/PKGBUILD'})
+
+    def test_version_only_momo_tag_is_first_package_revision(self):
+        sources = json.loads((Path(__file__).parents[1]/'sources.json').read_text())
+        project = next(p for p in sources['projects'] if p['id'] == 'clash-momo')
+        with tempfile.TemporaryDirectory() as temporary:
+            tag = 'clash-momo-v0.1.1'
+            archive = Path(temporary)/f'{tag}.tar.gz'
+            with tarfile.open(archive, 'w:gz') as bundle:
+                content = b'pkgver=0.1.1\n'
+                info = tarfile.TarInfo('aur/clash-momo/PKGBUILD')
+                info.size = len(content)
+                bundle.addfile(info, io.BytesIO(content))
+            url = f'https://github.com/fansion314/momo/releases/download/{tag}/clash-momo-aur.tar.gz'
+
+            class FakeGitHub:
+                def releases(self, repository):
+                    assert repository == 'fansion314/momo'
+                    return [{'tag_name': tag, 'draft': False, 'assets': [{
+                        'name': 'clash-momo-aur.tar.gz', 'browser_download_url': url,
+                        'digest': 'sha256:'+hashlib.sha256(archive.read_bytes()).hexdigest()}]}]
+
+                def download(self, requested, digest):
+                    assert requested == url
+                    assert hashlib.sha256(archive.read_bytes()).hexdigest() == digest
+                    return archive
+
+            reference, files = sync.recipe_files(project, FakeGitHub())
+        self.assertEqual(reference, tag)
+        self.assertEqual(set(files), {'aur/clash-momo/PKGBUILD'})

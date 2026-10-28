@@ -111,7 +111,7 @@ def release_key(settings, tag):
         raise ValueError('Unexpected release tag')
     major, minor, patch, stage, number, revision = match.groups()
     return (int(major), int(minor), int(patch),
-            {'alpha': 0, 'beta': 1, 'rc': 2, None: 3}[stage], int(number or 0), int(revision))
+            {'alpha': 0, 'beta': 1, 'rc': 2, None: 3}[stage], int(number or 0), int(revision or 1))
 
 
 def recipe_files(project, github):

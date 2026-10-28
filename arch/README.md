@@ -4,6 +4,8 @@
 package identities. Only already-built `.pkg.tar.zst` assets are indexed; the
 repository job never rebuilds or repackages applications. Runtime dependencies
 absent from Arch official repositories are maintained explicitly under `support/`.
+For `clash-momo`, a version-only tag (`clash-momo-vX.Y.Z`) denotes package
+revision 1; a suffixed tag (`clash-momo-vX.Y.Z-N`) pins revision N.
 
 ## Publishing
 
