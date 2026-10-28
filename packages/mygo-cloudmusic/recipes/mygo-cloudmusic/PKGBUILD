@@ -11,7 +11,7 @@ depends=('glibc' 'gtk3' 'libsecret' 'libpulse' 'alsa-lib')
 optdepends=('gnome-keyring: store login credentials' 'libayatana-appindicator: system tray integration')
 makedepends=('git' 'go>=1.27.3' 'python' 'desktop-file-utils')
 conflicts=('mygo-cloudmusic-bin' 'mygo-cloudmusic-git')
-options=('!lto')
+options=('!lto' '!debug' '!strip')
 _packaging_ref='@PACKAGING_REF@'
 source=("mygo-cloudmusic::git+https://github.com/egoist/mygo-cloudmusic.git#commit=@UPSTREAM_COMMIT@"
         "packaging::git+https://github.com/@REPOSITORY@.git#${_packaging_ref}")
