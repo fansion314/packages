@@ -14,7 +14,7 @@ spec.loader.exec_module(validate)
 
 
 class ValidationScopeTests(unittest.TestCase):
-    def run_validation(self, *args):
+    def run_validation(self, *args, missing=()):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             projects = [
@@ -24,6 +24,8 @@ class ValidationScopeTests(unittest.TestCase):
             (root/'sources.json').write_text(json.dumps({'projects': projects}))
             for project in projects:
                 for name in project['packages']:
+                    if name in missing:
+                        continue
                     path = root/'packages'/name
                     path.mkdir(parents=True)
                     (path/'PKGBUILD').touch()
@@ -54,6 +56,16 @@ class ValidationScopeTests(unittest.TestCase):
         self.assertEqual(metadata, ['dnc-bin', 'dnr', 'dnr-bin', 'other-bin'])
         self.assertEqual(binaries, ['dnc-bin', 'dnr-bin', 'other-bin'])
         self.assertEqual(smoke, set(binaries))
+
+    def test_project_allows_missing_unrelated_recipes(self):
+        metadata, _, _ = self.run_validation('--project', 'dnr', missing=('other-bin',))
+        self.assertEqual(metadata, ['dnc-bin', 'dnr', 'dnr-bin'])
+
+    def test_missing_selected_or_global_recipe_is_rejected(self):
+        with self.assertRaisesRegex(ValueError, 'Package inventory'):
+            self.run_validation('--project', 'dnr', missing=('dnr-bin',))
+        with self.assertRaisesRegex(ValueError, 'Package inventory'):
+            self.run_validation(missing=('other-bin',))
 
     def test_unknown_project_is_rejected(self):
         with self.assertRaises(SystemExit) as error:

@@ -10,6 +10,21 @@
         "mihomomo.install": "b2eed56f6feafc8291adc22059ce37f27bb14464ae5b5bafa014acd85c8e02e6"
       },
       "assets": []
+    },
+    "mihomomo-bin": {
+      "version": "0:0.1.0-3",
+      "files": {
+        ".SRCINFO": "d38833461f18c3a57af7e32c0009ecb8361d5fe94aafe47d396d4cb80fa0d1ea",
+        "PKGBUILD": "71019cbb9ce34bbe4c0cac68de86dcd8d815e37b68b1fda49c941e485e43216f",
+        "mihomomo.install": "b2eed56f6feafc8291adc22059ce37f27bb14464ae5b5bafa014acd85c8e02e6"
+      },
+      "assets": [
+        {
+          "url": "https://github.com/fansion314/momo/releases/download/mihomomo-v0.1.0-3/mihomomo-0.1.0-3-x86_64.pkg.tar.zst",
+          "sha256": "7721f9a2d90d48c706ee1b37cf2870bf82b92fb6efce7ad962469b9de7ddc5ce",
+          "size": 24445677
+        }
+      ]
     }
   }
 }

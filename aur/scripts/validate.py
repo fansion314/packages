@@ -108,9 +108,9 @@ def main():
         parser.error('Run as an unprivileged user in Arch Linux x86_64')
     configured = {name for p in projects for name in p['packages']}
     actual = {p.name for p in (ROOT/'packages').iterdir() if (p/'PKGBUILD').exists()}
-    if configured != actual:
-        raise ValueError('Package inventory differs from sources.json')
     selected = {name for p in projects if not args.project or p['id'] == args.project for name in p['packages']}
+    if (not args.project and configured != actual) or (args.project and not selected <= actual):
+        raise ValueError('Package inventory differs from sources.json')
     changed_file = ROOT/'.cache/changed.json'
     changed = set(json.loads(changed_file.read_text())) if args.changed_only else configured
     packages = {}
