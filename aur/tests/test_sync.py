@@ -64,6 +64,12 @@ class MultiPackageReleaseTests(unittest.TestCase):
         values = ['motrix-v2.0.0-beta.9-2', 'motrix-v2.0.0-beta.10-1', 'motrix-v2.0.0-1', 'motrix-v2.0.0-2', 'motrix-v2.0.1-alpha.1-1']
         self.assertEqual(sorted(reversed(values), key=lambda t: sync.release_key(self.settings, t)), values)
 
+    def test_mygo_release_pattern_matches_the_sort_key_contract(self):
+        sources = json.loads((Path(__file__).parents[1]/'sources.json').read_text())
+        project = next(p for p in sources['projects'] if p['id'] == 'mygo-cloudmusic')
+        self.assertEqual(sync.release_key(project['release_bundle'], 'mygo-cloudmusic-v0.1.20-1'),
+                         (0, 1, 20, 3, 0, 1))
+
     def test_other_packages_are_not_candidates(self):
         with self.assertRaises(ValueError):
             sync.release_key(self.settings, 'obsidian-v2.0.0-1')
