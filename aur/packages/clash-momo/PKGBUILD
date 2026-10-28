@@ -2,14 +2,14 @@ export LANG=C.UTF-8 LC_ALL=C.UTF-8
 
 pkgname=clash-momo
 pkgver=0.1.2
-pkgrel=1
+pkgrel=2
 pkgdesc='Desktop client for mihomomo'
 arch=('x86_64')
 url='https://github.com/fansion314/momo'
 license=('GPL-3.0-only')
 depends=('electron' 'mihomomo>=0.1.0' 'gtk3' 'libnotify' 'libsecret' 'xdg-utils' 'wl-clipboard' 'polkit')
 makedepends=('git' 'nodejs' 'pnpm' 'unzip')
-source=("git+https://github.com/fansion314/momo.git#commit=715be32e1bf640845a19deb332d1c68b53585ac8" 'clash-momo' 'clash-momo.desktop')
+source=("git+https://github.com/fansion314/momo.git#commit=08eecaafb471ead12a38b4560f069a7e2024d194" 'clash-momo' 'clash-momo.desktop')
 sha256sums=('SKIP' '4ad8796991a21e5008570fa0be46f981fa36e4068f4e0c017899c7a9817dfc6f' '3f54e2bb92469c094252c2ebd7b0c587218d8333b4cfc22c0328b869a94799d8')
 options=('!strip' '!debug')
 
