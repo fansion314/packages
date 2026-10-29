@@ -289,6 +289,12 @@
       "size": 11705,
       "tag": "pacman-snapshot-6ca0959f1faa040481929b0520086310"
     },
+    "https://cnb.cool/fansionia/packages/-/releases/download/snapshot-d985a1cace2c7a1c754aa9bf5ea950ad/manifest.json": {
+      "filename": "manifest.json",
+      "sha256": "f204f74b976925033f0cd3d81bc0c5f4042488974abfe43688e37a154b17016d",
+      "size": 16387,
+      "tag": "snapshot-d985a1cace2c7a1c754aa9bf5ea950ad"
+    },
     "https://cnb.cool/fansionia/packages/-/releases/download/snapshot-de0a4acc419728e406c9a735c16a51d9/fansionia.db": {
       "filename": "fansionia.db",
       "sha256": "2d2ad4e5ccadd47bdfde9f0c3af2ffe0d44556b440ef2850747b6ef061a139f0",
@@ -342,6 +348,24 @@
       "sha256": "82cac8d6aebf690cfebd57846c407c37b1d1015c5d957a8faa991bf43188dfc5",
       "size": 11705,
       "tag": "snapshot-de0a4acc419728e406c9a735c16a51d9"
+    },
+    "https://cnb.cool/fansionia/packages/-/releases/download/upstream-denial-0ffcee1f451c84f388f333e92b8fcd8b/denial-0.5.1-1-x86_64.pkg.tar.zst": {
+      "filename": "denial-0.5.1-1-x86_64.pkg.tar.zst",
+      "sha256": "a2d32523a9c162e255523ad5dd2d0f7a11ae3f668aaec48e801443fca8905ae1",
+      "size": 48962797,
+      "tag": "upstream-denial-0ffcee1f451c84f388f333e92b8fcd8b"
+    },
+    "https://cnb.cool/fansionia/packages/-/releases/download/upstream-denial-0ffcee1f451c84f388f333e92b8fcd8b/denial-0.5.1-1-x86_64.pkg.tar.zst.sig": {
+      "filename": "denial-0.5.1-1-x86_64.pkg.tar.zst.sig",
+      "sha256": "b8e22760df0cf0cece37e59735b7c3c468d115aa67e268c038a5450e3bb9ba4c",
+      "size": 119,
+      "tag": "upstream-denial-0ffcee1f451c84f388f333e92b8fcd8b"
+    },
+    "https://cnb.cool/fansionia/packages/-/releases/download/upstream-denial-36eb22a06d6a3a4fe4db2df79e3e715e/denial-flutter-engine-1%3A0.5.1-1-x86_64.pkg.tar.zst": {
+      "filename": "denial-flutter-engine-1:0.5.1-1-x86_64.pkg.tar.zst",
+      "sha256": "e2a317f852d493aa8d62e33eaf5825bf7e8c0391f2a9b32e6b1c46abb09d9ac7",
+      "size": 6454745,
+      "tag": "upstream-denial-36eb22a06d6a3a4fe4db2df79e3e715e"
     }
   },
   "pending": "d985a1cace2c7a1c754aa9bf5ea950ad",
