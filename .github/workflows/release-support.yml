@@ -52,6 +52,7 @@ jobs:
         env:
           PROJECT: ${{ steps.resolve.outputs.project }}
         run: |
+          pacman-key --init
           pacman -U --noconfirm dist/support/*.pkg.tar.zst
           if [[ $PROJECT == python-pptx ]]; then
             python -c 'from pptx import Presentation; import io; p=Presentation(); p.slides.add_slide(p.slide_layouts[6]); b=io.BytesIO(); p.save(b); b.seek(0); assert len(Presentation(b).slides)==1'
