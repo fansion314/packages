@@ -702,14 +702,14 @@
           "title": "denial 0.5.1-1 \u00b7 denial"
         },
         "/x86_64/denial-flutter-engine-1:0.5.1-1-x86_64.pkg.tar.zst": {
-          "filename": "denial-flutter-engine-1:0.5.1-1-x86_64.pkg.tar.zst",
+          "filename": "denial-flutter-engine-1_0.5.1-1-x86_64.pkg.tar.zst",
           "sha256": "e2a317f852d493aa8d62e33eaf5825bf7e8c0391f2a9b32e6b1c46abb09d9ac7",
           "source": "https://denialwm.github.io/denial/x86_64/denial-flutter-engine-1%3A0.5.1-1-x86_64.pkg.tar.zst",
           "tag": "upstream-denial-36eb22a06d6a3a4fe4db2df79e3e715e",
           "title": "denial 1:0.5.1-1 \u00b7 denial-flutter-engine"
         },
         "/x86_64/denial-flutter-engine-1:0.5.1-1-x86_64.pkg.tar.zst.sig": {
-          "filename": "denial-flutter-engine-1:0.5.1-1-x86_64.pkg.tar.zst.sig",
+          "filename": "denial-flutter-engine-1_0.5.1-1-x86_64.pkg.tar.zst.sig",
           "sha256": "04e3d647666bc74cef383a80536a7e3d11ceaec83889ca91f7253c6f8b29eb28",
           "source": "https://denialwm.github.io/denial/x86_64/denial-flutter-engine-1%3A0.5.1-1-x86_64.pkg.tar.zst.sig",
           "tag": "upstream-denial-36eb22a06d6a3a4fe4db2df79e3e715e",
