@@ -1,5 +1,5 @@
 {
-  "cleanup_pending": false,
+  "cleanup_pending": true,
   "keys": {
     "/keys/fansionia.asc": {
       "filename": "fansionia.asc",
@@ -336,7 +336,7 @@
       "tag": "pacman-snapshot-f198f63ea44a1b3b0e46b6e001958dfc"
     }
   },
-  "pending": "6ca0959f1faa040481929b0520086310",
+  "pending": "",
   "repository": "fansionia/packages",
   "schema": 1,
   "snapshots": {
@@ -802,6 +802,7 @@
     }
   },
   "successful": [
-    "f198f63ea44a1b3b0e46b6e001958dfc"
+    "f198f63ea44a1b3b0e46b6e001958dfc",
+    "6ca0959f1faa040481929b0520086310"
   ]
 }
