@@ -56,9 +56,12 @@ does not proxy downloads or silently fall back to GitHub.
 explicitly setting attachment retention to `ttl=0` (permanent) at both steps.
 `CNB_MIRROR_TOKEN` is an Actions secret limited to `fansionia/packages` with
 `repo-release:rw`. CNB's read-only deployment tokens cannot upload attachments.
-Package releases are identified by a hash of the source repository and tag;
-packages shared by multiple snapshots are stored once. Database releases use
-the snapshot ID, and public-key bundles use their content hash. Existing
+New package releases use the upstream tag, prefixed with the project ID when
+the upstream tag contains only a version (for example `dnr-v0.5.6`). Readable
+titles list the project, version and package names. Already-uploaded releases
+keep their original tags and URLs; title updates never reupload attachments.
+Packages shared by multiple snapshots are stored once. Database releases use
+`snapshot-<ID>`, and public-key bundles use `keys-<content hash>`. Existing
 attachments are never overwritten: retries require identical size and SHA-256.
 Every referenced attachment is downloaded anonymously and hashed in full,
 including on retries. Source package identity and signatures are checked by the

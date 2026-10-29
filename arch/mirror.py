@@ -63,18 +63,21 @@ class Client:
         except (OSError, ValueError):
             raise RuntimeError(f'CNB Release API {method} failed') from None
 
-    def release(self, tag, create=False):
+    def release(self, tag, create=False, title=None):
         path = f'/{self.repository}/-/releases'
         result = self.request('GET', path+'/tags/'+quote(tag), missing=True)
         if result is None and create:
             result = self.request('POST', path, {'tag_name': tag, 'target_commitish': 'main',
-                'name': tag, 'body': OWNER, 'draft': False, 'make_latest': 'false'})
+                'name': title or tag, 'body': OWNER, 'draft': False, 'make_latest': 'false'})
         if result is not None and result.get('body') != OWNER:
             raise ValueError('CNB release is not owned by the mirror: '+tag)
+        if result is not None and title and result.get('name') != title:
+            self.request('PATCH', path+'/'+quote(str(result['id'])), {'name': title})
+            result['name'] = title
         return result
 
     def upload(self, item, source):
-        release = self.release(item['tag'], create=True)
+        release = self.release(item['tag'], create=True, title=item.get('title'))
         matches = [a for a in (release.get('assets') or []) if a['name'] == item['filename']]
         if len(matches) > 1:
             raise ValueError('Duplicate CNB attachment')
@@ -138,39 +141,53 @@ def read_state(site, settings):
             'pending': '', 'cleanup_pending': False, 'snapshots': {}, 'objects': {}, 'keys': {}}
 
 
-def snapshot_plan(site, settings, snapshot):
+def existing_tag(objects, legacy, readable):
+    # Already-uploaded attachments keep their exact URLs. A title-only PATCH
+    # improves old releases without copying bytes or changing immutable tags.
+    return legacy if any(o['tag'] == legacy for o in objects.values()) else readable
+
+
+def snapshot_plan(site, settings, snapshot, objects=None):
     if not re.fullmatch(r'[0-9a-f]{32}', snapshot):
         raise ValueError('Invalid mirror snapshot identity')
     base = Path(site)/'snapshots'/snapshot
     manifest = json.loads((base/'manifest.json').read_text())
+    objects = objects or {}
+    snapshot_tag = existing_tag(objects, 'pacman-snapshot-'+snapshot, 'snapshot-'+snapshot)
+    snapshot_title = '仓库快照 · '+snapshot[:12]
     result = {}
     for package in manifest['packages']:
-        # Source identity is hashed so repositories/tags cannot collide even
-        # when their human-readable names contain the same separators.
+        project = package.get('project', package['repository'].rsplit('/', 1)[-1])
         identity = hashlib.sha256(canonical([package['repository'], package['tag']])).hexdigest()[:32]
-        tag = 'pacman-package-'+identity
+        readable = project+'-'+package['tag'] if package['tag'].startswith('v') else package['tag']
+        tag = existing_tag(objects, 'pacman-package-'+identity, readable)
+        members = sorted(p['name'] for p in manifest['packages']
+                         if (p['repository'], p['tag']) == (package['repository'], package['tag']))
+        title = f'{project} {package["version"]} · '+', '.join(members)
         for suffix, prefix in [('', ''), ('.sig', 'signature_')]:
             name = package['filename']+suffix
             result['/'+settings['architecture']+'/'+name] = {
-                'tag': tag, 'filename': name, 'sha256': package[prefix+'sha256'],
+                'tag': tag, 'title': title, 'filename': name, 'sha256': package[prefix+'sha256'],
                 'source': package[prefix+'url']}
     for filename, digest in manifest['files'].items():
         name = Path(filename).name
         if filename != settings['architecture']+'/'+name:
             raise ValueError('Unexpected database path')
-        result['/'+filename] = {'tag': 'pacman-snapshot-'+snapshot, 'filename': name,
+        result['/'+filename] = {'tag': snapshot_tag, 'title': snapshot_title, 'filename': name,
             'sha256': digest, 'local': str(base/filename)}
     # Keep the exact source manifest with the snapshot, but do not expose it as
     # a flat pacman route. It is also included in garbage-collection references.
-    result['/manifest.json'] = {'tag': 'pacman-snapshot-'+snapshot, 'filename': 'manifest.json',
+    result['/manifest.json'] = {'tag': snapshot_tag, 'title': snapshot_title, 'filename': 'manifest.json',
         'sha256': checksum(base/'manifest.json'), 'local': str(base/'manifest.json')}
     return result
 
 
-def key_plan(site):
+def key_plan(site, objects=None):
     keys = {p.name: checksum(p) for p in (Path(site)/'keys').iterdir() if p.is_file()}
-    tag = 'pacman-keys-'+hashlib.sha256(canonical(keys)).hexdigest()[:32]
-    return {'/keys/'+name: {'tag': tag, 'filename': name, 'sha256': digest,
+    identity = hashlib.sha256(canonical(keys)).hexdigest()[:32]
+    tag = existing_tag(objects or {}, 'pacman-keys-'+identity, 'keys-'+identity)
+    return {'/keys/'+name: {'tag': tag, 'title': 'Fansionia 签名公钥 · '+identity[:12],
+                          'filename': name, 'sha256': digest,
                           'local': str(Path(site)/'keys'/name)} for name, digest in keys.items()}
 
 
@@ -187,8 +204,9 @@ def stage(site, settings, active, candidate):
     retained = list(dict.fromkeys([*state['successful'], candidate]))
     if len(state['successful']) > 2 or len(retained) > 3:
         raise ValueError('Mirror snapshot retention exceeded')
-    state['snapshots'] = {s: {'verified': False, 'routes': snapshot_plan(site, settings, s)} for s in retained}
-    state['keys'] = key_plan(site)
+    state['snapshots'] = {s: {'verified': False, 'routes': snapshot_plan(site, settings, s, state['objects'])}
+                          for s in retained}
+    state['keys'] = key_plan(site, state['objects'])
     write_json(Path(site)/STATE, state)
     return state
 
@@ -249,7 +267,7 @@ def sync(site, settings, client=None):
             raise ValueError('Mirror storage budget exceeded; protected files will not be deleted')
         state['objects'][url] = record
         write_json(site/STATE, state)  # journal before any external write
-        if client.upload(record, source):
+        if client.upload(dict(record, title=item.get('title')), source):
             uploaded += 1
         else:
             reused += 1

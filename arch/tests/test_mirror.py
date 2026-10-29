@@ -101,7 +101,7 @@ class MirrorTests(unittest.TestCase):
         self.assertEqual(snapshots, [a, b, c])
         self.assertIn('/mirror/x86_64/foo-3-1-any.pkg.tar.zst', assets)
         self.assertIn('/mirror/keys/fansionia.asc', assets)
-        self.assertIn('pacman-snapshot-'+b, assets['/mirror/x86_64/fansionia.db'])
+        self.assertIn('snapshot-'+b, assets['/mirror/x86_64/fansionia.db'])
         mirror.finish(self.site, self.settings, c, self.public(c, [a, b, c]))
         with self.assertRaisesRegex(ValueError, 'retained public'):
             mirror.prune(self.site, self.settings, self.client, self.public(c, [a, b, c]))
@@ -207,6 +207,24 @@ class MirrorTests(unittest.TestCase):
         self.assertFalse(api.call_args_list[0].args[2]['overwrite'])
         self.assertTrue(api.call_args_list[1].args[1].endswith('?ttl=0'))
         self.assertEqual(put.call_count, 1)
+
+    def test_legacy_urls_are_preserved_while_new_tags_include_names_and_versions(self):
+        a = 'a'*32
+        package = self.snapshot(a, '1')[0]
+        identity = mirror.hashlib.sha256(mirror.canonical([package['repository'], package['tag']])).hexdigest()[:32]
+        legacy = 'pacman-package-'+identity
+        objects = {'old': {'tag': legacy}}
+        before = mirror.snapshot_plan(self.site, self.settings, a, objects)
+        fresh = mirror.snapshot_plan(self.site, self.settings, a)
+        path = '/x86_64/'+package['filename']
+        self.assertEqual(before[path]['tag'], legacy)
+        self.assertEqual(fresh[path]['tag'], 'foo-v1')
+        self.assertIn('foo 1-1', before[path]['title'])
+        client = mirror.Client('test/mirror', 'not-a-real-token')
+        release = {'id': '123', 'body': mirror.OWNER, 'name': legacy, 'assets': []}
+        with patch.object(client, 'request', side_effect=[release, None]) as api:
+            client.release(legacy, title='foo 1-1')
+        self.assertEqual(api.call_args_list[1].args, ('PATCH', '/test/mirror/-/releases/123', {'name': 'foo 1-1'}))
 
 
 if __name__ == '__main__':
