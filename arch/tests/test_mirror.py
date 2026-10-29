@@ -180,6 +180,16 @@ class MirrorTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, 'scope'):
                 client.request('GET', path)
 
+    def test_existing_identical_attachment_never_requests_an_upload_url_or_put(self):
+        client = mirror.Client('test/mirror', 'not-a-real-token')
+        item = {'tag': 'pacman-package-abc', 'filename': 'foo', 'size': 42, 'sha256': 'a'*64}
+        release = {'assets': [{'name': 'foo', 'size': 42, 'hash_algo': 'sha256', 'hash_value': 'a'*64}]}
+        with patch.object(client, 'release', return_value=release), \
+                patch.object(client, 'request') as api, patch.object(client.opener, 'open') as put:
+            client.upload(item, '/nonexistent-source-is-not-opened')
+        api.assert_not_called()
+        put.assert_not_called()
+
 
 if __name__ == '__main__':
     unittest.main()
