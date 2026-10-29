@@ -157,6 +157,29 @@ class MirrorTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'pending'):
             mirror.stage(self.site, self.settings, '', b)
 
+    def test_epoch_filename_routes_to_cnb_safe_name_with_original_bytes(self):
+        a = 'a'*32
+        package = self.snapshot(a, '1')[0]
+        package['filename'] = package['filename'].replace('foo-', 'foo-1:')
+        manifest_path = self.site/'snapshots'/a/'manifest.json'
+        manifest = json.loads(manifest_path.read_text())
+        manifest['packages'] = [package]
+        repository.write_json(manifest_path, manifest)
+        state = mirror.stage(self.site, self.settings, '', a)
+        path = '/x86_64/'+package['filename']
+        item = state['snapshots'][a]['routes'][path]
+        self.assertNotIn(':', item['filename'])
+        self.assertEqual(item['source'], package['url'])
+        self.assertEqual(item['sha256'], package['sha256'])
+        self.sync()
+        # Re-stage/retry a pending candidate without modifying its database.
+        mirror.stage(self.site, self.settings, '', a)
+        self.sync()
+        routes, _ = mirror.routes(self.site, self.settings, a)
+        self.assertIn('/mirror'+path, routes)
+        self.assertTrue(routes['/mirror'+path].endswith('/'+item['filename']))
+        self.assertNotIn('%3A', routes['/mirror'+path])
+
     def test_receipts_cannot_change_package_hashes(self):
         a = 'a'*32
         self.snapshot(a, '1')

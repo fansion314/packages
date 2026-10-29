@@ -166,8 +166,12 @@ def snapshot_plan(site, settings, snapshot, objects=None):
         title = f'{project} {package["version"]} · '+', '.join(members)
         for suffix, prefix in [('', ''), ('.sig', 'signature_')]:
             name = package['filename']+suffix
+            # CNB rejects ':' in attachment names, while pacman permits epoch
+            # colons in filenames. Only the storage name changes; route, bytes,
+            # package metadata and signature retain their upstream identity.
+            attachment = name.replace(':', '_')
             result['/'+settings['architecture']+'/'+name] = {
-                'tag': tag, 'title': title, 'filename': name, 'sha256': package[prefix+'sha256'],
+                'tag': tag, 'title': title, 'filename': attachment, 'sha256': package[prefix+'sha256'],
                 'source': package[prefix+'url']}
     for filename, digest in manifest['files'].items():
         name = Path(filename).name

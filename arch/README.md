@@ -26,6 +26,8 @@ Ordinary Worker routes redirect to upstream HTTPS package/signature URLs; mirror
 routes redirect to verified CNB attachments. Upstream CNB releases are per package
 version/content, named `upstream-<repository>-<content ID>`, and use the existing
 shared-object retention and two-phase publication machinery.
+CNB attachment names replace epoch colons with underscores; the original pacman
+filename remains the public route and database identity, with unchanged bytes.
 
 `publish-pacman.yml` checks all sources twice an hour (UTC minutes 9 and 39;
 GitHub schedules may be delayed). Release dispatches still check immediately.
