@@ -2,6 +2,8 @@ name: Publish signed pacman repository
 on:
   workflow_call:
   workflow_dispatch:
+  schedule:
+    - cron: '9,39 * * * *'
 permissions:
   contents: read
 concurrency:

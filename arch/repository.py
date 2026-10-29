@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build immutable pacman snapshots from signed, unmodified GitHub assets."""
+"""Build immutable pacman snapshots from signed, unmodified package sources."""
 import argparse
 import hashlib
 import json
@@ -87,6 +87,9 @@ def discover(settings):
         if repository not in releases:
             releases[repository] = [r for page in github(f'repos/{repository}/releases?per_page=100') for r in page]
         packages.extend(select_release(project, releases[repository]))
+    if settings.get('upstreams'):
+        from upstream import discover as upstream_discover
+        packages.extend(upstream_discover(settings, [p['name'] for p in packages]))
     filenames = [p['filename'] for p in packages]
     names = [p['name'] for p in packages]
     if len(filenames) != len(set(filenames)) or len(names) != len(set(names)):
@@ -100,7 +103,8 @@ def download(url, destination, expected):
     if destination.exists() and checksum(destination) == expected:
         return destination
     temporary = destination.with_name(destination.name+'.part')
-    request = urllib.request.Request(url, headers={'User-Agent': 'fansionia-packages-ci'})
+    from upstream import USER_AGENT
+    request = urllib.request.Request(url, headers={'User-Agent': USER_AGENT})
     with urllib.request.urlopen(request, timeout=60) as response, temporary.open('wb') as output:
         shutil.copyfileobj(response, output)
     if checksum(temporary) != expected:
@@ -110,7 +114,7 @@ def download(url, destination, expected):
     return destination
 
 
-def verify_package(package, archive, public_key):
+def verify_package(package, archive, public_key, settings=None):
     metadata = subprocess.check_output(['bsdtar', '-xOf', str(archive), '.PKGINFO'], text=True)
     fields = {}
     for line in metadata.splitlines():
@@ -121,6 +125,13 @@ def verify_package(package, archive, public_key):
                             ('arch', package['architecture'])]:
         if fields.get(field) != [expected]:
             raise ValueError('Package metadata mismatch: '+field)
+    if package.get('upstream'):
+        from upstream import sources, verify
+        source = next((s for s in sources(settings) if s['id'] == package['upstream']), None)
+        if source is None:
+            raise ValueError('Upstream is no longer configured')
+        verify(source, archive)
+        return fields
     status = subprocess.check_output(['gpgv', '--status-fd', '1', '--keyring', str(public_key),
                                       str(archive)+'.sig', str(archive)], text=True)
     signer = json.loads((ROOT/'keys/signers.json').read_text())[package['repository']]
@@ -154,9 +165,11 @@ def ensure_monotonic(packages, previous, compare=None):
 
 def snapshot_inputs(packages):
     source = Path(__file__).read_bytes()+ROOT.joinpath('worker.mjs').read_bytes()
-    for filename in ['mirror.py', 'sources.json']:
+    for filename in ['mirror.py', 'sources.json', 'upstream.py']:
         if (ROOT/filename).exists():
             source += (ROOT/filename).read_bytes()
+    for key in sorted((ROOT/'upstream-keys').glob('*.asc')):
+        source += key.read_bytes()
     generator = hashlib.sha256(source).hexdigest()
     inputs = {'schema': 1, 'packages': packages, 'generator': generator,
               'keyring': checksum(ROOT/'keys/fansionia.gpg')}
@@ -202,7 +215,7 @@ def build(site, settings, active, resume=''):
                     cache = ROOT.parent/'.cache/pacman-downloads'/package[prefix+'sha256']
                     download(package[prefix+'url'], cache, package[prefix+'sha256'])
                     shutil.copy2(cache, destination)
-                verify_package(package, archive, ROOT/'keys/fansionia.gpg')
+                verify_package(package, archive, ROOT/'keys/fansionia.gpg', settings)
                 archives.append(str(archive))
             database = database_dir/(settings['repository']+'.db.tar.gz')
             subprocess.run(['repo-add', '--include-sigs', str(database), *archives], check=True)
@@ -269,6 +282,13 @@ def worker(site, settings, active, candidate, phase, destination):
         from mirror import routes
         mirror_assets, mirror_snapshots = routes(site, settings, selected)
         assets.update(mirror_assets)
+    # A pacman filename may contain an epoch colon; embed both exact spellings.
+    for path, url in list(assets.items()):
+        encoded = urllib.parse.quote(path, safe='/')
+        if encoded != path:
+            if encoded in assets and assets[encoded] != url:
+                raise ValueError('Conflicting encoded package mapping')
+            assets[encoded] = url
     fingerprint = (ROOT/'keys/fingerprint.txt').read_text().strip()
     instructions = (f'Fansionia Arch Linux / CachyOS repository\n\nSigning key: {fingerprint}\n'
                     f'Public key: {settings["public_url"]}/keys/fansionia.asc\n'
@@ -279,7 +299,8 @@ def worker(site, settings, active, candidate, phase, destination):
                     f'Server = {settings["public_url"]}/$arch\n\n'
                     f'CNB mirror: Server = {settings["public_url"]}/mirror/$arch\n'
                     f'Mirror signing key: {settings["public_url"]}/mirror/keys/fansionia.asc\n\n'
-                    'sudo pacman -Syu fansionia-keyring\n'
+                    'sudo pacman -Sy fansionia/fansionia-keyring\n'
+                    'sudo pacman -Su\n'
                     'sudo pacman -S dnr pi-dnr etcher-dnr motrix-electron dsh-electron bitwarden-electron obsidian-electron\n')
     config = {'schema': 1, 'active': selected, 'candidate': candidate, 'phase': phase,
               'snapshots': snapshots, 'assets': assets, 'instructions': instructions}

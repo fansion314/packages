@@ -8,6 +8,26 @@
     "repository": "fansionia/packages",
     "max_bytes": 96636764160
   },
+  "upstreams": [
+    {
+      "id": "warpdotdev",
+      "server": "https://releases.warp.dev/linux/pacman/$repo/$arch",
+      "key": "upstream-keys/warpdotdev.asc",
+      "fingerprint": "0913165C78D5B7A41B42AC657FF7AB39D60F803F"
+    },
+    {
+      "id": "denial",
+      "server": "https://denialwm.github.io/denial/$arch",
+      "key": "upstream-keys/denial.asc",
+      "fingerprint": "AE4108FA5E91E26BE0EE331E0F5B3AD16E023091"
+    },
+    {
+      "id": "home_msime_Arch",
+      "server": "https://downloadcontent.opensuse.org/repositories/home:/msime/Arch/$arch",
+      "key": "upstream-keys/home_msime_Arch.asc",
+      "fingerprint": "F339A91A4C77008B49101BEFF9D283EB1137FF6B"
+    }
+  ],
   "projects": [
     {"id":"dnr","repository":"fansion314/dnr","tag_pattern":"^v([0-9]+)\\.([0-9]+)\\.([0-9]+)$","packages":["dnr","dnr-cef","dnr-webview","dnc"]},
     {"id":"pi","repository":"fansion314/pi","tag_pattern":"^pi-dnr-v([0-9]+)\\.([0-9]+)\\.([0-9]+)-([0-9]+)$","packages":["pi-dnr"]},

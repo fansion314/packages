@@ -29,6 +29,7 @@ jobs:
       - run: python3 -m unittest discover -s homebrew/scripts -p 'test_*.py' -v
       - run: python3 -m unittest discover -s aur/tests -v
       - run: python3 -m unittest discover -s arch/tests -v
+      - run: python3 arch/upstream.py keyring --check
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1
         with:
           node-version: '24'

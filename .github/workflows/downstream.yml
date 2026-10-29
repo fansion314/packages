@@ -54,7 +54,8 @@ jobs:
     uses: ./.github/workflows/sync-homebrew.yml
   pacman:
     needs: validate
-    if: inputs.platform != 'macos'
+    # pacman has its own half-hour schedule; retain immediate release dispatches.
+    if: inputs.platform != 'macos' && github.event_name != 'schedule'
     permissions:
       contents: write
       pages: write

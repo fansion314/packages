@@ -13,8 +13,30 @@ cat >> /etc/pacman.conf <<EOF
 SigLevel = Required TrustedOnly
 Server = $server
 EOF
-pacman -Syu --noconfirm fansionia-keyring
+# Bootstrap only the keyring before a full upgrade can encounter upstream keys.
+pacman -Sy --noconfirm fansionia/fansionia-keyring
+pacman -Syu --noconfirm
 pacman -Fy --noconfirm
+python - "$server" <<'PY'
+import json
+from pathlib import Path
+import subprocess
+settings = json.loads(Path('arch/sources.json').read_text())
+# Discover from the merged database, so future configured packages are covered
+# without keeping a second hard-coded allowlist. Existing apps are tested below.
+internal = {name for p in settings['projects'] for name in p['packages']}
+packages = subprocess.check_output(['pacman', '-Slq', 'fansionia'], text=True).splitlines()
+external = sorted(set(packages)-internal)
+if settings.get('upstreams') and not external:
+    raise SystemExit('Configured upstreams contributed no packages')
+if external:
+    subprocess.run(['pacman', '-Sw', '--noconfirm', *['fansionia/'+p for p in external]], check=True)
+    # Separate transactions avoid conflicts between otherwise valid upstream apps.
+    for package in external:
+        subprocess.run(['pacman', '-S', '--noconfirm', 'fansionia/'+package], check=True)
+        subprocess.run(['pacman', '-Qk', package], check=True)
+        subprocess.run(['pacman', '-Rns', '--noconfirm', package], check=True)
+PY
 pacman -Si dnr dnr-cef dnr-webview dnc pi-dnr etcher-dnr motrix-electron dsh-electron bitwarden-electron obsidian-electron mygo-cloudmusic clash-momo mihomomo python-pptx
 # Download and verify every variant. Mutually conflicting runtime alternatives
 # cannot be installed together, but each must be a valid signed archive.

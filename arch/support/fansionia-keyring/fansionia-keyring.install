@@ -1,5 +1,5 @@
 post_install() {
-  pacman-key --populate fansionia
+  pacman-key --populate fansionia fansionia-upstream
 }
 post_upgrade() {
   post_install

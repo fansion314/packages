@@ -1,5 +1,5 @@
 pkgname=fansionia-keyring
-pkgver=20261027
+pkgver=20261029
 pkgrel=1
 pkgdesc='Fansionia repository signing keys'
 arch=('any')
@@ -7,12 +7,16 @@ url='https://github.com/fansion314/packages'
 license=('CC0-1.0')
 depends=('pacman')
 install=fansionia-keyring.install
-source=('fansionia.gpg' 'fansionia-trusted' 'fansionia-revoked')
+source=('fansionia.gpg' 'fansionia-trusted' 'fansionia-revoked'
+        'fansionia-upstream.gpg' 'fansionia-upstream-trusted' 'fansionia-upstream-revoked')
 # These local inputs are part of the pinned packaging commit, never network input.
-sha256sums=('SKIP' 'SKIP' 'SKIP')
+sha256sums=('SKIP' 'SKIP' 'SKIP' 'SKIP' 'SKIP' 'SKIP')
 
 package() {
   install -Dm644 fansionia.gpg "$pkgdir/usr/share/pacman/keyrings/fansionia.gpg"
   install -Dm644 fansionia-trusted "$pkgdir/usr/share/pacman/keyrings/fansionia-trusted"
   install -Dm644 fansionia-revoked "$pkgdir/usr/share/pacman/keyrings/fansionia-revoked"
+  install -Dm644 fansionia-upstream.gpg "$pkgdir/usr/share/pacman/keyrings/fansionia-upstream.gpg"
+  install -Dm644 fansionia-upstream-trusted "$pkgdir/usr/share/pacman/keyrings/fansionia-upstream-trusted"
+  install -Dm644 fansionia-upstream-revoked "$pkgdir/usr/share/pacman/keyrings/fansionia-upstream-revoked"
 }

@@ -57,6 +57,11 @@ jobs:
             python -c 'from pptx import Presentation; import io; p=Presentation(); p.slides.add_slide(p.slide_layouts[6]); b=io.BytesIO(); p.save(b); b.seek(0); assert len(Presentation(b).slides)==1'
           else
             test -s /usr/share/pacman/keyrings/fansionia.gpg
+            test -s /usr/share/pacman/keyrings/fansionia-upstream.gpg
+            python arch/upstream.py keyring --check
+            while IFS=: read -r fingerprint rest; do
+              pacman-key --finger "$fingerprint"
+            done < arch/support/fansionia-keyring/fansionia-upstream-trusted
           fi
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
