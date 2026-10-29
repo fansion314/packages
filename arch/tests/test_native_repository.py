@@ -119,6 +119,15 @@ class NativeRepositoryTests(unittest.TestCase):
                     upstream.verify(source, files/'fansionia.db', files/'fansionia.db.sig')
                     parsed = upstream.parse_database((files/'fansionia.db').read_bytes(), source, 'x86_64')
                     self.assertEqual({p['name'] for p in parsed}, {'fixture', 'external'})
+                    # Denial serves a zstd-compressed database, unlike our gzip
+                    # snapshots. Probe and build must both support that format.
+                    unpacked = root/'database-entries'
+                    unpacked.mkdir()
+                    subprocess.run(['bsdtar', '-xf', str(files/'fansionia.db'), '-C', str(unpacked)], check=True)
+                    compressed = root/'upstream.db.tar.zst'
+                    subprocess.run(['bsdtar', '--zstd', '-cf', str(compressed), '-C', str(unpacked), '.'], check=True)
+                    parsed = upstream.parse_database(compressed.read_bytes(), source, 'x86_64')
+                    self.assertEqual({p['name'] for p in parsed}, {'fixture', 'external'})
                     # Tampered bytes and unreviewed keys must fail even when a
                     # detached signature is present and correctly formatted.
                     external.write_bytes(external.read_bytes()+b'tampered')

@@ -30,9 +30,9 @@ external = sorted(set(packages)-internal)
 if settings.get('upstreams') and not external:
     raise SystemExit('Configured upstreams contributed no packages')
 if external:
-    subprocess.run(['pacman', '-Sw', '--noconfirm', *['fansionia/'+p for p in external]], check=True)
     # Separate transactions avoid conflicts between otherwise valid upstream apps.
     for package in external:
+        subprocess.run(['pacman', '-Sw', '--noconfirm', 'fansionia/'+package], check=True)
         subprocess.run(['pacman', '-S', '--noconfirm', 'fansionia/'+package], check=True)
         subprocess.run(['pacman', '-Qk', package], check=True)
         subprocess.run(['pacman', '-Rns', '--noconfirm', package], check=True)
