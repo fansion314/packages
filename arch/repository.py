@@ -153,21 +153,36 @@ def ensure_monotonic(packages, previous, compare=None):
 
 
 def snapshot_inputs(packages):
-    generator = hashlib.sha256(Path(__file__).read_bytes()+ROOT.joinpath('worker.mjs').read_bytes()).hexdigest()
+    source = Path(__file__).read_bytes()+ROOT.joinpath('worker.mjs').read_bytes()
+    for filename in ['mirror.py', 'sources.json']:
+        if (ROOT/filename).exists():
+            source += (ROOT/filename).read_bytes()
+    generator = hashlib.sha256(source).hexdigest()
     inputs = {'schema': 1, 'packages': packages, 'generator': generator,
               'keyring': checksum(ROOT/'keys/fansionia.gpg')}
     return inputs, hashlib.sha256(canonical(inputs)).hexdigest()[:32]
 
 
-def build(site, settings, active):
+def build(site, settings, active, resume=''):
     site = Path(site)
     site.mkdir(parents=True, exist_ok=True)
-    packages = discover(settings)
+    if resume:
+        manifest_path = site/'snapshots'/resume/'manifest.json'
+        if not re.fullmatch(r'[0-9a-f]{32}', resume) or not manifest_path.is_file():
+            raise ValueError('Pending snapshot is missing from persisted state')
+        existing = json.loads(manifest_path.read_text())
+        packages = existing['packages']
+    else:
+        packages = discover(settings)
     previous = previous_manifest(site, active)
     ensure_monotonic(packages, previous)
     # Changes in inputs, generator or public signing material require a new
     # snapshot. Repeated release notifications reuse the existing signed bytes.
-    inputs, snapshot = snapshot_inputs(packages)
+    if resume:
+        inputs = {k: v for k, v in existing.items() if k != 'files'}
+        snapshot = resume
+    else:
+        inputs, snapshot = snapshot_inputs(packages)
     manifest_path = site/'snapshots'/snapshot/'manifest.json'
     if manifest_path.exists():
         existing = json.loads(manifest_path.read_text())
@@ -249,6 +264,11 @@ def worker(site, settings, active, candidate, phase, destination):
     for key in (site/'keys').iterdir():
         if key.is_file():
             assets['/keys/'+key.name] = settings['pages_url']+'/keys/'+key.name
+    mirror_snapshots = []
+    if settings.get('mirror'):
+        from mirror import routes
+        mirror_assets, mirror_snapshots = routes(site, settings, selected)
+        assets.update(mirror_assets)
     fingerprint = (ROOT/'keys/fingerprint.txt').read_text().strip()
     instructions = (f'Fansionia Arch Linux / CachyOS repository\n\nSigning key: {fingerprint}\n'
                     f'Public key: {settings["public_url"]}/keys/fansionia.asc\n'
@@ -257,10 +277,15 @@ def worker(site, settings, active, candidate, phase, destination):
                     f'sudo pacman-key --lsign-key {fingerprint}\n\n'
                     f'[{settings["repository"]}]\nSigLevel = Required TrustedOnly\n'
                     f'Server = {settings["public_url"]}/$arch\n\n'
+                    f'CNB mirror: Server = {settings["public_url"]}/mirror/$arch\n'
+                    f'Mirror signing key: {settings["public_url"]}/mirror/keys/fansionia.asc\n\n'
                     'sudo pacman -Syu fansionia-keyring\n'
                     'sudo pacman -S dnr pi-dnr etcher-dnr motrix-electron dsh-electron bitwarden-electron obsidian-electron\n')
     config = {'schema': 1, 'active': selected, 'candidate': candidate, 'phase': phase,
               'snapshots': snapshots, 'assets': assets, 'instructions': instructions}
+    if settings.get('mirror'):
+        config['mirror'] = {'repository': settings['mirror']['repository'], 'active': selected,
+                            'snapshots': mirror_snapshots}
     destination = Path(destination)
     destination.parent.mkdir(parents=True, exist_ok=True)
     destination.write_text((ROOT/'worker.mjs').read_text()+'\nconst config = '+canonical(config).decode()
@@ -290,15 +315,19 @@ if __name__ == '__main__':
     args = parser.parse_args()
     settings = json.loads((ROOT/'sources.json').read_text())
     if args.command == 'probe':
-        from state import active_snapshot
-        _, candidate = snapshot_inputs(discover(settings))
-        active = active_snapshot()
+        from state import public_status, mirror_state
+        status = public_status()
+        active = status.get('active', '')
+        state = mirror_state() if settings.get('mirror') else {}
+        resume = state.get('pending') or (active if state.get('cleanup_pending') else '')
+        _, candidate = snapshot_inputs(discover(settings)) if not resume else ({}, resume)
+        changed = candidate != active or bool(resume) or os.environ.get('FORCE_PUBLISH') == 'true'
         print('Candidate snapshot:', candidate, 'active:', active or '(none)')
         if os.environ.get('GITHUB_OUTPUT'):
             with open(os.environ['GITHUB_OUTPUT'], 'a') as output:
-                output.write(f'changed={str(candidate != active).lower()}\n')
+                output.write(f'changed={str(changed).lower()}\nresume={resume}\n')
     elif args.command == 'build':
-        build(args.site, settings, args.active)
+        build(args.site, settings, args.active, args.candidate)
     elif args.command == 'worker':
         worker(args.site, settings, args.active, args.candidate, args.phase, args.output)
     else:

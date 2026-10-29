@@ -12,20 +12,36 @@ REPOSITORY = 'https://github.com/fansion314/packages.git'
 STATUS = 'https://packages.fansionia.world/status.json'
 
 
-def active_snapshot():
+def public_status():
     try:
         with urllib.request.urlopen(STATUS, timeout=30) as response:
-            state = json.load(response)
-            return state['active']
+            return json.load(response)
     except urllib.error.HTTPError as error:
         if error.code == 404:
-            return ''
+            return {}
         raise RuntimeError(
             f'Public repository status returned HTTP {error.code}; '
             f'CF-Ray={error.headers.get("cf-ray", "")}; '
             f'CF-Mitigated={error.headers.get("cf-mitigated", "")}; '
             f'body={error.read(500).decode("utf-8", errors="replace")!r}'
         ) from error
+
+
+def active_snapshot():
+    return public_status().get('active', '')
+
+
+def mirror_state():
+    """Read persisted recovery state through the uncached GitHub API."""
+    result = subprocess.run(['gh', 'api', '-H', 'Cache-Control: no-cache',
+        'repos/fansion314/packages/contents/mirror-state.json?ref=pacman-pages'],
+        text=True, capture_output=True)
+    if result.returncode:
+        if 'HTTP 404' in result.stderr:
+            return {}
+        raise RuntimeError('Cannot read persisted CNB mirror recovery state')
+    import base64
+    return json.loads(base64.b64decode(json.loads(result.stdout)['content']))
 
 
 def checkout(directory):
@@ -51,6 +67,8 @@ def checkout(directory):
 def commit(directory):
     directory = Path(directory)
     paths = ['snapshots', 'snapshots.json', 'keys', '.nojekyll', 'index.html']
+    if (directory/'mirror-state.json').exists():
+        paths.append('mirror-state.json')
     subprocess.run(['git', '-C', str(directory), 'add', '--', *paths], check=True)
     changes = subprocess.run(['git', '-C', str(directory), 'diff', '--cached', '--quiet'])
     if changes.returncode == 0:

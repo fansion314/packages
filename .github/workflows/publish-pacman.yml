@@ -13,6 +13,7 @@ jobs:
     outputs:
       changed: ${{ steps.probe.outputs.changed }}
       commit: ${{ steps.code.outputs.commit }}
+      resume: ${{ steps.probe.outputs.resume }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
@@ -23,6 +24,7 @@ jobs:
       - id: probe
         env:
           GH_TOKEN: ${{ github.token }}
+          FORCE_PUBLISH: ${{ github.event_name == 'workflow_dispatch' }}
         run: python3 arch/repository.py probe
   snapshot:
     needs: probe
@@ -55,8 +57,24 @@ jobs:
           ARCH_SIGNING_PASSPHRASE: ${{ secrets.ARCH_SIGNING_PASSPHRASE }}
           ARCH_SIGNING_KEY_ID: ${{ secrets.ARCH_SIGNING_KEY_ID }}
           ACTIVE: ${{ steps.state.outputs.active }}
-        run: python arch/repository.py build --active "$ACTIVE"
+          RESUME: ${{ needs.probe.outputs.resume }}
+        run: |
+          python arch/repository.py build --active "$ACTIVE" --candidate "$RESUME"
+      - name: Journal the protected mirror snapshots before external writes
+        env:
+          ACTIVE: ${{ steps.state.outputs.active }}
+          CANDIDATE: ${{ steps.snapshot.outputs.candidate }}
+        run: python arch/mirror.py stage --active "$ACTIVE" --candidate "$CANDIDATE"
       - name: Persist the complete candidate before deployment
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python arch/state.py commit .work/pacman-site
+      - name: Upload permanent CNB attachments and verify anonymous SHA-256
+        env:
+          CNB_MIRROR_TOKEN: ${{ secrets.CNB_MIRROR_TOKEN }}
+        run: python arch/mirror.py sync
+      - name: Persist mirror receipts even after an interrupted upload
+        if: always() && steps.snapshot.outcome == 'success'
         env:
           GH_TOKEN: ${{ github.token }}
         run: python arch/state.py commit .work/pacman-site
@@ -70,6 +88,7 @@ jobs:
             .work/pacman-site/snapshots/
             .work/pacman-site/snapshots.json
             .work/pacman-site/keys/
+            .work/pacman-site/mirror-state.json
           retention-days: 7
   pages:
     needs: snapshot
@@ -86,6 +105,10 @@ jobs:
   candidate:
     needs: [probe, snapshot, pages]
     runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        origin: [primary, mirror]
     container:
       image: archlinux:base
       options: --cap-add=NET_ADMIN --cap-add=NET_RAW --cap-add=NET_BIND_SERVICE
@@ -102,6 +125,7 @@ jobs:
       - name: Verify Pages bytes and the candidate Worker with real pacman
         env:
           CANDIDATE: ${{ needs.snapshot.outputs.candidate }}
+          ORIGIN: ${{ matrix.origin }}
           CI: 'true'
         run: |
           python arch/repository.py verify-pages --candidate "$CANDIDATE"
@@ -109,7 +133,9 @@ jobs:
           node arch/serve.mjs > /tmp/candidate-worker.log 2>&1 &
           server_pid=$!
           trap 'kill "$server_pid" || true' EXIT
-          bash arch/test-install.sh http://127.0.0.1:8765/x86_64
+          path=x86_64
+          if [[ $ORIGIN == mirror ]]; then path=mirror/x86_64; fi
+          bash arch/test-install.sh "http://127.0.0.1:8765/$path"
   worker:
     needs: [probe, snapshot, candidate]
     runs-on: ubuntu-24.04
@@ -147,6 +173,10 @@ jobs:
       (needs.worker.result == 'success' ||
        (needs.probe.outputs.changed == 'false' && github.event_name == 'workflow_dispatch'))
     runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        origin: [primary, mirror]
     container:
       image: archlinux:base
       options: --cap-add=NET_ADMIN --cap-add=NET_RAW --cap-add=NET_BIND_SERVICE
@@ -159,4 +189,47 @@ jobs:
       - name: Install from the public repository domain
         env:
           CI: 'true'
-        run: bash arch/test-install.sh https://packages.fansionia.world/x86_64
+          ORIGIN: ${{ matrix.origin }}
+        run: |
+          path=x86_64
+          if [[ $ORIGIN == mirror ]]; then path=mirror/x86_64; fi
+          bash arch/test-install.sh "https://packages.fansionia.world/$path"
+  retention:
+    needs: [probe, snapshot, public]
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ needs.probe.outputs.commit }}
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1
+        with:
+          node-version: '24'
+      - run: npm install --global --ignore-scripts pnpm@12.15.0
+      - run: pnpm --dir arch install --frozen-lockfile --ignore-scripts
+      - run: python3 arch/state.py checkout .work/pacman-site
+      - name: Record both public installation checks and retain two successful snapshots
+        env:
+          CANDIDATE: ${{ needs.snapshot.outputs.candidate }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          python3 arch/mirror.py finish --candidate "$CANDIDATE"
+          python3 arch/state.py commit .work/pacman-site
+      - name: Remove retired mirror routes before deleting their attachments
+        env:
+          CANDIDATE: ${{ needs.snapshot.outputs.candidate }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: |
+          python3 arch/repository.py worker --candidate "$CANDIDATE" --phase active
+          python3 arch/deploy.py active "$CANDIDATE" "$CANDIDATE"
+      - name: Delete only journaled CNB files without retained references
+        env:
+          CNB_MIRROR_TOKEN: ${{ secrets.CNB_MIRROR_TOKEN }}
+        run: python3 arch/mirror.py prune
+      - name: Persist cleanup progress for safe retries
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 arch/state.py commit .work/pacman-site

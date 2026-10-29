@@ -42,6 +42,62 @@ Worker does not fetch configuration or package bodies; it only returns exact 302
 locations. Deployment completion plus HTTP phase checks gate activation. These
 checks do not establish a globally atomic transaction across independent requests.
 
+## CNB China mirror
+
+`https://packages.fansionia.world/mirror/$arch` redirects repository files to
+permanent Release attachments in `https://cnb.cool/fansionia/packages`. The
+primary `/$arch` routes continue to use GitHub Releases and Pages. Public keys
+are also available under `/mirror/keys/`; `/status.json` and `/mirror/status.json`
+report the same selected snapshot and the mirror's retained snapshot IDs.
+The Worker embeds stable CNB download URLs, never expiring storage URLs, and
+does not proxy downloads or silently fall back to GitHub.
+
+`arch/mirror.py` uses the CNB OpenAPI upload URL / PUT / confirmation sequence,
+explicitly setting attachment retention to `ttl=0` (permanent) at both steps.
+`CNB_MIRROR_TOKEN` is an Actions secret limited to `fansionia/packages` with
+`repo-release:rw`. CNB's read-only deployment tokens cannot upload attachments.
+Package releases are identified by a hash of the source repository and tag;
+packages shared by multiple snapshots are stored once. Database releases use
+the snapshot ID, and public-key bundles use their content hash. Existing
+attachments are never overwritten: retries require identical size and SHA-256.
+Every referenced attachment is downloaded anonymously and hashed in full,
+including on retries. Source package identity and signatures are checked by the
+snapshot builder; candidate and public installs enforce pacman's signature checks.
+
+Publication is coupled: CNB sync and both clean Arch candidate installation jobs
+must succeed before either database entry advances. Public installation jobs
+then verify both origins independently. A mirror error leaves the old snapshot
+selected; uploaded objects remain available for retry. During initial bootstrap,
+the currently active primary snapshot is mirrored alongside the new candidate.
+
+`mirror-state.json` in `pacman-pages` journals two successful snapshots, at most
+one pending candidate, verified routes and an explicit inventory of uploaded
+objects. It contains public metadata only. A pending publication is resumed
+before discovering later releases, including when activation already happened
+but public acceptance or cleanup was interrupted. Manual publications perform
+the full verification again even when the selected version is unchanged.
+
+Only after both public installation checks succeed does retention keep the
+latest two successful mirror snapshots. CI first deploys routing without the
+retired snapshot, checks the published retained IDs, and only then deletes
+unreferenced journaled CNB attachments. Shared packages remain. Releases must
+carry the exact workflow ownership marker; unrelated releases and user-added
+attachments are left untouched. Failed cleanup remains journaled for retry.
+The mirror temporarily holds up to three snapshots; GitHub/Pages retains its
+existing 32-snapshot policy. Cached mirror databases older than the retained
+pair require `pacman -Syyu` before further installation.
+
+The mirror has a conservative 90 GiB inventory cap. Exceeding it stops publication
+without deleting protected snapshots. CNB's 100 GiB free object storage is shared
+by the top-level organization, including other repositories, LFS and attachments;
+the inventory cap is not an organization-wide reservation. Keep the organization
+on its free budget; this workflow never enables billing or purchases quota.
+Other organizational storage usage may cause CNB to reject uploads earlier.
+
+Official references: [CNB storage pricing](https://docs.cnb.cool/zh/pricing.md),
+[access tokens](https://docs.cnb.cool/zh/guide/access-token.md), and the
+[Release OpenAPI](https://api.cnb.cool/swagger.json).
+
 ## Failure recovery
 
 Before activation, a failure leaves the previous database selected. Retry the same

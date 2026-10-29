@@ -103,6 +103,22 @@ class RepositoryTests(unittest.TestCase):
                 self.assertEqual(config['active'], active)
                 self.assertEqual(len([path for path in config['assets'] if path.endswith('.pkg.tar.zst')]), 2)
 
+    def test_pending_snapshot_resume_does_not_discover_or_resign_new_releases(self):
+        snapshot = 'a'*32
+        package = repository.select_release(self.project, [self.release()])[0]
+        settings = {'architecture': 'x86_64', 'keep_snapshots': 32}
+        with tempfile.TemporaryDirectory() as temporary:
+            site = Path(temporary)/'site'
+            manifest = {'schema': 1, 'packages': [package], 'generator': 'original-generator',
+                        'keyring': 'original-keyring', 'files': {'x86_64/fansionia.db': 'c'*64}}
+            repository.write_json(site/'snapshots'/snapshot/'manifest.json', manifest)
+            repository.write_json(site/'snapshots.json', [snapshot])
+            with patch.object(repository, 'discover', side_effect=AssertionError('must resume first')), \
+                    patch.object(repository, 'Signer', side_effect=AssertionError('do not resign')), \
+                    patch.object(repository, 'ensure_monotonic'):
+                repository.build(site, settings, snapshot, resume=snapshot)
+            self.assertEqual(json.loads((site/'snapshots'/snapshot/'manifest.json').read_text()), manifest)
+
 
 if __name__ == '__main__':
     unittest.main()

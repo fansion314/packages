@@ -9,10 +9,11 @@ export function createWorker(config) {
         return respond("Method Not Allowed\n", 405, { allow: "GET, HEAD" });
       }
       const path = new URL(request.url).pathname;
-      if (path === "/status.json") {
+      if (path === "/status.json" || (config.mirror && path === "/mirror/status.json")) {
         return respond(request.method === "HEAD" ? null : JSON.stringify({
           schema: 1, active: config.active, candidate: config.candidate,
           phase: config.phase, snapshots: config.snapshots, assets: Object.keys(config.assets).length,
+          ...(config.mirror ? { mirror: config.mirror } : {}),
         }), 200, { "content-type": "application/json" });
       }
       if (path === "/") {

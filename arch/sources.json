@@ -4,6 +4,10 @@
   "pages_url": "https://fansion314.github.io/packages",
   "public_url": "https://packages.fansionia.world",
   "keep_snapshots": 32,
+  "mirror": {
+    "repository": "fansionia/packages",
+    "max_bytes": 96636764160
+  },
   "projects": [
     {"id":"dnr","repository":"fansion314/dnr","tag_pattern":"^v([0-9]+)\\.([0-9]+)\\.([0-9]+)$","packages":["dnr","dnr-cef","dnr-webview","dnc"]},
     {"id":"pi","repository":"fansion314/pi","tag_pattern":"^pi-dnr-v([0-9]+)\\.([0-9]+)\\.([0-9]+)-([0-9]+)$","packages":["pi-dnr"]},

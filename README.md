@@ -15,8 +15,8 @@ GitHub 源码与发布地址：**https://github.com/fansion314/packages**。
 | Bitwarden | `bitwarden-electron` | `bitwarden-electron-bin` | — |
 | MyGo 云音乐 | `mygo-cloudmusic` | `mygo-cloudmusic-bin` | — |
 | Obsidian | `obsidian-electron` | `obsidian-electron-bin` | — |
-| Clash Momo | `clash-momo` | —（源码配方：`clash-momo`） | — |
-| Mihomomo | `mihomomo` | —（源码配方：`mihomomo`） | — |
+| Clash Momo | `clash-momo` | `clash-momo-bin` | — |
+| Mihomomo | `mihomomo` | `mihomomo-bin` | — |
 
 所有 DNR 后端包是互斥替代品。Arch 仓库还提供 DSH 需要的 `python-pptx`
 和签名公钥维护包 `fansionia-keyring`。Bitwarden/Obsidian 使用官方成品应用和
@@ -57,6 +57,18 @@ sudo pacman-key --lsign-key 338AEAB64ECF2EF69AAF3EEFDF31748072E5B972
 SigLevel = Required TrustedOnly
 Server = https://packages.fansionia.world/$arch
 ```
+
+中国网络可将上面的 `Server` 改为 CNB 镜像入口：
+
+```ini
+Server = https://packages.fansionia.world/mirror/$arch
+```
+
+镜像的数据库、包和签名来自 CNB Release 附件，内容和签名身份与主源一致。
+公钥也可从 [CNB 镜像公钥入口](https://packages.fansionia.world/mirror/keys/fansionia.asc)
+下载，仍须核对上述指纹。两端全部验证成功才更新仓库入口；CNB 故障会阻止新快照发布。
+镜像保留最近两个成功快照及其引用的包。长期未更新、缓存了更旧数据库时，先执行
+`sudo pacman -Syyu` 完成数据库刷新和系统升级，再安装软件。
 
 ### 3. 更新并选择应用安装
 

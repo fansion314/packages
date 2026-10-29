@@ -37,7 +37,7 @@ def deploy(phase, candidate, active):
             request = urllib.request.Request(STATUS+'?candidate='+candidate, headers={'Cache-Control': 'no-cache'})
             with urllib.request.urlopen(request, timeout=15) as response:
                 status = json.load(response)
-            if all(status.get(k) == config[k] for k in ['active', 'candidate', 'phase']):
+            if all(status.get(k) == config.get(k) for k in ['active', 'candidate', 'phase', 'mirror']):
                 print('Verified deployed phase:', phase, active)
                 return
         except (OSError, ValueError):
