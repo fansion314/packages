@@ -26,7 +26,14 @@
       "tag": "pacman-keys-6b566fa0060060a2ef08f3d603a1c10b"
     }
   },
-  "objects": {},
+  "objects": {
+    "https://cnb.cool/fansionia/packages/-/releases/download/pacman-keys-6b566fa0060060a2ef08f3d603a1c10b/fansionia.asc": {
+      "filename": "fansionia.asc",
+      "sha256": "8deb6d8e251735400c3cc7f58e3688a4e731888da8fb1c44653ef08df46527e5",
+      "size": 2688,
+      "tag": "pacman-keys-6b566fa0060060a2ef08f3d603a1c10b"
+    }
+  },
   "pending": "6ca0959f1faa040481929b0520086310",
   "repository": "fansionia/packages",
   "schema": 1,
