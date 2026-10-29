@@ -1,5 +1,6 @@
 """Mirror publication, recovery and reference-based collection boundaries."""
 import json
+import io
 from pathlib import Path
 import sys
 import tempfile
@@ -189,6 +190,23 @@ class MirrorTests(unittest.TestCase):
             client.upload(item, '/nonexistent-source-is-not-opened')
         api.assert_not_called()
         put.assert_not_called()
+
+    def test_null_assets_on_new_cnb_release_uploads_with_permanent_retention(self):
+        client = mirror.Client('test/mirror', 'not-a-real-token')
+        source = self.site/'new-attachment'
+        source.write_bytes(b'new attachment')
+        item = {'tag': 'new', 'filename': source.name, 'size': source.stat().st_size,
+                'sha256': mirror.checksum(source)}
+        upload = {'upload_url': 'https://storage.example/upload',
+                  'verify_url': 'https://api.cnb.cool/test/mirror/-/releases/123/asset-upload-confirmation/t/path'}
+        with patch.object(client, 'release', return_value={'id': '123', 'assets': None}), \
+                patch.object(client, 'request', side_effect=[upload, None]) as api, \
+                patch.object(client.opener, 'open', return_value=io.BytesIO()) as put:
+            self.assertTrue(client.upload(item, source))
+        self.assertEqual(api.call_args_list[0].args[2]['ttl'], 0)
+        self.assertFalse(api.call_args_list[0].args[2]['overwrite'])
+        self.assertTrue(api.call_args_list[1].args[1].endswith('?ttl=0'))
+        self.assertEqual(put.call_count, 1)
 
 
 if __name__ == '__main__':

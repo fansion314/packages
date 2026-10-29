@@ -75,19 +75,19 @@ class Client:
 
     def upload(self, item, source):
         release = self.release(item['tag'], create=True)
-        matches = [a for a in release.get('assets', []) if a['name'] == item['filename']]
+        matches = [a for a in (release.get('assets') or []) if a['name'] == item['filename']]
         if len(matches) > 1:
             raise ValueError('Duplicate CNB attachment')
         if matches:
             asset = matches[0]
             if asset['size'] != item['size']:
                 raise ValueError('Refusing to overwrite a different CNB attachment')
-            if asset.get('hash_algo', '').lower().replace('-', '') == 'sha256' and \
+            if (asset.get('hash_algo') or '').lower().replace('-', '') == 'sha256' and \
                     asset['hash_value'].lower() != item['sha256']:
                 raise ValueError('Refusing to overwrite a different CNB digest')
             # Full anonymous SHA-256 verification below also handles servers
             # that report a different hash algorithm, or no hash metadata.
-            return
+            return False
         prefix = f'/{self.repository}/-/releases/{quote(str(release["id"]))}'
         result = self.request('POST', prefix+'/asset-upload-url', {
             'asset_name': item['filename'], 'size': item['size'], 'overwrite': False, 'ttl': 0})
@@ -111,13 +111,14 @@ class Client:
         query = dict(urllib.parse.parse_qsl(verify.query))
         query['ttl'] = '0'
         self.request('POST', verify.path+'?'+urllib.parse.urlencode(query))
+        return True
 
     def delete(self, item):
         release = self.release(item['tag'])
         if release is None:
             return
         prefix = f'/{self.repository}/-/releases/{quote(str(release["id"]))}'
-        for asset in release.get('assets', []):
+        for asset in (release.get('assets') or []):
             if asset['name'] == item['filename']:
                 self.request('DELETE', prefix+'/assets/'+quote(str(asset['id'])))
         # A user may have added other attachments: leave those untouched.
@@ -227,6 +228,7 @@ def sync(site, settings, client=None):
     if not state['pending']:
         raise ValueError('Stage a mirror candidate before syncing')
     client = client or Client(state['repository'])
+    uploaded = reused = 0
     for url, item in references(state).items():
         if 'source' in item:
             source = download(item['source'], ROOT.parent/'.cache/pacman-downloads'/item['sha256'], item['sha256'])
@@ -247,7 +249,10 @@ def sync(site, settings, client=None):
             raise ValueError('Mirror storage budget exceeded; protected files will not be deleted')
         state['objects'][url] = record
         write_json(site/STATE, state)  # journal before any external write
-        client.upload(record, source)
+        if client.upload(record, source):
+            uploaded += 1
+        else:
+            reused += 1
         verify_remote(url, item['sha256'])
         print('Verified CNB attachment:', item['filename'])
     for snapshot in state['snapshots'].values():
@@ -257,6 +262,7 @@ def sync(site, settings, client=None):
         for item in mapping.values():
             item.pop('local', None)
     write_json(site/STATE, state)
+    print(f'CNB sync complete: uploaded {uploaded} new attachments; reused {reused} existing attachments')
 
 
 def routes(site, settings, selected):
