@@ -3,7 +3,9 @@
 set -euo pipefail
 [[ ${GITHUB_ACTIONS:-} == true && $(uname -sm) == 'Darwin arm64' ]]
 app=${1:-/Applications/Clash Momo.app}
-[[ $# -le 1 && $app == /* && -x $app/Contents/MacOS/Electron ]]
+[[ $# -le 1 && $app == /* ]]
+executable=$(/usr/bin/plutil -extract CFBundleExecutable raw -o - "$app/Contents/Info.plist")
+[[ -n $executable && $executable != */* && -f $app/Contents/MacOS/$executable && -x $app/Contents/MacOS/$executable ]]
 app_dir="$HOME/Library/Application Support/clash-momo"
 if [[ -e $app_dir || -L $app_dir ]]; then
   echo "Refusing to alter an existing Clash Momo configuration: $app_dir" >&2
@@ -55,7 +57,7 @@ cleanup() {
   fi
   if (( status != 0 )); then
     cat "$smoke_dir/app.log" 2>/dev/null || true
-    find "$app_dir/logs" -type f -exec tail -n 100 {} \; 2>/dev/null || true
+    find "$app_dir/logs" "$HOME/Library/Application Support/clash-momo-dev/logs" -type f -exec tail -n 100 {} \; 2>/dev/null || true
   fi
   rm -rf "$smoke_dir" "$app_dir"
   exit "$status"
@@ -91,7 +93,7 @@ tproxy-port: 0
 CONFIG
 core_bin="$(brew --prefix mihomomo)/bin/mihomomo"
 expected_version=$("$core_bin" --momo-capabilities | python3 -c 'import json,sys; print(json.load(sys.stdin)["version"])')
-"$app/Contents/MacOS/Electron" >"$smoke_dir/app.log" 2>&1 &
+"$app/Contents/MacOS/$executable" >"$smoke_dir/app.log" 2>&1 &
 app_pid=$!
 socket="/tmp/clash-momo-$(id -u)-$app_pid.sock"
 deadline=$((SECONDS + 120))
