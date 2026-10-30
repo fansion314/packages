@@ -1,6 +1,6 @@
 pkgname=mihomomo-bin
 pkgver=1.19.33
-pkgrel=1
+pkgrel=2
 pkgdesc='Mihomo-based proxy core for Clash Momo (prebuilt)'
 arch=('x86_64')
 url='https://github.com/fansion314/momo'
@@ -13,7 +13,7 @@ options=('!strip' '!debug')
 _package="mihomomo-${pkgver}-${pkgrel}-x86_64.pkg.tar.zst"
 source_x86_64=("https://github.com/fansion314/momo/releases/download/mihomomo-v${pkgver}-${pkgrel}/${_package}")
 noextract=("${_package}")
-sha256sums_x86_64=('40f5f67b88b64eec1f516f756ec30fc97ff079ae5e4355ffb2bc307126f8972f')
+sha256sums_x86_64=('cd430d7c3e8050b1a53781b0002cee7fffe26ad8d631ac29defa452347d2977c')
 
 package() {
   bsdtar -xf "$srcdir/$_package" -C "$pkgdir" usr

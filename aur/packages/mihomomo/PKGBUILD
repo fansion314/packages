@@ -2,21 +2,21 @@ export LANG=C.UTF-8 LC_ALL=C.UTF-8
 
 pkgname=mihomomo
 pkgver=1.19.33
-pkgrel=1
+pkgrel=2
 pkgdesc='Mihomo-based proxy core for Clash Momo'
 arch=('x86_64')
 url='https://github.com/fansion314/momo'
 license=('GPL-3.0-only')
 depends=('glibc' 'libcap')
-makedepends=('git' 'go')
+makedepends=('git' 'go' 'python')
 install=mihomomo.install
-source=("git+https://github.com/fansion314/momo.git#commit=25f67b5e923de0fe134b598a601c3ef71e8a2a68" 'mihomomo.install')
+source=("git+https://github.com/fansion314/momo.git#commit=8856168c199abecb2c1c698f88d46134bcaea282" 'mihomomo.install')
 sha256sums=('SKIP' 'b2eed56f6feafc8291adc22059ce37f27bb14464ae5b5bafa014acd85c8e02e6')
 options=('!debug' '!strip')
 
 build() {
   cd "$srcdir/momo"
-  CGO_ENABLED=0 GOAMD64=v1 go build -trimpath -tags with_gvisor -ldflags "-s -w -X github.com/metacubex/mihomo/constant.Version=$pkgver" -o mihomomo .
+  CGO_ENABLED=0 GOAMD64=v1 bash packaging/build-core.sh mihomomo "$pkgver"
 }
 
 check() {
