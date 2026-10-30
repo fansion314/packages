@@ -1,12 +1,12 @@
 pkgbase = clash-momo-bin
 	pkgdesc = Desktop client for mihomomo (prebuilt)
 	pkgver = 2.0.4
-	pkgrel = 1
+	pkgrel = 2
 	url = https://github.com/fansion314/momo
 	arch = x86_64
 	license = GPL-3.0-only
 	depends = electron
-	depends = mihomomo>=1.19.33
+	depends = mihomomo>=1.19.33-2
 	depends = gtk3
 	depends = libnotify
 	depends = libsecret
@@ -15,10 +15,10 @@ pkgbase = clash-momo-bin
 	depends = polkit
 	provides = clash-momo=2.0.4
 	conflicts = clash-momo
-	noextract = clash-momo-2.0.4-1-x86_64.pkg.tar.zst
+	noextract = clash-momo-2.0.4-2-x86_64.pkg.tar.zst
 	options = !strip
 	options = !debug
-	source_x86_64 = https://github.com/fansion314/momo/releases/download/clash-momo-v2.0.4-1/clash-momo-2.0.4-1-x86_64.pkg.tar.zst
-	sha256sums_x86_64 = aaf1e5ac67ee2f97e5709c588082d5333788bded92a019bffecc4a860eed8bd4
+	source_x86_64 = https://github.com/fansion314/momo/releases/download/clash-momo-v2.0.4-2/clash-momo-2.0.4-2-x86_64.pkg.tar.zst
+	sha256sums_x86_64 = a5cd2ff728ad1071b3617a6a56522c852e499c04e71fbdf870ce79a91cdfbfbb
 
 pkgname = clash-momo-bin

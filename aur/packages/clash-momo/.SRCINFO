@@ -1,7 +1,7 @@
 pkgbase = clash-momo
 	pkgdesc = Desktop client for mihomomo
 	pkgver = 2.0.4
-	pkgrel = 1
+	pkgrel = 2
 	url = https://github.com/fansion314/momo
 	arch = x86_64
 	license = GPL-3.0-only
@@ -10,7 +10,7 @@ pkgbase = clash-momo
 	makedepends = pnpm
 	makedepends = unzip
 	depends = electron
-	depends = mihomomo>=1.19.33
+	depends = mihomomo>=1.19.33-2
 	depends = gtk3
 	depends = libnotify
 	depends = libsecret
@@ -19,7 +19,7 @@ pkgbase = clash-momo
 	depends = polkit
 	options = !strip
 	options = !debug
-	source = git+https://github.com/fansion314/momo.git#commit=60395d217349b331ed107aebc888a0f0246ed83b
+	source = git+https://github.com/fansion314/momo.git#commit=2a36cba1a16c3db815e1f4d845b79f1d089668ce
 	source = clash-momo
 	source = clash-momo.desktop
 	sha256sums = SKIP
