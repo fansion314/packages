@@ -1,8 +1,8 @@
 # Maintainer: fansion314 <https://github.com/fansion314>
 pkgname=mygo-cloudmusic
-pkgver=0.1.20
-pkgrel=2
-_tag=mygo-cloudmusic-v0.1.20-2
+pkgver=0.1.22
+pkgrel=1
+_tag=mygo-cloudmusic-v0.1.22-1
 pkgdesc='MyGo CloudMusic native NetEase Music client with adjustable interface scale'
 arch=('x86_64')
 url='https://github.com/fansion314/packages'
@@ -12,8 +12,8 @@ optdepends=('gnome-keyring: store login credentials' 'libayatana-appindicator: s
 makedepends=('git' 'go>=1.27.3' 'python' 'desktop-file-utils' 'imagemagick' 'kiconthemes' 'xorg-xprop' 'xdotool')
 conflicts=('mygo-cloudmusic-bin' 'mygo-cloudmusic-git')
 options=('!lto' '!debug' '!strip')
-_packaging_ref='tag=mygo-cloudmusic-v0.1.20-2'
-source=("mygo-cloudmusic::git+https://github.com/egoist/mygo-cloudmusic.git#commit=8d7386f8a42032d07ece3be330241daf5c9442a0"
+_packaging_ref='tag=mygo-cloudmusic-v0.1.22-1'
+source=("mygo-cloudmusic::git+https://github.com/egoist/mygo-cloudmusic.git#commit=d7265506a80ec8251a3645cd3885427679320d90"
         "packaging::git+https://github.com/fansion314/packages.git#${_packaging_ref}")
 sha256sums=('SKIP' 'SKIP')
 

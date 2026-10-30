@@ -1,8 +1,8 @@
 # Maintainer: fansion314 <https://github.com/fansion314>
 pkgname=mygo-cloudmusic-bin
-pkgver=0.1.20
-pkgrel=2
-_tag=mygo-cloudmusic-v0.1.20-2
+pkgver=0.1.22
+pkgrel=1
+_tag=mygo-cloudmusic-v0.1.22-1
 pkgdesc='MyGo CloudMusic native NetEase Music client with adjustable interface scale (prebuilt Arch package)'
 arch=('x86_64')
 url='https://github.com/fansion314/packages'
@@ -15,7 +15,7 @@ options=('!strip')
 _package="mygo-cloudmusic-${pkgver}-${pkgrel}-x86_64.pkg.tar.zst"
 source=("${url}/releases/download/${_tag}/${_package}")
 noextract=("${_package}")
-sha256sums=('cc3376e4fb53e6c9ecd3a049508142a70d2e99d7bed05c3649bc974fa382e9f0')
+sha256sums=('69f83392edcdf77420e18869591f1219f60e3ca06286fe784ba724ea0bf41e05')
 
 package() {
   bsdtar -xf "$srcdir/$_package" -C "$pkgdir" usr

@@ -1,7 +1,7 @@
 pkgbase = mygo-cloudmusic-bin
 	pkgdesc = MyGo CloudMusic native NetEase Music client with adjustable interface scale (prebuilt Arch package)
-	pkgver = 0.1.20
-	pkgrel = 2
+	pkgver = 0.1.22
+	pkgrel = 1
 	url = https://github.com/fansion314/packages
 	arch = x86_64
 	license = AGPL-3.0-only
@@ -13,12 +13,12 @@ pkgbase = mygo-cloudmusic-bin
 	depends = hicolor-icon-theme
 	optdepends = gnome-keyring: store login credentials
 	optdepends = libayatana-appindicator: system tray integration
-	provides = mygo-cloudmusic=0.1.20
+	provides = mygo-cloudmusic=0.1.22
 	conflicts = mygo-cloudmusic
 	conflicts = mygo-cloudmusic-git
-	noextract = mygo-cloudmusic-0.1.20-2-x86_64.pkg.tar.zst
+	noextract = mygo-cloudmusic-0.1.22-1-x86_64.pkg.tar.zst
 	options = !strip
-	source = https://github.com/fansion314/packages/releases/download/mygo-cloudmusic-v0.1.20-2/mygo-cloudmusic-0.1.20-2-x86_64.pkg.tar.zst
-	sha256sums = cc3376e4fb53e6c9ecd3a049508142a70d2e99d7bed05c3649bc974fa382e9f0
+	source = https://github.com/fansion314/packages/releases/download/mygo-cloudmusic-v0.1.22-1/mygo-cloudmusic-0.1.22-1-x86_64.pkg.tar.zst
+	sha256sums = 69f83392edcdf77420e18869591f1219f60e3ca06286fe784ba724ea0bf41e05
 
 pkgname = mygo-cloudmusic-bin
