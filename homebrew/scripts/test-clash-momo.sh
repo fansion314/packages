@@ -18,10 +18,10 @@ core_identity=''
 find_core() {
   [[ -n $app_pid ]] || return 0
   for candidate in $(pgrep -P "$app_pid" || true); do
-    command=$(ps -p "$candidate" -o comm= | sed 's/^[[:space:]]*//' || true)
+    command=$(ps -p "$candidate" -o ucomm= | sed 's/^[[:space:]]*//' || true)
     if [[ $command == */mihomomo || $command == mihomomo ]]; then
       core_pid=$candidate
-      core_identity=$(ps -p "$candidate" -o uid= -o lstart= -o comm= || true)
+      core_identity=$(ps -p "$candidate" -o uid= -o lstart= -o ucomm= || true)
       break
     fi
   done
@@ -46,10 +46,10 @@ cleanup() {
     echo "App left its Mihomomo process running: $core_pid" >&2
     # Only terminate the exact child observed during this test, and only if
     # its executable still matches the installed core (avoid PID reuse).
-    if [[ $(ps -p "$core_pid" -o uid= -o lstart= -o comm= 2>/dev/null) == "$core_identity" ]]; then
+    if [[ $(ps -p "$core_pid" -o uid= -o lstart= -o ucomm= 2>/dev/null) == "$core_identity" ]]; then
       kill -TERM "$core_pid" 2>/dev/null || true
       sleep 1
-      if [[ $(ps -p "$core_pid" -o uid= -o lstart= -o comm= 2>/dev/null || true) == "$core_identity" ]]; then
+      if [[ $(ps -p "$core_pid" -o uid= -o lstart= -o ucomm= 2>/dev/null || true) == "$core_identity" ]]; then
         kill -KILL "$core_pid" 2>/dev/null || true
       fi
     fi
