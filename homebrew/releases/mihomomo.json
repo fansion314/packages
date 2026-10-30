@@ -1,0 +1,19 @@
+{
+  "repository": "fansion314/momo",
+  "tag": "mihomomo-v1.19.33-1",
+  "version": "1.19.33",
+  "release": 1,
+  "revision": 1,
+  "asset": "mihomomo-1.19.33-1-macos-arm64-r1.tar.gz",
+  "url": "https://github.com/fansion314/momo/releases/download/mihomomo-v1.19.33-1/mihomomo-1.19.33-1-macos-arm64-r1.tar.gz",
+  "github_digest": "sha256:9403935d16952a4e0b2b8e10cf46aea7487ece3de9cea2201e70ef116d3223b7",
+  "source_sha": "25f67b5e923de0fe134b598a601c3ef71e8a2a68",
+  "sha256": "9403935d16952a4e0b2b8e10cf46aea7487ece3de9cea2201e70ef116d3223b7",
+  "key": [
+    1,
+    19,
+    33,
+    1,
+    1
+  ]
+}
