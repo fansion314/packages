@@ -17,7 +17,7 @@ conflicts=('bitwarden' 'bitwarden-bin' 'bitwarden-electron-bin')
 options=('!strip' '!debug')
 source=("https://github.com/bitwarden/clients/releases/download/desktop-v${pkgver}/Bitwarden-${pkgver}-amd64.deb"
         'bitwarden.sh')
-sha256sums=('02cb6bc6a429d8d0da9fdf9d23739358165cf7b98a245783d6f641526f75b0a7'
+sha256sums=('72c9ff6c45b8c8d803a4e4102f2884d6f579f329801a8953921c118737d92bc0'
             'd13e5137334dfda41999aeabff4c29cfe4b1a15bb7d14e5c9ebe7bed7fc8c829')
 
 prepare() {

@@ -1,6 +1,6 @@
 {
   "id": "bitwarden",
-  "version": "2026.10.1",
+  "version": "2026.10.2",
   "pkgrel": 1,
   "package": "bitwarden-electron",
   "import": {
