@@ -20,3 +20,13 @@ index 18bb0d9..4e36a35 100644
  	a := newTestApp()
  	a.settings = defaultSettings()
  	n := &notch{a: a, w0: 200, h0: 32, winW: notchOpenW + 60, winH: 240}
+@@ -63,6 +66,9 @@ func TestNotchGreetsOnce(t *testing.T) {
+ // The pointer resting on the greeting leaves it as it is, so its button can
+ // be clicked. It used to open the player, which hid the button, and leaving
+ // brought it back only to open again as the pointer came back to it.
+ func TestNotchGreetingKeptUnderPointer(t *testing.T) {
++	if runtime.GOOS != "darwin" {
++		t.Skip("the notch greeting is only enabled on macOS")
++	}
+ 	a := newTestApp()
+ 	a.settings = defaultSettings()

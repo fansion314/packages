@@ -50,14 +50,15 @@ class PackageTests(unittest.TestCase):
 
     def test_native_app_version_comes_from_mygo_config_not_website(self):
         import json
-        for version in ['0.1.20', '0.0.0']:
+        current = package.manifest('mygo-cloudmusic')['version']
+        for version in [current, '0.0.0']:
             with self.subTest(version=version), tempfile.TemporaryDirectory() as directory:
                 source = Path(directory)
                 (source/'package.json').write_text('{"private":true}')
                 (source/'mygo.json').write_text(json.dumps({'version': version}))
                 with patch.object(package, 'run', side_effect=[package.manifest('mygo-cloudmusic')['upstream']['commit'], '']), \
                      patch.object(package.subprocess, 'run'):
-                    if version == '0.1.20':
+                    if version == current:
                         package.apply('mygo-cloudmusic', source)
                         self.assertTrue((source/'aur/mygo-cloudmusic/PKGBUILD').is_file())
                     else:

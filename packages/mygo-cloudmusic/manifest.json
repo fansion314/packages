@@ -1,13 +1,13 @@
 {
   "id": "mygo-cloudmusic",
-  "version": "0.1.20",
-  "pkgrel": 2,
+  "version": "0.1.22",
+  "pkgrel": 1,
   "package": "mygo-cloudmusic",
   "runtime": "native-go",
   "version_file": "mygo.json",
   "upstream": {
     "repository": "egoist/mygo-cloudmusic",
-    "tag": "v0.1.20",
-    "commit": "8d7386f8a42032d07ece3be330241daf5c9442a0"
+    "tag": "v0.1.22",
+    "commit": "d7265506a80ec8251a3645cd3885427679320d90"
   }
 }

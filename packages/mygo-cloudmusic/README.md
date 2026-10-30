@@ -4,7 +4,7 @@ The pinned upstream release is recorded in `manifest.json`. The interface featur
 patch is `patches/0001-add-interface-scale-setting.patch`: a persistent
 75–200% content scale in Settings, applied immediately to the main and settings
 windows. A separate test-only patch limits the upstream macOS notch greeting
-test to macOS, matching the implementation’s existing platform guard. The default remains 100% of the system display scale. The upstream
+tests to macOS, matching the implementation’s existing platform guard. The default remains 100% of the system display scale. The upstream
 application name, ID (`dev.egoist.cloudmusic`) and data directories are preserved.
 
 The native Go application is built on Arch CI, without a WebView or Electron.
