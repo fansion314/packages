@@ -1,28 +1,28 @@
 {
   "repository": "fansion314/momo",
-  "reference": "mihomomo-v1.19.33-2",
+  "reference": "mihomomo-v1.19.33-3",
   "packages": {
     "mihomomo": {
-      "version": "0:1.19.33-2",
+      "version": "0:1.19.33-3",
       "files": {
-        ".SRCINFO": "b30cb1b749b9368329c2615fd58cbc83d42a897db69df0b51a95e01060490568",
-        "PKGBUILD": "66be5e3e92158f584ed48459cf02271bab23dbcb685fc98db8a205ad4bb3b928",
+        ".SRCINFO": "474350881596e50db23ae435850a44617de95fdc37f35641b413844df2205f82",
+        "PKGBUILD": "6354a9bf9a6c2e7e644794be3298b9cc3cf8b93a612dea3ab782cf448b5b5277",
         "mihomomo.install": "b2eed56f6feafc8291adc22059ce37f27bb14464ae5b5bafa014acd85c8e02e6"
       },
       "assets": []
     },
     "mihomomo-bin": {
-      "version": "0:1.19.33-2",
+      "version": "0:1.19.33-3",
       "files": {
-        ".SRCINFO": "940ab6b696bd2f703abf72fc8fc706a8e25fadf7f753af79608ab92c72e18ad2",
-        "PKGBUILD": "c01bfd4ae6200eb3f047549ef3f3602bc078f724d740773a8607100cd08b37bf",
+        ".SRCINFO": "7156830423fea27819935e3561385d537d1f67ab12984afc95f8cc071d8109be",
+        "PKGBUILD": "90091bc147e1391f55a02b5fc960045aa05a40c642a90c6862aa2b368918f9aa",
         "mihomomo.install": "b2eed56f6feafc8291adc22059ce37f27bb14464ae5b5bafa014acd85c8e02e6"
       },
       "assets": [
         {
-          "url": "https://github.com/fansion314/momo/releases/download/mihomomo-v1.19.33-2/mihomomo-1.19.33-2-x86_64.pkg.tar.zst",
-          "sha256": "cd430d7c3e8050b1a53781b0002cee7fffe26ad8d631ac29defa452347d2977c",
-          "size": 24488599
+          "url": "https://github.com/fansion314/momo/releases/download/mihomomo-v1.19.33-3/mihomomo-1.19.33-3-x86_64.pkg.tar.zst",
+          "sha256": "48209b3de692ffcd0c452de773b8ac79fc93b83c1a585cd8ec66b71485df668a",
+          "size": 24505017
         }
       ]
     }
