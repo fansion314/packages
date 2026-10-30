@@ -51,6 +51,7 @@ for project in "${projects[@]}"; do
       brew reinstall --cask fansion314/packages/clash-momo
       codesign --verify --deep --strict "$app"
       if xattr -p com.apple.quarantine "$app" >/dev/null 2>&1; then exit 1; fi
+      bash homebrew/scripts/test-clash-momo.sh
       brew uninstall --cask fansion314/packages/clash-momo
       test ! -e "$app"
       ;;
