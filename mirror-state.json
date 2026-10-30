@@ -1,5 +1,5 @@
 {
-  "cleanup_pending": true,
+  "cleanup_pending": false,
   "keys": {
     "/keys/fansionia.asc": {
       "filename": "fansionia.asc",
@@ -231,18 +231,6 @@
       "size": 119,
       "tag": "pacman-package-ca4b950693f23a5754912a1029bd17f9"
     },
-    "https://cnb.cool/fansionia/packages/-/releases/download/pacman-package-cf73a45625ebbcea21a20862121cd633/mihomomo-0.1.0-3-x86_64.pkg.tar.zst": {
-      "filename": "mihomomo-0.1.0-3-x86_64.pkg.tar.zst",
-      "sha256": "7721f9a2d90d48c706ee1b37cf2870bf82b92fb6efce7ad962469b9de7ddc5ce",
-      "size": 24445677,
-      "tag": "pacman-package-cf73a45625ebbcea21a20862121cd633"
-    },
-    "https://cnb.cool/fansionia/packages/-/releases/download/pacman-package-cf73a45625ebbcea21a20862121cd633/mihomomo-0.1.0-3-x86_64.pkg.tar.zst.sig": {
-      "filename": "mihomomo-0.1.0-3-x86_64.pkg.tar.zst.sig",
-      "sha256": "f0142786e2a4e1cac6f9d4f22de3e3477ec49c29a30bfec72191ba1361e19549",
-      "size": 119,
-      "tag": "pacman-package-cf73a45625ebbcea21a20862121cd633"
-    },
     "https://cnb.cool/fansionia/packages/-/releases/download/pacman-package-e479549c9e3746c39bbf0b599d492844/mygo-cloudmusic-0.1.20-2-x86_64.pkg.tar.zst": {
       "filename": "mygo-cloudmusic-0.1.20-2-x86_64.pkg.tar.zst",
       "sha256": "cc3376e4fb53e6c9ecd3a049508142a70d2e99d7bed05c3649bc974fa382e9f0",
@@ -362,60 +350,6 @@
       "sha256": "5063cfe2a9dae8f75f05467328590496b4a273689db0e813f3599414c7540e12",
       "size": 16401,
       "tag": "snapshot-7d1736c172a43f5b796da1759b85ad8d"
-    },
-    "https://cnb.cool/fansionia/packages/-/releases/download/snapshot-9009c6fd8f11fbc793457b5248583f0d/fansionia.db": {
-      "filename": "fansionia.db",
-      "sha256": "4e2d5208e1f3d99300b8dc1302fc5b8860aad59bd90ef45c012673f265e670e9",
-      "size": 10000,
-      "tag": "snapshot-9009c6fd8f11fbc793457b5248583f0d"
-    },
-    "https://cnb.cool/fansionia/packages/-/releases/download/snapshot-9009c6fd8f11fbc793457b5248583f0d/fansionia.db.sig": {
-      "filename": "fansionia.db.sig",
-      "sha256": "cacf51037555a638f23a724a6c258509e3feb52a14895df9aa21608662f7157b",
-      "size": 119,
-      "tag": "snapshot-9009c6fd8f11fbc793457b5248583f0d"
-    },
-    "https://cnb.cool/fansionia/packages/-/releases/download/snapshot-9009c6fd8f11fbc793457b5248583f0d/fansionia.db.tar.gz": {
-      "filename": "fansionia.db.tar.gz",
-      "sha256": "4e2d5208e1f3d99300b8dc1302fc5b8860aad59bd90ef45c012673f265e670e9",
-      "size": 10000,
-      "tag": "snapshot-9009c6fd8f11fbc793457b5248583f0d"
-    },
-    "https://cnb.cool/fansionia/packages/-/releases/download/snapshot-9009c6fd8f11fbc793457b5248583f0d/fansionia.db.tar.gz.sig": {
-      "filename": "fansionia.db.tar.gz.sig",
-      "sha256": "cacf51037555a638f23a724a6c258509e3feb52a14895df9aa21608662f7157b",
-      "size": 119,
-      "tag": "snapshot-9009c6fd8f11fbc793457b5248583f0d"
-    },
-    "https://cnb.cool/fansionia/packages/-/releases/download/snapshot-9009c6fd8f11fbc793457b5248583f0d/fansionia.files": {
-      "filename": "fansionia.files",
-      "sha256": "9602b5c8305d9f1165d981818ab8ed5b3081047036f3245eb0e969c6e9e8ac7d",
-      "size": 145310,
-      "tag": "snapshot-9009c6fd8f11fbc793457b5248583f0d"
-    },
-    "https://cnb.cool/fansionia/packages/-/releases/download/snapshot-9009c6fd8f11fbc793457b5248583f0d/fansionia.files.sig": {
-      "filename": "fansionia.files.sig",
-      "sha256": "6f0cc395964e2ebf07785768bcd8a5cda99cd31690ea09b8585ce2ac668bd3d3",
-      "size": 119,
-      "tag": "snapshot-9009c6fd8f11fbc793457b5248583f0d"
-    },
-    "https://cnb.cool/fansionia/packages/-/releases/download/snapshot-9009c6fd8f11fbc793457b5248583f0d/fansionia.files.tar.gz": {
-      "filename": "fansionia.files.tar.gz",
-      "sha256": "9602b5c8305d9f1165d981818ab8ed5b3081047036f3245eb0e969c6e9e8ac7d",
-      "size": 145310,
-      "tag": "snapshot-9009c6fd8f11fbc793457b5248583f0d"
-    },
-    "https://cnb.cool/fansionia/packages/-/releases/download/snapshot-9009c6fd8f11fbc793457b5248583f0d/fansionia.files.tar.gz.sig": {
-      "filename": "fansionia.files.tar.gz.sig",
-      "sha256": "6f0cc395964e2ebf07785768bcd8a5cda99cd31690ea09b8585ce2ac668bd3d3",
-      "size": 119,
-      "tag": "snapshot-9009c6fd8f11fbc793457b5248583f0d"
-    },
-    "https://cnb.cool/fansionia/packages/-/releases/download/snapshot-9009c6fd8f11fbc793457b5248583f0d/manifest.json": {
-      "filename": "manifest.json",
-      "sha256": "fe09eec69b0bd7ccc4c0004273fe649c5e0a05d284435d73a098abbea92711a6",
-      "size": 16387,
-      "tag": "snapshot-9009c6fd8f11fbc793457b5248583f0d"
     },
     "https://cnb.cool/fansionia/packages/-/releases/download/upstream-denial-0ffcee1f451c84f388f333e92b8fcd8b/denial-0.5.1-1-x86_64.pkg.tar.zst": {
       "filename": "denial-0.5.1-1-x86_64.pkg.tar.zst",
