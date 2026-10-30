@@ -1,7 +1,7 @@
 class Dnr < Formula
   desc "Shared Deno runtime and application packager"
   homepage "https://github.com/@REPOSITORY@"
-  url "https://github.com/@REPOSITORY@/releases/download/v@VERSION@/@ARCHIVE@"
+  url "@URL@"
   version "@VERSION@"@REVISION@
   sha256 "@SHA256@"
   license "MIT"

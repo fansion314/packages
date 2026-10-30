@@ -122,29 +122,55 @@ Bitwarden/Obsidian 的配方重打包官方成品。源码与 bin 变体是替�
 
 Clash Momo 需要 macOS 15 及 Apple Silicon；Cask 自动安装独立的 `mihomomo` Formula，不自动安装或启动系统服务。应用采用 ad-hoc 签名，未经 Apple 公证；验证签名后仅移除已安装应用的隔离属性。
 
-支持 Apple Silicon、macOS 15 及以上：
+支持 Apple Silicon、macOS 15 及以上。两个来源使用同一个 tap 名称
+`fansionia/tap`，首次添加时选择其中一个：
 
 ```sh
-brew tap fansion314/packages https://github.com/fansion314/packages.git
-brew install fansion314/packages/dnr fansion314/packages/pi-dnr
-brew install --cask fansion314/packages/etcher-dnr
-brew install --cask fansion314/packages/clash-momo
+# GitHub 主源
+brew tap fansionia/tap https://github.com/fansion314/packages.git
+
+# 或 CNB 镜像
+brew tap fansionia/tap https://cnb.cool/fansionia/packages
 ```
 
-仓库名不带 `homebrew-` 前缀，首次 tap 必须提供完整 URL。
-`dnr` formula 提供 `dnr` 和 `dnc`；Pi/Etcher 共享该 runtime。
-信任配方后也可用短包名安装。
-
-从旧 tap `fansion314/dnr` 迁移时先添加新 tap，然后可按需重装对应新来源：
+安装命令对两个来源相同：
 
 ```sh
-brew reinstall fansion314/packages/dnr fansion314/packages/pi-dnr
-brew reinstall --cask fansion314/packages/etcher-dnr
-brew untap fansion314/dnr
+brew install fansionia/tap/dnr fansionia/tap/pi-dnr
+brew install --cask fansionia/tap/etcher-dnr
+brew install --cask fansionia/tap/clash-momo
 ```
 
-只重装已使用的应用。若 untap 提示仍有旧来源安装，先按提示检查并迁移这些应用，
-再移除旧 tap；不要用 `--force` 触发卸载。日常更新：
+Homebrew 要求 tap 名称为 `用户/仓库` 两段，不能只写 `fansionia`。
+显式提供 Git URL 时，名称无需与实际仓库路径一致；同一台机器上的
+`fansionia/tap` 一次对应一个来源。首次添加必须提供完整 URL。
+`dnr` formula 提供 `dnr` 和 `dnc`；Pi/Etcher 共享该 runtime，Clash Momo
+依赖同一 tap 的 Mihomomo。信任配方后也可用短包名安装。
+
+CNB 的 `main` 自动维护 Homebrew 配方、版本记录及使用说明；开发代码与 CI
+仍在 GitHub。镜像配方及内部运行时依赖均从 CNB Release 附件下载，归档和
+`.sha256` 文件与 GitHub 原件完全一致。首次同步覆盖当前五个受支持项目，
+之后自动跟进新版本；使用独立的 `homebrew-…` Release 标签，不参与 pacman
+镜像附件清理。
+
+已添加 `fansionia/tap` 后，切换到 CNB：
+
+```sh
+brew tap --custom-remote fansionia/tap https://cnb.cool/fansionia/packages
+brew update-reset "$(brew --repository fansionia/tap)"
+```
+
+切回 GitHub：
+
+```sh
+brew tap --custom-remote fansionia/tap https://github.com/fansion314/packages.git
+brew update-reset "$(brew --repository fansionia/tap)"
+```
+
+两端的 Git 历史不同，切换后需执行上述定向刷新。它会清除该 tap 检出中的
+手工提交和未提交修改；先保存需要保留的修改。必须保留命令中的仓库路径，
+不要运行不带路径的 `brew update-reset`。此操作不卸载已安装应用，也不删除
+应用配置和数据。日常更新：
 
 ```sh
 brew update
@@ -169,7 +195,7 @@ Worker 嵌入映射配置，不使用 KV，不运行时拉 JSON。保留最近�
 
 发布源主动通知下游，每 15 分钟另有定时兜底；GitHub 调度可能延迟。
 本仓库的标签发布会异步调度 `main` 上的 `downstream.yml`，须独立跟进该运行及正式域名安装结果。
-Homebrew 安装验证、原生 Arch 构建/包测试和正式域名 pacman 安装均在 CI 执行。Homebrew 同步可按项目指定 `dnr`、`pi`、`etcher`、`mihomomo` 或 `clash-momo`；留空同步全部项目。
+Homebrew 安装验证、原生 Arch 构建/包测试和正式域名 pacman 安装均在 CI 执行。Homebrew 主源同步可按项目指定 `dnr`、`pi`、`etcher`、`mihomomo` 或 `clash-momo`；留空同步全部项目。随后固定验证后的维护提交，上传并匿名校验 CNB 附件、测试完整候选 tap，再快进发布 CNB `main`，最后从公开镜像执行双向切换和完整安装验收。镜像失败不会撤回已验证的 GitHub 更新；失败的镜像步骤须修复或重跑，无版本变化时也会检查镜像是否完成。
 CI 烟雾测试不代表手动 GUI 或物理 USB 设备已经验收。
 
 ## 维护入口

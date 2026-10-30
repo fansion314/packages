@@ -7,6 +7,7 @@ from pathlib import Path
 import re
 import subprocess
 import tempfile
+from urllib.parse import quote
 
 ROOT = Path(__file__).resolve().parents[1]
 TAP_ROOT = ROOT.parent
@@ -87,12 +88,36 @@ def verified_digest(info):
         return digest
 
 
-def render(project, info):
+def cnb_tag(project, info):
+    """Keep Homebrew attachments separate from pacman's managed release tags."""
+    if project not in PROJECTS:
+        raise ValueError('Unsupported Homebrew project')
+    version = info['version']
+    release = info['release']
+    if not re.fullmatch(r'\d+\.\d+\.\d+', version) or type(release) is not int or release < 0:
+        raise ValueError('Invalid mirrored release identity')
+    return f'homebrew-{project}-v{version}' + (f'-{release}' if release else '')
+
+
+def cnb_url(project, info):
+    tag = cnb_tag(project, info)
+    asset = info['asset']
+    if not asset or Path(asset).name != asset or asset in {'.', '..'}:
+        raise ValueError('Invalid mirrored release asset')
+    return f'https://cnb.cool/fansionia/packages/-/releases/download/{quote(tag, safe="")}/{quote(asset, safe="")}'
+
+
+def render(project, info, source='github'):
+    if project not in PROJECTS:
+        raise ValueError('Unsupported Homebrew project')
+    if source not in {'github', 'cnb'}:
+        raise ValueError('Unsupported Homebrew source')
+    url = info['url'] if source == 'github' else cnb_url(project, info)
     version, revision = info['version'], info['revision']
     if project == 'dnr':
         text = (ROOT/'templates/dnr.rb.in').read_text()
         values = {'REPOSITORY': info['repository'], 'VERSION': version, 'SHA256': info['sha256'],
-                  'ARCHIVE': info['asset'], 'REVISION': f'\n  revision {revision}' if revision else ''}
+                  'URL': url, 'REVISION': f'\n  revision {revision}' if revision else ''}
         for key, value in values.items():
             text = text.replace('@' + key + '@', value)
         return 'Formula/dnr.rb', text
@@ -100,7 +125,7 @@ def render(project, info):
         return 'Formula/mihomomo.rb', f'''class Mihomomo < Formula
   desc "Mihomomo proxy core for Clash Momo"
   homepage "https://github.com/fansion314/momo"
-  url "{info['url']}"
+  url "{url}"
   version "{version}-{info['release']}"
   revision {revision}
   sha256 "{info['sha256']}"
@@ -129,14 +154,14 @@ end
   version "{version}-{info['release']},{revision}"
   sha256 "{info['sha256']}"
 
-  url "{info['url']}"
+  url "{url}"
   name "Clash Momo"
   desc "Graphical proxy client using Mihomomo"
   homepage "https://github.com/fansion314/momo"
 
   depends_on arch: :arm64
   depends_on macos: :sequoia
-  depends_on formula: "fansion314/packages/mihomomo"
+  depends_on formula: "fansionia/tap/mihomomo"
 
   app "Clash Momo.app"
 
@@ -162,7 +187,7 @@ end
         return 'Formula/pi-dnr.rb', f'''class PiDnr < Formula
   desc "Pi coding agent for the shared dnr runtime"
   homepage "https://github.com/fansion314/pi"
-  url "{info['url']}"
+  url "{url}"
   version "{version}-{info['release']}"
   revision {revision}
   sha256 "{info['sha256']}"
@@ -170,15 +195,15 @@ end
 
   depends_on arch: :arm64
   depends_on macos: :sequoia
-  depends_on "fansion314/packages/dnr"
+  depends_on "fansionia/tap/dnr"
   depends_on "fd"
   depends_on "ripgrep"
 
   def install
-    system Formula["fansion314/packages/dnr"].opt_bin/"dnc", "install", "pi.dnp", libexec/"app"
+    system Formula["fansionia/tap/dnr"].opt_bin/"dnc", "install", "pi.dnp", libexec/"app"
     (bin/"pi").write <<~SH
       #!/bin/sh
-      exec "#{{Formula["fansion314/packages/dnr"].opt_bin}}/dnr" "#{{libexec}}/app/pi.dnp" "$@"
+      exec "#{{Formula["fansionia/tap/dnr"].opt_bin}}/dnr" "#{{libexec}}/app/pi.dnp" "$@"
     SH
   end
 
@@ -199,14 +224,14 @@ end
   version "{cask_version}"
   sha256 "{info['sha256']}"
 
-  url "{info['url']}"
+  url "{url}"
   name "{name}"
   desc "{description}"
   homepage "https://github.com/{info['repository']}"
 
   depends_on arch: :arm64
   depends_on macos: :sequoia
-  depends_on formula: "fansion314/packages/dnr"
+  depends_on formula: "fansionia/tap/dnr"
 
   app "{app}"
 

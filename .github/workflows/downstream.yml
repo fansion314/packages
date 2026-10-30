@@ -54,6 +54,7 @@ jobs:
     uses: ./.github/workflows/sync-homebrew.yml
     with:
       project: ${{ inputs.project }}
+    secrets: inherit
   pacman:
     needs: validate
     # pacman has its own half-hour schedule; retain immediate release dispatches.

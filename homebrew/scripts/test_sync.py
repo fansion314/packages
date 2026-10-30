@@ -47,7 +47,7 @@ class NewTapTests(unittest.TestCase):
             _, text = sync.render(project, {'version': '1.2.3', 'release': 1, 'revision': 1,
                                            'sha256': 'a'*64, 'url': 'https://example.com/package',
                                            'repository': 'fansion314/etcher'})
-            self.assertIn('fansion314/packages/dnr', text)
+            self.assertIn('fansionia/tap/dnr', text)
             self.assertNotIn('fansion314/dnr/dnr', text)
 
 
@@ -81,10 +81,68 @@ class MomoReleaseTests(unittest.TestCase):
         info = {'version': '2.0.4', 'release': 1, 'revision': 1, 'sha256': 'a'*64,
                 'url': 'https://example.com/archive', 'repository': 'fansion314/momo'}
         _, cask = sync.render('clash-momo', info)
-        self.assertIn('fansion314/packages/mihomomo', cask)
+        self.assertIn('fansionia/tap/mihomomo', cask)
         self.assertLess(cask.index('codesign'), cask.index('xattr'))
         self.assertIn('{{appdir}}/Clash Momo.app', cask)
         _, formula = sync.render('mihomomo', info)
         self.assertIn('capabilities["protocol"]', formula)
         self.assertIn('capabilities["managedMode"]', formula)
         self.assertNotIn('service do', formula)
+
+
+class MirrorRenderTests(unittest.TestCase):
+    def info(self, project, release=1, revision=2):
+        version = '1.2.3'
+        filename = f'{project}-{version}' + (f'-{release}' if release else '')
+        filename += f'-macos-arm64-r{revision}.tar.gz'
+        return {'repository': sync.PROJECTS[project][0], 'tag': 'upstream-tag',
+                'version': version, 'release': release, 'revision': revision,
+                'asset': filename, 'url': 'https://github.com/example/upstream/archive.tar.gz',
+                'sha256': 'a' * 64}
+
+    def test_all_projects_change_only_download_origin(self):
+        for project in sync.PROJECTS:
+            with self.subTest(project=project):
+                info = self.info(project, release=0 if project == 'dnr' else 1)
+                original = info.copy()
+                github_path, github = sync.render(project, info)
+                mirror_path, mirror = sync.render(project, info, source='cnb')
+                self.assertEqual(github_path, mirror_path)
+                self.assertEqual(mirror, github.replace(info['url'], sync.cnb_url(project, info)))
+                self.assertIn('sha256 "' + info['sha256'] + '"', mirror)
+                self.assertIn('url "https://cnb.cool/fansionia/packages/-/releases/download/', mirror)
+                self.assertNotIn('fansion314/packages/', mirror)
+                self.assertNotIn('@URL@', mirror)
+                self.assertEqual(info, original)
+
+    def test_tags_separate_projects_and_packaging_releases(self):
+        self.assertEqual(sync.cnb_tag('dnr', self.info('dnr', release=0)), 'homebrew-dnr-v1.2.3')
+        self.assertEqual(sync.cnb_tag('etcher-dnr', self.info('etcher-dnr')), 'homebrew-etcher-dnr-v1.2.3-1')
+        first = self.info('pi-dnr')
+        self.assertEqual(sync.cnb_tag('pi-dnr', first), 'homebrew-pi-dnr-v1.2.3-1')
+        self.assertNotEqual(sync.cnb_tag('pi-dnr', first), sync.cnb_tag('pi-dnr', {**first, 'release': 2}))
+        # macOS revisions have distinct immutable filenames within one version's Release.
+        later = self.info('pi-dnr', revision=3)
+        self.assertEqual(sync.cnb_tag('pi-dnr', first), sync.cnb_tag('pi-dnr', later))
+        self.assertNotEqual(sync.cnb_url('pi-dnr', first), sync.cnb_url('pi-dnr', later))
+
+    def test_internal_dependencies_stay_with_selected_tap(self):
+        for source in ('github', 'cnb'):
+            for project, dependency in [('pi-dnr', 'dnr'), ('etcher-dnr', 'dnr'), ('clash-momo', 'mihomomo')]:
+                with self.subTest(source=source, project=project):
+                    _, recipe = sync.render(project, self.info(project), source=source)
+                    self.assertIn(f'fansionia/tap/{dependency}', recipe)
+                    self.assertNotIn('fansion314/packages/', recipe)
+
+    def test_invalid_source_and_asset_identity_fail_closed(self):
+        info = self.info('dnr')
+        with self.assertRaises(ValueError):
+            sync.render('dnr', info, source='other')
+        with self.assertRaises(ValueError):
+            sync.cnb_tag('unknown', info)
+        for version, release in [('1.2', 1), ('../1.2.3', 1), ('1.2.3', -1), ('1.2.3', True)]:
+            with self.subTest(version=version, release=release), self.assertRaises(ValueError):
+                sync.cnb_tag('dnr', {**info, 'version': version, 'release': release})
+        for name in ('../archive.tar.gz', '.', ''):
+            with self.subTest(name=name), self.assertRaises(ValueError):
+                sync.cnb_url('dnr', {**info, 'asset': name})

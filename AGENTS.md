@@ -59,12 +59,14 @@
 
 ## Homebrew 与 paru
 
-- Homebrew 只允许 dnr、pi-dnr、etcher-dnr、clash-momo、mihomomo；tap 为 `fansion314/packages`，必须显式 URL `https://github.com/fansion314/packages.git`。Apple Silicon/macOS 15+；Pi/Etcher 共享 dnr。Etcher 和 Clash Momo 维持 ad-hoc 签名，不宣称 Apple notarization；隔离属性只从对应已安装 app 删除。
+- Homebrew 只允许 dnr、pi-dnr、etcher-dnr、clash-momo、mihomomo；两个来源的 tap 名称均为 `fansionia/tap`，显式 URL 为 `https://github.com/fansion314/packages.git` 或 `https://cnb.cool/fansionia/packages`，不保留旧 tap 名称兼容。实际 GitHub 维护仓库仍是 `fansion314/packages`。Apple Silicon/macOS 15+；Pi/Etcher 共享 dnr。Etcher 和 Clash Momo 维持 ad-hoc 签名，不宣称 Apple notarization；隔离属性只从对应已安装 app 删除。
 - `homebrew/scripts/sync.py` 生成 formula/cask/release 记录；版本比较为数字 key `[major, minor, patch, packaging_release, macos_revision]`，拒绝降级、同 key 更换 URL/哈希。
-- paru 配方仓库名 `fansionia`，URL 同上，`Path = aur/packages`。源码/bin 是互斥选择；普通使用 `paru -S dnr-bin` 等短名称。pacman 二进制仓库没有额外 `-bin` 变体。
+- CNB `main` 是自动生成的 Homebrew 分发内容，不是完整开发代码镜像。固定 GitHub 已验证维护提交，原样上传归档及 `.sha256` 到独立 `homebrew-…` Release，匿名验证下载摘要，再生成、安装测试并快进发布完整五项目 tap。保留 CNB 既有历史及非托管文件，不强推、不覆盖附件、不参与 pacman 镜像回收。复用 `CNB_MIRROR_TOKEN`，需该仓库代码与 Release 读写权限；token 和临时上传 URL 不得出现在日志或 Git 配置中。
+- 镜像发布后从公开 CNB tap 验证安装及 GitHub/CNB 双向切换。切换用 `brew tap --custom-remote fansionia/tap <URL>`，随后仅对该 tap 执行 `brew update-reset "$(brew --repository fansionia/tap)"`；文档须说明它会清除该 tap 的手工修改，禁止省略路径。主源更新不依赖 CNB 成功；镜像失败须修复或重试，不以触发成功代替发布完成。
+- paru 配方仓库名 `fansionia`，URL 为 `https://github.com/fansion314/packages.git`，`Path = aur/packages`。源码/bin 是互斥选择；普通使用 `paru -S dnr-bin` 等短名称。pacman 二进制仓库没有额外 `-bin` 变体。
 - `aur/sources.json` 是项目、配方与排除项的权威清单。外部 Release 完整且 bin 配方回写后同步；Motrix 配方取正式 Release 的 recipe bundle，避免默认分支回写时序造成旧内容。
 - bin 校验和来自公开 CI 真字节，保留 provides/conflicts、许可证与 runtime 依赖。原生 Arch 普通用户验证 `makepkg --printsrcinfo` 和 bin 打包；源码配方元数据通过不等于全量源码构建通过。
-- `sync-homebrew.yml` 每小时 17/47 分，`sync-aur.yml` 每小时 23 分；调度可能延迟。默认让验证后的 workflow 自动提交生成结果。
+- `sync-homebrew.yml` 每小时 17/47 分，同步 GitHub 后继续同步和验收 CNB，无主源版本变化时也须恢复未完成镜像；`sync-aur.yml` 每小时 23 分；调度可能延迟。默认让验证后的 workflow 自动提交生成结果。
 
 ## pacman、签名和 Cloudflare
 

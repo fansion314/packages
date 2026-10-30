@@ -5,6 +5,9 @@ on:
       project:
         type: string
         default: ''
+    secrets:
+      CNB_MIRROR_TOKEN:
+        required: true
   workflow_dispatch:
     inputs:
       project:
@@ -15,7 +18,7 @@ on:
     - cron: '17,47 * * * *'
   push:
     branches: [main]
-    paths: ['homebrew/scripts/**', 'homebrew/templates/**', 'scripts/commit-generated.sh', 'scripts/sync.sh', '.github/workflows/sync-homebrew.yml']
+    paths: ['homebrew/scripts/**', 'homebrew/templates/**', 'scripts/cnb_release.py', 'scripts/commit-generated.sh', 'scripts/sync.sh', '.github/workflows/sync-homebrew.yml']
 permissions:
   contents: read
 concurrency:
@@ -27,6 +30,8 @@ jobs:
     timeout-minutes: 45
     permissions:
       contents: write
+    outputs:
+      source_sha: ${{ steps.source.outputs.sha }}
     env:
       GH_TOKEN: ${{ github.token }}
       HOMEBREW_NO_AUTO_UPDATE: '1'
@@ -40,3 +45,64 @@ jobs:
           persist-credentials: false
       - run: python3 -m unittest discover -s homebrew/scripts -p 'test_*.py' -v
       - run: bash scripts/sync.sh homebrew "$PROJECT"
+      - name: Pin the validated maintenance commit
+        id: source
+        run: echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+  mirror:
+    needs: sync
+    runs-on: macos-15
+    timeout-minutes: 60
+    env:
+      GH_TOKEN: ${{ github.token }}
+      HOMEBREW_NO_AUTO_UPDATE: '1'
+      HOMEBREW_NO_INSTALL_CLEANUP: '1'
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ needs.sync.outputs.source_sha }}
+          persist-credentials: false
+      - name: Upload immutable CNB attachments and prepare the complete tap
+        env:
+          CNB_MIRROR_TOKEN: ${{ secrets.CNB_MIRROR_TOKEN }}
+        run: python3 homebrew/scripts/mirror.py prepare --output-root .work/homebrew-cnb
+      - name: Install and test the CNB candidate
+        env:
+          HOMEBREW_TAP_URL: https://cnb.cool/fansionia/packages
+          HOMEBREW_CANDIDATE_ROOT: .work/homebrew-cnb
+        run: bash homebrew/scripts/test-install.sh
+      - name: Publish the tested tap with a fast-forward push
+        env:
+          CNB_MIRROR_TOKEN: ${{ secrets.CNB_MIRROR_TOKEN }}
+        run: python3 homebrew/scripts/mirror.py publish --output-root .work/homebrew-cnb
+  mirror-public:
+    needs: [sync, mirror]
+    runs-on: macos-15
+    timeout-minutes: 45
+    env:
+      HOMEBREW_NO_AUTO_UPDATE: '1'
+      HOMEBREW_NO_INSTALL_CLEANUP: '1'
+      HOMEBREW_TAP_URL: https://cnb.cool/fansionia/packages
+      HOMEBREW_VERIFY_PUBLISHED: '1'
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ needs.sync.outputs.source_sha }}
+          persist-credentials: false
+      - name: Isolate the public download cache
+        run: echo "HOMEBREW_CACHE=$RUNNER_TEMP/homebrew-cnb-public-cache" >> "$GITHUB_ENV"
+      - name: Verify switching between both public origins
+        run: bash homebrew/scripts/test-switch.sh
+      - name: Require the public tap to match the validated maintenance commit
+        env:
+          EXPECTED_SOURCE_SHA: ${{ needs.sync.outputs.source_sha }}
+        run: |
+          tap=$(brew --repository fansionia/tap)
+          python3 - "$tap/homebrew/mirror.json" <<'PY'
+          import json, os, sys
+          with open(sys.argv[1]) as stream:
+              provenance = json.load(stream)
+          if provenance.get('source_sha') != os.environ['EXPECTED_SOURCE_SHA']:
+              raise SystemExit('Public CNB tap does not match the validated maintenance commit')
+          PY
+      - name: Install and test all packages from the public CNB tap
+        run: bash homebrew/scripts/test-install.sh
