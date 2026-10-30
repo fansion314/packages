@@ -1,18 +1,18 @@
 pkgname=clash-momo-bin
-pkgver=0.1.2
-pkgrel=2
+pkgver=2.0.4
+pkgrel=1
 pkgdesc='Desktop client for mihomomo (prebuilt)'
 arch=('x86_64')
 url='https://github.com/fansion314/momo'
 license=('GPL-3.0-only')
-depends=('electron' 'mihomomo>=0.1.0' 'gtk3' 'libnotify' 'libsecret' 'xdg-utils' 'wl-clipboard' 'polkit')
+depends=('electron' 'mihomomo>=1.19.33' 'gtk3' 'libnotify' 'libsecret' 'xdg-utils' 'wl-clipboard' 'polkit')
 provides=("clash-momo=${pkgver}")
 conflicts=('clash-momo')
 options=('!strip' '!debug')
 _package="clash-momo-${pkgver}-${pkgrel}-x86_64.pkg.tar.zst"
 source_x86_64=("https://github.com/fansion314/momo/releases/download/clash-momo-v${pkgver}-${pkgrel}/${_package}")
 noextract=("${_package}")
-sha256sums_x86_64=('ba6af1ce1af869d5823137843d87c93eee3e4a25ac90a916343a30d9294f12ed')
+sha256sums_x86_64=('aaf1e5ac67ee2f97e5709c588082d5333788bded92a019bffecc4a860eed8bd4')
 
 package() {
   bsdtar -xf "$srcdir/$_package" -C "$pkgdir" usr
