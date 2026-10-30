@@ -9,15 +9,15 @@ class PiDnr < Formula
 
   depends_on arch: :arm64
   depends_on macos: :sequoia
-  depends_on "fansion314/packages/dnr"
+  depends_on "fansionia/tap/dnr"
   depends_on "fd"
   depends_on "ripgrep"
 
   def install
-    system Formula["fansion314/packages/dnr"].opt_bin/"dnc", "install", "pi.dnp", libexec/"app"
+    system Formula["fansionia/tap/dnr"].opt_bin/"dnc", "install", "pi.dnp", libexec/"app"
     (bin/"pi").write <<~SH
       #!/bin/sh
-      exec "#{Formula["fansion314/packages/dnr"].opt_bin}/dnr" "#{libexec}/app/pi.dnp" "$@"
+      exec "#{Formula["fansionia/tap/dnr"].opt_bin}/dnr" "#{libexec}/app/pi.dnp" "$@"
     SH
   end
 

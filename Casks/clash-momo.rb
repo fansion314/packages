@@ -9,7 +9,7 @@ cask "clash-momo" do
 
   depends_on arch: :arm64
   depends_on macos: :sequoia
-  depends_on formula: "fansion314/packages/mihomomo"
+  depends_on formula: "fansionia/tap/mihomomo"
 
   app "Clash Momo.app"
 

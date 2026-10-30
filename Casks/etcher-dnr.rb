@@ -9,7 +9,7 @@ cask "etcher-dnr" do
 
   depends_on arch: :arm64
   depends_on macos: :sequoia
-  depends_on formula: "fansion314/packages/dnr"
+  depends_on formula: "fansionia/tap/dnr"
 
   app "balenaEtcher.app"
 
