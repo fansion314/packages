@@ -108,6 +108,7 @@ while (( SECONDS < deadline )); do
       python3 -c 'import json,sys; assert json.load(sys.stdin)["version"] == sys.argv[1]' "$expected_version" &&
     curl -fsS --max-time 2 --unix-socket "$socket" http://localhost/traffic-history/status |
       python3 -c 'import json,sys; s=json.load(sys.stdin); assert s["enabled"] is True and s["ready"] is True'; then
+    [[ -n $core_pid ]] || find_core
     [[ -n $core_pid ]] || { echo 'Could not identify the app-owned Mihomomo child' >&2; exit 1; }
     echo "Clash Momo started Mihomomo $expected_version and traffic history is ready."
     exit 0
