@@ -15,8 +15,8 @@ GitHub 源码与发布地址：**https://github.com/fansion314/packages**。
 | Bitwarden | `bitwarden-electron` | `bitwarden-electron-bin` | — |
 | MyGo 云音乐 | `mygo-cloudmusic` | `mygo-cloudmusic-bin` | — |
 | Obsidian | `obsidian-electron` | `obsidian-electron-bin` | — |
-| Clash Momo | `clash-momo` | `clash-momo-bin` | — |
-| Mihomomo | `mihomomo` | `mihomomo-bin` | — |
+| Clash Momo | `clash-momo` | `clash-momo-bin` | cask `clash-momo` |
+| Mihomomo | `mihomomo` | `mihomomo-bin` | `mihomomo` |
 
 所有 DNR 后端包是互斥替代品。Arch 仓库还提供 DSH 需要的 `python-pptx`
 和签名公钥维护包 `fansionia-keyring`。Bitwarden/Obsidian 使用官方成品应用和
@@ -120,12 +120,15 @@ Bitwarden/Obsidian 的配方重打包官方成品。源码与 bin 变体是替�
 
 ## macOS：用 Homebrew
 
+Clash Momo 需要 macOS 15 及 Apple Silicon；Cask 自动安装独立的 `mihomomo` Formula，不自动安装或启动系统服务。应用采用 ad-hoc 签名，未经 Apple 公证；验证签名后仅移除已安装应用的隔离属性。
+
 支持 Apple Silicon、macOS 15 及以上：
 
 ```sh
 brew tap fansion314/packages https://github.com/fansion314/packages.git
 brew install fansion314/packages/dnr fansion314/packages/pi-dnr
 brew install --cask fansion314/packages/etcher-dnr
+brew install --cask fansion314/packages/clash-momo
 ```
 
 仓库名不带 `homebrew-` 前缀，首次 tap 必须提供完整 URL。
@@ -166,7 +169,7 @@ Worker 嵌入映射配置，不使用 KV，不运行时拉 JSON。保留最近�
 
 发布源主动通知下游，每 15 分钟另有定时兜底；GitHub 调度可能延迟。
 本仓库的标签发布会异步调度 `main` 上的 `downstream.yml`，须独立跟进该运行及正式域名安装结果。
-Homebrew 安装验证、原生 Arch 构建/包测试和正式域名 pacman 安装均在 CI 执行。
+Homebrew 安装验证、原生 Arch 构建/包测试和正式域名 pacman 安装均在 CI 执行。Homebrew 同步可按项目指定 `dnr`、`pi`、`etcher`、`mihomomo` 或 `clash-momo`；留空同步全部项目。
 CI 烟雾测试不代表手动 GUI 或物理 USB 设备已经验收。
 
 ## 维护入口

@@ -49,3 +49,42 @@ class NewTapTests(unittest.TestCase):
                                            'repository': 'fansion314/etcher'})
             self.assertIn('fansion314/packages/dnr', text)
             self.assertNotIn('fansion314/dnr/dnr', text)
+
+
+class MomoReleaseTests(unittest.TestCase):
+    def release(self, project, version, pkgrel, revision, checksum=True):
+        tag = f'{project}-v{version}-{pkgrel}'
+        name = f'{project}-{version}-{pkgrel}-macos-arm64-r{revision}.tar.gz'
+        assets = [{'name': name, 'browser_download_url': f'https://github.com/fansion314/momo/releases/download/{tag}/{name}'}]
+        if checksum:
+            assets.append({'name': name + '.sha256'})
+        return {'tag_name': tag, 'draft': False, 'prerelease': False, 'assets': assets}
+
+    def test_numeric_selection_and_tag_family(self):
+        releases = [self.release('mihomomo', '1.19.9', 2, 10), self.release('mihomomo', '1.19.10', 1, 2),
+                    self.release('mihomomo', '1.19.10', 1, 10), self.release('clash-momo', '9.0.0', 1, 1)]
+        self.assertEqual(sync.candidates('mihomomo', releases)[-1][0], [1, 19, 10, 1, 10])
+
+    def test_latest_release_and_revision_fail_closed(self):
+        older = self.release('clash-momo', '2.0.3', 1, 1)
+        latest = self.release('clash-momo', '2.0.4', 1, 1)
+        latest['assets'] = []
+        with self.assertRaises(ValueError):
+            sync.candidates('clash-momo', [older, latest])
+        latest = self.release('clash-momo', '2.0.4', 1, 1)
+        latest['assets'] += self.release('clash-momo', '2.0.4', 1, 2, False)['assets']
+        with self.assertRaises(ValueError):
+            sync.candidates('clash-momo', [older, latest])
+        self.assertEqual(sync.candidates('clash-momo', [self.release('clash-momo', '2.0.2', 1, 1, False), older])[-1][1]['version'], '2.0.3')
+
+    def test_render_security_and_independent_formula(self):
+        info = {'version': '2.0.4', 'release': 1, 'revision': 1, 'sha256': 'a'*64,
+                'url': 'https://example.com/archive', 'repository': 'fansion314/momo'}
+        _, cask = sync.render('clash-momo', info)
+        self.assertIn('fansion314/packages/mihomomo', cask)
+        self.assertLess(cask.index('codesign'), cask.index('xattr'))
+        self.assertIn('{{appdir}}/Clash Momo.app', cask)
+        _, formula = sync.render('mihomomo', info)
+        self.assertIn('capabilities["protocol"]', formula)
+        self.assertIn('capabilities["managedMode"]', formula)
+        self.assertNotIn('service do', formula)

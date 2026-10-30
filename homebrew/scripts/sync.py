@@ -11,6 +11,8 @@ import tempfile
 ROOT = Path(__file__).resolve().parents[1]
 TAP_ROOT = ROOT.parent
 PROJECTS = {
+    "clash-momo": ("fansion314/momo", r"clash-momo-v(\d+\.\d+\.\d+)-(\d+)", r"clash-momo-{version}-{release}-macos-arm64-r([1-9]\d*)\.tar\.gz"),
+    "mihomomo": ("fansion314/momo", r"mihomomo-v(\d+\.\d+\.\d+)-(\d+)", r"mihomomo-{version}-{release}-macos-arm64-r([1-9]\d*)\.tar\.gz"),
     "dnr": ("fansion314/dnr", r"v(\d+\.\d+\.\d+)", r"dnr-{version}-macos-arm64(?:-r([1-9]\d*))?\.tar\.gz"),
     "pi-dnr": ("fansion314/pi", r"pi-dnr-v(\d+\.\d+\.\d+)-(\d+)", r"pi-dnr-{version}-{release}-macos-arm64-r([1-9]\d*)\.tar\.gz"),
     "etcher-dnr": ("fansion314/etcher", r"v(\d+\.\d+\.\d+)-dnr\.(\d+)", r"etcher-dnr-{version}-{release}-macos-arm64-r([1-9]\d*)\.tar\.gz"),
@@ -24,6 +26,9 @@ def run(*args):
 def candidates(project, releases):
     repository, tag_pattern, asset_pattern = PROJECTS[project]
     found = []
+    strict = project in {'clash-momo', 'mihomomo'}
+    matching = []
+    incomplete = []
     for release in releases:
         if release['draft'] or release['prerelease']:
             continue
@@ -33,11 +38,20 @@ def candidates(project, releases):
         version = match[1]
         packaging = int(match[2]) if match.lastindex > 1 else 0
         names = {asset['name']: asset for asset in release['assets']}
+        matching.append(([*map(int, version.split('.')), packaging], release['tag_name']))
+        matched_assets = []
+        if strict:
+            for name in names:
+                if name.endswith('.sha256') and re.fullmatch(asset_pattern.format(version=re.escape(version), release=packaging), name[:-7]) and name[:-7] not in names:
+                    incomplete.append(([*map(int, version.split('.')), packaging], name))
         for name, asset in names.items():
             m = re.fullmatch(asset_pattern.format(version=re.escape(version), release=packaging), name)
-            if not m or name + '.sha256' not in names:
+            if not m:
                 continue
             revision = int(m[1] or 0)
+            matched_assets.append((revision, name, name + '.sha256' in names))
+            if name + '.sha256' not in names:
+                continue
             url = f"https://github.com/{repository}/releases/download/{release['tag_name']}/{name}"
             if asset['browser_download_url'] != url:
                 raise ValueError('Unexpected release asset URL')
@@ -45,6 +59,16 @@ def candidates(project, releases):
             found.append((key, {'repository': repository, 'tag': release['tag_name'], 'version': version,
                                 'release': packaging, 'revision': revision, 'asset': name, 'url': url,
                                 'github_digest': asset.get('digest')}))
+        if strict and matched_assets:
+            revision, name, complete = max(matched_assets)
+            if not complete:
+                incomplete.append(([*map(int, version.split('.')), packaging], name))
+    if strict and matching:
+        latest = max(matching)[0]
+        if any(key == latest for key, _ in incomplete):
+            raise ValueError('Latest macOS asset is missing its checksum')
+        if not any(key[:4] == latest for key, _ in found):
+            raise ValueError(f'Latest {project} release has no complete macOS asset')
     return sorted(found, key=lambda item: item[0])
 
 
@@ -72,6 +96,68 @@ def render(project, info):
         for key, value in values.items():
             text = text.replace('@' + key + '@', value)
         return 'Formula/dnr.rb', text
+    if project == 'mihomomo':
+        return 'Formula/mihomomo.rb', f'''class Mihomomo < Formula
+  desc "Mihomomo proxy core for Clash Momo"
+  homepage "https://github.com/fansion314/momo"
+  url "{info['url']}"
+  version "{version}-{info['release']}"
+  revision {revision}
+  sha256 "{info['sha256']}"
+  license "GPL-3.0-only"
+
+  depends_on arch: :arm64
+  depends_on macos: :sequoia
+
+  def install
+    bin.install "bin/mihomomo"
+    (share/"mihomomo").install "share/mihomomo/manifest.json"
+    pkgshare.install "LICENSE", "README.md"
+  end
+
+  test do
+    require "json"
+    assert_match "{version}", shell_output("#{{bin}}/mihomomo -v")
+    capabilities = JSON.parse(shell_output("#{{bin}}/mihomomo --momo-capabilities"))
+    assert_equal 1, capabilities["protocol"]
+    assert_equal true, capabilities["managedMode"]
+  end
+end
+'''
+    if project == 'clash-momo':
+        return 'Casks/clash-momo.rb', f'''cask "clash-momo" do
+  version "{version}-{info['release']},{revision}"
+  sha256 "{info['sha256']}"
+
+  url "{info['url']}"
+  name "Clash Momo"
+  desc "Graphical proxy client using Mihomomo"
+  homepage "https://github.com/fansion314/momo"
+
+  depends_on arch: :arm64
+  depends_on macos: :sequoia
+  depends_on formula: "fansion314/packages/mihomomo"
+
+  app "Clash Momo.app"
+
+  preflight_steps do
+    run "/usr/bin/codesign",
+        args: ["--verify", "--deep", "--strict", "{{{{staged_path}}}}/Clash Momo.app"]
+    run "/bin/sh",
+        args: ["-c", '/usr/bin/codesign -dv "$1" 2>&1 | /usr/bin/grep -Fx Signature=adhoc', "sh", "{{{{staged_path}}}}/Clash Momo.app"]
+  end
+
+  postflight_steps do
+    run "/usr/bin/xattr",
+        args: ["-dr", "com.apple.quarantine", "{{{{appdir}}}}/Clash Momo.app"]
+  end
+
+  caveats <<~EOS
+    This app is ad-hoc signed and is not notarized by Apple.
+    This tap removes quarantine from the installed app after signature verification.
+  EOS
+end
+'''
     if project == 'pi-dnr':
         return 'Formula/pi-dnr.rb', f'''class PiDnr < Formula
   desc "Pi coding agent for the shared dnr runtime"
@@ -156,6 +242,13 @@ def sync(project):
     current = json.loads(state_path.read_text()) if state_path.exists() else None
     if current and key < current['key']:
         raise ValueError('Refusing to downgrade an installed tap release')
+    if project in {'clash-momo', 'mihomomo'}:
+        commit = json.loads(run('gh', 'api', f'repos/{repository}/commits/{info["tag"]}'))['sha']
+        if not re.fullmatch(r'[a-f0-9]{40}', commit):
+            raise ValueError('Invalid source commit SHA')
+        info['source_sha'] = commit
+        if current and key == current['key'] and current.get('source_sha') != commit:
+            raise ValueError('Refusing to replace immutable source commit')
     info['sha256'] = verified_digest(info)
     info['key'] = key
     if current and key == current['key'] and (info['sha256'], info['url']) != (current['sha256'], current['url']):

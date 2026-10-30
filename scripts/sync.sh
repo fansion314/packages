@@ -3,10 +3,19 @@
 set -euo pipefail
 kind=${1:?homebrew or aur}
 project=${2:-}
+if [[ $kind == homebrew ]]; then
+  case $project in
+    '') homebrew_project= ;;
+    dnr|mihomomo|clash-momo) homebrew_project=$project ;;
+    pi) homebrew_project=pi-dnr ;;
+    etcher) homebrew_project=etcher-dnr ;;
+    *) echo "Unknown Homebrew project: $project" >&2; exit 2 ;;
+  esac
+fi
 for attempt in 1 2 3 4 5; do
   if [[ $kind == homebrew ]]; then
-    python3 homebrew/scripts/sync.py
-    bash homebrew/scripts/test-install.sh
+    python3 homebrew/scripts/sync.py ${homebrew_project:+"$homebrew_project"}
+    bash homebrew/scripts/test-install.sh ${homebrew_project:+"$homebrew_project"}
   else
     python3 -u aur/scripts/sync.py ${project:+"$project"}
     if [[ ${GITHUB_EVENT_NAME:-} != schedule ]]; then

@@ -1,7 +1,16 @@
 name: Sync and test Homebrew
 on:
   workflow_call:
+    inputs:
+      project:
+        type: string
+        default: ''
   workflow_dispatch:
+    inputs:
+      project:
+        description: Optional project ID (empty checks all)
+        type: string
+        default: ''
   schedule:
     - cron: '17,47 * * * *'
   push:
@@ -21,6 +30,7 @@ jobs:
     env:
       GH_TOKEN: ${{ github.token }}
       HOMEBREW_NO_AUTO_UPDATE: '1'
+      PROJECT: ${{ inputs.project }}
       HOMEBREW_NO_INSTALL_CLEANUP: '1'
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -29,4 +39,4 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
       - run: python3 -m unittest discover -s homebrew/scripts -p 'test_*.py' -v
-      - run: bash scripts/sync.sh homebrew
+      - run: bash scripts/sync.sh homebrew "$PROJECT"

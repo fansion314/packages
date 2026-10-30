@@ -59,7 +59,7 @@
 
 ## Homebrew 与 paru
 
-- Homebrew 只允许 dnr、pi-dnr、etcher-dnr；tap 为 `fansion314/packages`，必须显式 URL `https://github.com/fansion314/packages.git`。Apple Silicon/macOS 15+；Pi/Etcher 共享 dnr。Etcher 维持 ad-hoc 签名，不宣称 Apple notarization；隔离属性只从安装的 Etcher app 删除。
+- Homebrew 只允许 dnr、pi-dnr、etcher-dnr、clash-momo、mihomomo；tap 为 `fansion314/packages`，必须显式 URL `https://github.com/fansion314/packages.git`。Apple Silicon/macOS 15+；Pi/Etcher 共享 dnr。Etcher 和 Clash Momo 维持 ad-hoc 签名，不宣称 Apple notarization；隔离属性只从对应已安装 app 删除。
 - `homebrew/scripts/sync.py` 生成 formula/cask/release 记录；版本比较为数字 key `[major, minor, patch, packaging_release, macos_revision]`，拒绝降级、同 key 更换 URL/哈希。
 - paru 配方仓库名 `fansionia`，URL 同上，`Path = aur/packages`。源码/bin 是互斥选择；普通使用 `paru -S dnr-bin` 等短名称。pacman 二进制仓库没有额外 `-bin` 变体。
 - `aur/sources.json` 是项目、配方与排除项的权威清单。外部 Release 完整且 bin 配方回写后同步；Motrix 配方取正式 Release 的 recipe bundle，避免默认分支回写时序造成旧内容。
