@@ -18,7 +18,7 @@ core_identity=''
 find_core() {
   [[ -n $app_pid ]] || return 0
   for candidate in $(pgrep -P "$app_pid" || true); do
-    command=$(ps -p "$candidate" -o ucomm= | sed 's/^[[:space:]]*//' || true)
+    command=$(ps -p "$candidate" -o ucomm= | sed 's/^[[:space:]]*//;s/[[:space:]]*$//' || true)
     if [[ $command == */mihomomo || $command == mihomomo ]]; then
       core_pid=$candidate
       core_identity=$(ps -p "$candidate" -o uid= -o lstart= -o ucomm= || true)
