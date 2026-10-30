@@ -1,6 +1,6 @@
 pkgbase = bitwarden-electron
 	pkgdesc = Bitwarden official binaries using the latest system Electron
-	pkgver = 2026.10.1
+	pkgver = 2026.10.2
 	pkgrel = 1
 	url = https://github.com/bitwarden/clients
 	arch = x86_64
@@ -17,15 +17,15 @@ pkgbase = bitwarden-electron
 	depends = libxtst
 	depends = libxss
 	depends = libnss_nis
-	provides = bitwarden=2026.10.1
+	provides = bitwarden=2026.10.2
 	conflicts = bitwarden
 	conflicts = bitwarden-bin
 	conflicts = bitwarden-electron-bin
 	options = !strip
 	options = !debug
-	source = https://github.com/bitwarden/clients/releases/download/desktop-v2026.10.1/Bitwarden-2026.10.1-amd64.deb
+	source = https://github.com/bitwarden/clients/releases/download/desktop-v2026.10.2/Bitwarden-2026.10.2-amd64.deb
 	source = bitwarden.sh
-	sha256sums = 02cb6bc6a429d8d0da9fdf9d23739358165cf7b98a245783d6f641526f75b0a7
+	sha256sums = 72c9ff6c45b8c8d803a4e4102f2884d6f579f329801a8953921c118737d92bc0
 	sha256sums = d13e5137334dfda41999aeabff4c29cfe4b1a15bb7d14e5c9ebe7bed7fc8c829
 
 pkgname = bitwarden-electron

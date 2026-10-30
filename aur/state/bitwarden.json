@@ -1,27 +1,27 @@
 {
   "repository": "fansion314/packages",
-  "reference": "bitwarden-v2026.10.1-1",
+  "reference": "bitwarden-v2026.10.2-1",
   "packages": {
     "bitwarden-electron": {
-      "version": "0:2026.10.1-1",
+      "version": "0:2026.10.2-1",
       "files": {
-        ".SRCINFO": "2e9eeebd84e8f2ae90d2ac9e0a264732fb27326e4245638fb78a1df1ab3b17a7",
-        "PKGBUILD": "4a33c2b885ff1642e63e2fedcd9e1f49bd15a7c7b0643fe1ba74129fc0bbc0fb",
+        ".SRCINFO": "e48cb9ba6096435806c4a6dbe4369b9b9a48c3ef57a941c1b961de67068fcd89",
+        "PKGBUILD": "09692588798ec5030a0ada4a4ab11bc1eae1303ef9c8ee0b371a11a000d6d1fb",
         "bitwarden.sh": "d13e5137334dfda41999aeabff4c29cfe4b1a15bb7d14e5c9ebe7bed7fc8c829"
       },
       "assets": []
     },
     "bitwarden-electron-bin": {
-      "version": "0:2026.10.1-1",
+      "version": "0:2026.10.2-1",
       "files": {
-        ".SRCINFO": "784b022c0ef19b90deada125d57cce962d9c5c0be01d5970f8e63559b67748c8",
-        "PKGBUILD": "74237aa19bdda8550de475c19e1048d2cef3f77ee90a36f75b84d6714f3320c0"
+        ".SRCINFO": "feffb4b1fc2a25313d91eedded785cb4d264d521e08bf1a3b4b7aee0e79cc04a",
+        "PKGBUILD": "cd69228372919f252f4493a10bf8c40a98dcd9fcdf17cdba5d56590d3e9bf1f0"
       },
       "assets": [
         {
-          "url": "https://github.com/fansion314/packages/releases/download/bitwarden-v2026.10.1-1/bitwarden-electron-2026.10.1-1-x86_64.pkg.tar.zst",
-          "sha256": "d8e41d124edf5b1d19f7dd83dd34feb6e2878e2bb9aa91f6abf30577831aa7d9",
-          "size": 23251214
+          "url": "https://github.com/fansion314/packages/releases/download/bitwarden-v2026.10.2-1/bitwarden-electron-2026.10.2-1-x86_64.pkg.tar.zst",
+          "sha256": "770068c37084443ac36370b5a1f0816bf0d5c5d50ec2f6e4735a170290cd98bb",
+          "size": 65436643
         }
       ]
     }
