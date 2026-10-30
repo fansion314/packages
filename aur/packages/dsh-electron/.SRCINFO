@@ -1,6 +1,6 @@
 pkgbase = dsh-electron
 	pkgdesc = DeepSeek Harness desktop using system Electron
-	pkgver = 0.2.1rc.3
+	pkgver = 0.2.1rc.4
 	pkgrel = 1
 	url = https://github.com/fansion314/packages
 	arch = x86_64
@@ -37,8 +37,8 @@ pkgbase = dsh-electron
 	depends = xdg-user-dirs
 	conflicts = dsh-electron-bin
 	options = !strip
-	source = deepseek-harness::git+https://github.com/deepseek-ai/deepseek-harness.git#commit=1f81c047fc48fa190a683e469daa699857e9afe8
-	source = packaging::git+https://github.com/fansion314/packages.git#tag=deepseek-harness-v0.2.1-rc.3-1
+	source = deepseek-harness::git+https://github.com/deepseek-ai/deepseek-harness.git#commit=504a01a9578abc2c6f1fb896b1dc322c9fe24f66
+	source = packaging::git+https://github.com/fansion314/packages.git#tag=deepseek-harness-v0.2.1-rc.4-1
 	sha256sums = SKIP
 	sha256sums = SKIP
 
