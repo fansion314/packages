@@ -145,6 +145,30 @@ signing-key verification and setup.
 '''
 
 
+def authenticated_push(output, dry_run=False):
+    token = os.environ.get('CNB_MIRROR_TOKEN')
+    if not token:
+        raise ValueError('CNB_MIRROR_TOKEN is required')
+    # Supply credentials only through an ephemeral askpass process environment.
+    with tempfile.TemporaryDirectory(prefix='fansionia-cnb-auth-') as tmp:
+        askpass = Path(tmp)/'askpass'
+        askpass.write_text('#!/bin/sh\ncase "$1" in\n  *Username*) printf "%s\\n" cnb ;;\n  *Password*) printf "%s\\n" "$CNB_MIRROR_TOKEN" ;;\n  *) exit 1 ;;\nesac\n')
+        askpass.chmod(0o700)
+        env = {**os.environ, 'GIT_ASKPASS': str(askpass), 'GIT_TERMINAL_PROMPT': '0'}
+        result = subprocess.run(['git', '-c', 'core.hooksPath=/dev/null', '-C', str(output),
+                                 '-c', 'credential.helper=', 'push', *(['--dry-run'] if dry_run else []),
+                                 'origin', 'HEAD:refs/heads/main'], env=env, capture_output=True, text=True)
+        if result.returncode:
+            # Do not echo remote diagnostics, which may contain credential material.
+            diagnostic = (result.stderr or '').lower()
+            if any(word in diagnostic for word in ('403', '401', 'forbidden', 'denied', 'authentication failed')):
+                raise RuntimeError('CNB Git write access denied; CNB_MIRROR_TOKEN needs repo-code:rw '
+                                   'for fansionia/packages (Release write access alone is insufficient)')
+            operation = 'write preflight' if dry_run else 'publication'
+            raise RuntimeError(f'CNB Git {operation} failed; verify connectivity and regenerate the candidate '
+                               'if remote main advanced')
+
+
 def prepare(output, source=ROOT, remote=REMOTE, client=None):
     output, source = Path(output).resolve(), Path(source).resolve()
     if output.exists():
@@ -171,7 +195,10 @@ def prepare(output, source=ROOT, remote=REMOTE, client=None):
         path = output/'homebrew/releases'/f'{project}.json'
         if path.exists():
             compare(json.loads(path.read_text()), record)
-    client = client or Client(REPOSITORY, owner=OWNER, user_agent='fansionia-homebrew-mirror')
+    if client is None:
+        # Authenticate receive-pack before downloading or uploading any archives.
+        authenticated_push(output, dry_run=True)
+        client = Client(REPOSITORY, owner=OWNER, user_agent='fansionia-homebrew-mirror')
     paths = []
     for project, info in records.items():
         with tempfile.TemporaryDirectory(prefix='fansionia-homebrew-assets-') as tmp:
@@ -214,18 +241,9 @@ def publish(output):
     if subprocess.run(['git', '-C', str(output), 'diff', '--cached', '--quiet'], check=False).returncode == 0:
         print('CNB Homebrew snapshot already current')
         return
-    token = os.environ.get('CNB_MIRROR_TOKEN')
-    if not token:
-        raise ValueError('CNB_MIRROR_TOKEN is required')
     git(output, '-c', 'user.name=github-actions[bot]', '-c', 'user.email=41898282+github-actions[bot]@users.noreply.github.com',
         'commit', '-m', 'chore(homebrew): update verified CNB distribution')
-    # Supply credentials only through an ephemeral askpass process environment.
-    with tempfile.TemporaryDirectory(prefix='fansionia-cnb-auth-') as tmp:
-        askpass = Path(tmp)/'askpass'
-        askpass.write_text('#!/bin/sh\ncase "$1" in\n  *Username*) printf "%s\\n" cnb ;;\n  *Password*) printf "%s\\n" "$CNB_MIRROR_TOKEN" ;;\n  *) exit 1 ;;\nesac\n')
-        askpass.chmod(0o700)
-        env = {**os.environ, 'GIT_ASKPASS': str(askpass), 'GIT_TERMINAL_PROMPT': '0'}
-        git(output, '-c', 'credential.helper=', 'push', 'origin', 'HEAD:refs/heads/main', env=env)
+    authenticated_push(output)
     print('Published verified CNB Homebrew snapshot:', git(output, 'rev-parse', 'HEAD'))
 
 
@@ -234,7 +252,12 @@ if __name__ == '__main__':
     parser.add_argument('command', choices=['prepare', 'publish'])
     parser.add_argument('--output-root', type=Path, default=ROOT/'.work/homebrew-cnb')
     args = parser.parse_args()
-    if args.command == 'prepare':
-        prepare(args.output_root)
-    else:
-        publish(args.output_root)
+    try:
+        if args.command == 'prepare':
+            prepare(args.output_root)
+        else:
+            publish(args.output_root)
+    except subprocess.CalledProcessError as error:
+        parser.exit(1, f'CNB Homebrew mirror: external command failed (exit {error.returncode})\n')
+    except (ValueError, RuntimeError, OSError) as error:
+        parser.exit(1, f'CNB Homebrew mirror: {error}\n')

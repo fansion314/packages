@@ -4,6 +4,7 @@ import json
 import os
 from pathlib import Path
 import subprocess
+import sys
 import tempfile
 import unittest
 from unittest.mock import patch
@@ -109,7 +110,7 @@ class HomebrewMirrorTests(unittest.TestCase):
         self.run_git(other, 'commit', '-m', 'user change')
         self.run_git(other, 'push', 'origin', 'main')
         tip = self.run_git(self.remote, 'rev-parse', 'main')
-        with self.assertRaises(subprocess.CalledProcessError):
+        with self.assertRaisesRegex(RuntimeError, 'remote main advanced'):
             self.publish()
         self.assertEqual(self.run_git(self.remote, 'rev-parse', 'main'), tip)
 
@@ -160,3 +161,38 @@ class HomebrewMirrorTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'Unrelated'):
             self.publish()
         self.assertEqual(self.run_git(self.remote, 'rev-parse', 'main'), self.base)
+
+    def test_missing_code_permission_stops_before_download_or_upload(self):
+        with patch.object(mirror, 'authenticated_push', side_effect=RuntimeError('needs repo-code:rw')) as preflight, \
+                patch.object(mirror, 'source_files') as download, patch.object(mirror, 'Client') as client:
+            with self.assertRaisesRegex(RuntimeError, 'repo-code:rw'):
+                mirror.prepare(self.candidate, self.source, str(self.remote))
+        preflight.assert_called_once_with(self.candidate.resolve(), dry_run=True)
+        download.assert_not_called()
+        client.assert_not_called()
+        self.assertEqual(self.run_git(self.remote, 'rev-parse', 'main'), self.base)
+
+    def test_dry_run_authenticates_without_updating_refs(self):
+        self.run_git(self.root, 'clone', str(self.remote), str(self.candidate))
+        (self.candidate/'new-file').write_text('not published')
+        self.run_git(self.candidate, 'add', 'new-file')
+        self.run_git(self.candidate, 'commit', '-m', 'candidate')
+        with patch.dict(os.environ, CNB_MIRROR_TOKEN='test-only'):
+            mirror.authenticated_push(self.candidate, dry_run=True)
+        self.assertEqual(self.run_git(self.remote, 'rev-parse', 'main'), self.base)
+
+    def test_permission_failure_explains_scope_without_remote_diagnostics(self):
+        result = subprocess.CompletedProcess([], 128, '', 'HTTP 403 forbidden SECRET_REMOTE_DIAGNOSTIC')
+        with patch.dict(os.environ, CNB_MIRROR_TOKEN='test-only'), \
+                patch.object(mirror.subprocess, 'run', return_value=result) as run:
+            with self.assertRaisesRegex(RuntimeError, 'repo-code:rw') as error:
+                mirror.authenticated_push(self.root, dry_run=True)
+        self.assertNotIn('SECRET_REMOTE_DIAGNOSTIC', str(error.exception))
+        self.assertIn('--dry-run', run.call_args.args[0])
+
+    def test_cli_error_is_concise_without_traceback(self):
+        result = subprocess.run([sys.executable, str(Path(mirror.__file__)), 'publish',
+                                 '--output-root', str(self.root/'missing')], capture_output=True, text=True)
+        self.assertEqual(result.returncode, 1)
+        self.assertIn('CNB Homebrew mirror:', result.stderr)
+        self.assertNotIn('Traceback', result.stderr)
