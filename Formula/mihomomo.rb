@@ -1,10 +1,10 @@
 class Mihomomo < Formula
   desc "Mihomomo proxy core for Clash Momo"
   homepage "https://github.com/fansion314/momo"
-  url "https://github.com/fansion314/momo/releases/download/mihomomo-v1.19.33-1/mihomomo-1.19.33-1-macos-arm64-r1.tar.gz"
-  version "1.19.33-1"
-  revision 1
-  sha256 "9403935d16952a4e0b2b8e10cf46aea7487ece3de9cea2201e70ef116d3223b7"
+  url "https://github.com/fansion314/momo/releases/download/mihomomo-v1.19.33-2/mihomomo-1.19.33-2-macos-arm64-r2.tar.gz"
+  version "1.19.33-2"
+  revision 2
+  sha256 "eae84973071bb4579f915a3a42b255e637f2c51c8bb1c899a8d3dbac2ab5547a"
   license "GPL-3.0-only"
 
   depends_on arch: :arm64
