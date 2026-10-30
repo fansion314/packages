@@ -1,12 +1,12 @@
 {
   "id": "deepseek-harness",
-  "version": "0.2.1-rc.4",
+  "version": "0.2.1-rc.5",
   "pkgrel": 1,
   "package": "dsh-electron",
   "upstream": {
     "repository": "deepseek-ai/deepseek-harness",
-    "tag": "dsh-v0.2.1-rc.4",
-    "commit": "504a01a9578abc2c6f1fb896b1dc322c9fe24f66"
+    "tag": "dsh-v0.2.1-rc.5",
+    "commit": "b830ec950faba0a46dda564be3e2d854afed94f1"
   },
   "import": {
     "repository": "fansion314/deepseek-harness",
