@@ -1,5 +1,5 @@
 {
-  "cleanup_pending": true,
+  "cleanup_pending": false,
   "keys": {
     "/keys/fansionia.asc": {
       "filename": "fansionia.asc",
@@ -243,60 +243,6 @@
       "size": 119,
       "tag": "pacman-package-ca4b950693f23a5754912a1029bd17f9"
     },
-    "https://cnb.cool/fansionia/packages/-/releases/download/snapshot-58ced1bb70b0c25f4e72b2c4c6f81662/fansionia.db": {
-      "filename": "fansionia.db",
-      "sha256": "dc62da189f3a29e2dffe6c705646e30fdc7850d99aad28c5e754827c840412f8",
-      "size": 10004,
-      "tag": "snapshot-58ced1bb70b0c25f4e72b2c4c6f81662"
-    },
-    "https://cnb.cool/fansionia/packages/-/releases/download/snapshot-58ced1bb70b0c25f4e72b2c4c6f81662/fansionia.db.sig": {
-      "filename": "fansionia.db.sig",
-      "sha256": "ca8a457e40787d0359d4e5761e5ab0dbac0a2185c6a4f5128934b1ba3b0d92fe",
-      "size": 119,
-      "tag": "snapshot-58ced1bb70b0c25f4e72b2c4c6f81662"
-    },
-    "https://cnb.cool/fansionia/packages/-/releases/download/snapshot-58ced1bb70b0c25f4e72b2c4c6f81662/fansionia.db.tar.gz": {
-      "filename": "fansionia.db.tar.gz",
-      "sha256": "dc62da189f3a29e2dffe6c705646e30fdc7850d99aad28c5e754827c840412f8",
-      "size": 10004,
-      "tag": "snapshot-58ced1bb70b0c25f4e72b2c4c6f81662"
-    },
-    "https://cnb.cool/fansionia/packages/-/releases/download/snapshot-58ced1bb70b0c25f4e72b2c4c6f81662/fansionia.db.tar.gz.sig": {
-      "filename": "fansionia.db.tar.gz.sig",
-      "sha256": "ca8a457e40787d0359d4e5761e5ab0dbac0a2185c6a4f5128934b1ba3b0d92fe",
-      "size": 119,
-      "tag": "snapshot-58ced1bb70b0c25f4e72b2c4c6f81662"
-    },
-    "https://cnb.cool/fansionia/packages/-/releases/download/snapshot-58ced1bb70b0c25f4e72b2c4c6f81662/fansionia.files": {
-      "filename": "fansionia.files",
-      "sha256": "e387251373ab0a4b1569e3f003372f7221377c28c9e75a3e498c40a3c7ff3d0c",
-      "size": 145760,
-      "tag": "snapshot-58ced1bb70b0c25f4e72b2c4c6f81662"
-    },
-    "https://cnb.cool/fansionia/packages/-/releases/download/snapshot-58ced1bb70b0c25f4e72b2c4c6f81662/fansionia.files.sig": {
-      "filename": "fansionia.files.sig",
-      "sha256": "c04a8f80d36e134e7f66fb380570ebe44aede68237b53ac95be8a917df075ee4",
-      "size": 119,
-      "tag": "snapshot-58ced1bb70b0c25f4e72b2c4c6f81662"
-    },
-    "https://cnb.cool/fansionia/packages/-/releases/download/snapshot-58ced1bb70b0c25f4e72b2c4c6f81662/fansionia.files.tar.gz": {
-      "filename": "fansionia.files.tar.gz",
-      "sha256": "e387251373ab0a4b1569e3f003372f7221377c28c9e75a3e498c40a3c7ff3d0c",
-      "size": 145760,
-      "tag": "snapshot-58ced1bb70b0c25f4e72b2c4c6f81662"
-    },
-    "https://cnb.cool/fansionia/packages/-/releases/download/snapshot-58ced1bb70b0c25f4e72b2c4c6f81662/fansionia.files.tar.gz.sig": {
-      "filename": "fansionia.files.tar.gz.sig",
-      "sha256": "c04a8f80d36e134e7f66fb380570ebe44aede68237b53ac95be8a917df075ee4",
-      "size": 119,
-      "tag": "snapshot-58ced1bb70b0c25f4e72b2c4c6f81662"
-    },
-    "https://cnb.cool/fansionia/packages/-/releases/download/snapshot-58ced1bb70b0c25f4e72b2c4c6f81662/manifest.json": {
-      "filename": "manifest.json",
-      "sha256": "2622e6342b21b3e7d9a80c05ab6e8d4b4bf639aeb6dd9396ec811d98b2c3f496",
-      "size": 16401,
-      "tag": "snapshot-58ced1bb70b0c25f4e72b2c4c6f81662"
-    },
     "https://cnb.cool/fansionia/packages/-/releases/download/snapshot-7ac13c60d3325581afae8de883e49b19/fansionia.db": {
       "filename": "fansionia.db",
       "sha256": "413d5e2b8d4f2517439c32a49d83915e8f04425517997df242f86788ceac6aea",
@@ -452,18 +398,6 @@
       "sha256": "57ff606ab9e8c0e7ac7c7629e1702ac697a12c1819cfb64ed0e4a39624de97d2",
       "size": 566,
       "tag": "upstream-home_msime_Arch-1bdbbe9aa6795f8a0f5035a9530f3a5e"
-    },
-    "https://cnb.cool/fansionia/packages/-/releases/download/upstream-home_msime_Arch-f8682faf57decb8a3307e7ad6e352b92/msime-bin-0.14.0-1-x86_64.pkg.tar.zst": {
-      "filename": "msime-bin-0.14.0-1-x86_64.pkg.tar.zst",
-      "sha256": "47ee9513ecb76298369c6e59b336b1d2d9076600923bf69f429ff53ed13c4963",
-      "size": 72528598,
-      "tag": "upstream-home_msime_Arch-f8682faf57decb8a3307e7ad6e352b92"
-    },
-    "https://cnb.cool/fansionia/packages/-/releases/download/upstream-home_msime_Arch-f8682faf57decb8a3307e7ad6e352b92/msime-bin-0.14.0-1-x86_64.pkg.tar.zst.sig": {
-      "filename": "msime-bin-0.14.0-1-x86_64.pkg.tar.zst.sig",
-      "sha256": "3d461ee2b2b6ed6e4df509809bf0b8da9d15e2bb72ac5eba8611e0399e91121f",
-      "size": 566,
-      "tag": "upstream-home_msime_Arch-f8682faf57decb8a3307e7ad6e352b92"
     },
     "https://cnb.cool/fansionia/packages/-/releases/download/upstream-warpdotdev-5380dd0efd6f119f14f35b0e0d5d4a07/warp-terminal-v0.2026.10.21.08.25.stable_02-1-x86_64.pkg.tar.zst": {
       "filename": "warp-terminal-v0.2026.10.21.08.25.stable_02-1-x86_64.pkg.tar.zst",
