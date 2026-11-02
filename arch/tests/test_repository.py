@@ -84,6 +84,46 @@ class RepositoryTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'same-version'):
             repository.ensure_monotonic([changed], previous, lambda a, b: 0)
 
+    def test_upstream_rebuild_retains_verified_bytes_and_allows_other_upgrades(self):
+        import mirror
+        package = dict(repository.select_release(self.project, [self.release()])[0],
+                       upstream='fixture', repository='upstream/fixture')
+        settings = {'architecture': 'x86_64', 'mirror': {'repository': 'test/mirror'}}
+        routes, objects = {}, {}
+        for suffix, prefix in [('', ''), ('.sig', 'signature_')]:
+            item = {'tag': 'upstream-fixture-original', 'filename': package['filename']+suffix,
+                    'sha256': package[prefix+'sha256']}
+            routes['/x86_64/'+package['filename']+suffix] = item
+            objects[mirror.location('test/mirror', item['tag'], item['filename'])] = dict(item, size=100)
+        state = {'repository': 'test/mirror', 'snapshots': {'old': {'verified': True, 'routes': routes}},
+                 'objects': objects}
+        changed = dict(package, sha256='c'*64, signature_sha256='d'*64)
+        upgrade = repository.select_release(self.project, [self.release('2.0.0')])[0]
+        previous = {'packages': [package]}
+        selected = repository.retain_upstream_rebuilds([changed, upgrade], previous, settings, state)
+        self.assertEqual(selected[0]['sha256'], package['sha256'])
+        self.assertEqual(selected[0]['signature_sha256'], package['signature_sha256'])
+        self.assertEqual(selected[1], upgrade)
+        repository.ensure_monotonic(selected[:1], previous, lambda a, b: 0)
+        self.assertNotIn('archive_url', package)
+        self.assertTrue(selected[0]['archive_url'].startswith('https://cnb.cool/test/mirror/'))
+        # Repeated rebuilds and signature-only changes cannot cause new snapshots.
+        for next_input in [dict(changed, sha256='e'*64), dict(package, signature_sha256='f'*64), package]:
+            again = repository.retain_upstream_rebuilds([next_input], {'packages': selected[:1]}, settings, state)
+            self.assertEqual(again, selected[:1])
+            self.assertEqual(repository.snapshot_inputs(again), repository.snapshot_inputs(selected[:1]))
+        new_version = dict(changed, version='2.0.0-1')
+        self.assertEqual(repository.retain_upstream_rebuilds([new_version], previous, settings, state), [new_version])
+        for missing in [{}, dict(state, objects={}), dict(state, snapshots={'old': {'verified': False, 'routes': routes}})]:
+            with self.assertRaisesRegex(ValueError, 'No verified immutable'):
+                repository.retain_upstream_rebuilds([changed], previous, settings, missing)
+        # Internal releases, another upstream, and downgrades retain strict failure.
+        for invalid in [dict(changed, upstream='other'), dict(changed, repository='upstream/other'),
+                        dict(changed, upstream=None), dict(changed, version='0.9.0-1')]:
+            selected = repository.retain_upstream_rebuilds([invalid], previous, settings, state)
+            with self.assertRaises(ValueError):
+                repository.ensure_monotonic(selected, previous, lambda a, b: -1 if a=='0.9.0-1' else 0)
+
     def test_both_worker_phases_keep_old_and_new_package_maps(self):
         settings = {'architecture':'x86_64', 'repository':'fansionia', 'pages_url':'https://pages.example',
                     'public_url':'https://packages.example'}

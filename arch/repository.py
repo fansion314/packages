@@ -149,6 +149,37 @@ def previous_manifest(site, active):
     return json.loads(path.read_text())
 
 
+IMMUTABLE_PACKAGE_FIELDS = ('sha256', 'url', 'filename', 'signature_sha256',
+                            'signature_url', 'repository', 'architecture')
+
+
+def retain_upstream_rebuilds(packages, previous, settings, mirror_state):
+    """Reject upstream rebuilds without blocking unrelated package upgrades."""
+    from mirror import archived_urls
+    old = {p['name']: p for p in previous['packages']} if previous else {}
+    result = []
+    for package in packages:
+        before = old.get(package['name'])
+        same_upstream = before and package.get('upstream') and \
+            package['upstream'] == before.get('upstream') and \
+            package['repository'] == before['repository']
+        if same_upstream and package['version'] == before['version']:
+            changed = any(package[k] != before[k] for k in IMMUTABLE_PACKAGE_FIELDS)
+            if changed or before.get('archive_url'):
+                # A verified permanent copy is required: the original URL may
+                # already serve different bytes. Never accept the replacement.
+                package = dict(before, **archived_urls(mirror_state, settings, before))
+                if changed:
+                    message = (f"Retaining verified {before['name']} {before['version']}: "
+                               'upstream changed immutable package inputs without a version bump')
+                    print('WARNING:', message)
+                    if os.environ.get('GITHUB_STEP_SUMMARY'):
+                        with open(os.environ['GITHUB_STEP_SUMMARY'], 'a') as summary:
+                            summary.write(message+'\n\n')
+        result.append(package)
+    return result
+
+
 def ensure_monotonic(packages, previous, compare=None):
     compare = compare or (lambda a, b: int(subprocess.check_output(['vercmp', a, b], text=True)))
     old = {p['name']: p for p in previous['packages']} if previous else {}
@@ -159,7 +190,7 @@ def ensure_monotonic(packages, previous, compare=None):
         order = compare(package['version'], before['version'])
         if order < 0:
             raise ValueError('Refusing package downgrade: '+package['name'])
-        if order == 0 and any(package[k] != before[k] for k in ['sha256', 'url', 'filename']):
+        if order == 0 and any(package[k] != before[k] for k in IMMUTABLE_PACKAGE_FIELDS):
             raise ValueError('Refusing same-version package replacement: '+package['name'])
 
 
@@ -188,6 +219,9 @@ def build(site, settings, active, resume=''):
     else:
         packages = discover(settings)
     previous = previous_manifest(site, active)
+    if not resume and settings.get('mirror'):
+        from mirror import read_state
+        packages = retain_upstream_rebuilds(packages, previous, settings, read_state(site, settings))
     ensure_monotonic(packages, previous)
     # Changes in inputs, generator or public signing material require a new
     # snapshot. Repeated release notifications reuse the existing signed bytes.
@@ -213,7 +247,8 @@ def build(site, settings, active, resume=''):
                 archive = temporary/package['filename']
                 for prefix, destination in [('', archive), ('signature_', Path(str(archive)+'.sig'))]:
                     cache = ROOT.parent/'.cache/pacman-downloads'/package[prefix+'sha256']
-                    download(package[prefix+'url'], cache, package[prefix+'sha256'])
+                    download(package.get(prefix+'archive_url', package[prefix+'url']),
+                             cache, package[prefix+'sha256'])
                     shutil.copy2(cache, destination)
                 verify_package(package, archive, ROOT/'keys/fansionia.gpg', settings)
                 archives.append(str(archive))
@@ -336,12 +371,18 @@ if __name__ == '__main__':
     args = parser.parse_args()
     settings = json.loads((ROOT/'sources.json').read_text())
     if args.command == 'probe':
-        from state import public_status, mirror_state
+        from state import public_status, mirror_state, snapshot_manifest
         status = public_status()
         active = status.get('active', '')
         state = mirror_state() if settings.get('mirror') else {}
         resume = state.get('pending') or (active if state.get('cleanup_pending') else '')
-        _, candidate = snapshot_inputs(discover(settings)) if not resume else ({}, resume)
+        if not resume:
+            packages = discover(settings)
+            if settings.get('mirror'):
+                packages = retain_upstream_rebuilds(packages, snapshot_manifest(active), settings, state)
+            _, candidate = snapshot_inputs(packages)
+        else:
+            candidate = resume
         changed = candidate != active or bool(resume) or os.environ.get('FORCE_PUBLISH') == 'true'
         print('Candidate snapshot:', candidate, 'active:', active or '(none)')
         if os.environ.get('GITHUB_OUTPUT'):

@@ -5,6 +5,7 @@ from pathlib import Path
 import sys
 import tempfile
 import unittest
+import urllib.error
 from unittest.mock import patch
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -16,10 +17,12 @@ import repository
 class FakeClient:
     def __init__(self):
         self.uploaded = {}
+        self.sources = {}
         self.deleted = []
 
     def upload(self, item, source):
         self.uploaded[(item['tag'], item['filename'])] = item.copy()
+        self.sources[(item['tag'], item['filename'])] = source
 
     def delete(self, item):
         self.deleted.append(item.copy())
@@ -63,9 +66,12 @@ class MirrorTests(unittest.TestCase):
         return packages
 
     def sync(self):
+        mirrored = {mirror.location(self.settings['mirror']['repository'], tag, filename): source
+                    for (tag, filename), source in self.client.sources.items()}
         def download(url, destination, digest):
-            self.assertEqual(mirror.checksum(self.sources[url]), digest)
-            return self.sources[url]
+            source = mirrored.get(url) or self.sources[url]
+            self.assertEqual(mirror.checksum(source), digest)
+            return source
         with patch.object(mirror, 'download', side_effect=download), \
                 patch.object(mirror, 'verify_remote') as verify:
             mirror.sync(self.site, self.settings, self.client)
@@ -137,6 +143,91 @@ class MirrorTests(unittest.TestCase):
         mirror.stage(self.site, self.settings, a, b)
         self.sync()
         self.accept(b)
+
+    def test_retry_reads_existing_mirror_when_original_source_is_gone(self):
+        a = 'a'*32
+        self.snapshot(a, '1')
+        mirror.stage(self.site, self.settings, '', a)
+        self.sync()
+        self.sources.clear()
+        mirror.stage(self.site, self.settings, '', a)
+        # Both the immutable cache source and the mirror bytes are checked;
+        # reusing a ledger entry must never require the removed upstream URL.
+        self.sync()
+
+    def test_interrupted_upload_falls_back_only_for_missing_attachment(self):
+        a = 'a'*32
+        package = self.snapshot(a, '1')[0]
+        mirror.stage(self.site, self.settings, '', a)
+        self.sync()
+        state = mirror.read_state(self.site, self.settings)
+        item = state['snapshots'][a]['routes']['/x86_64/'+package['filename']]
+        url = mirror.location(state['repository'], item['tag'], item['filename'])
+        mirror.stage(self.site, self.settings, '', a)
+        mirrored = {mirror.location(state['repository'], tag, filename): source
+                    for (tag, filename), source in self.client.sources.items()}
+        def download(source, destination, digest):
+            if source == url:
+                raise urllib.error.HTTPError(source, 404, 'not uploaded yet', {}, None)
+            return mirrored.get(source) or self.sources[source]
+        with patch.object(mirror, 'download', side_effect=download) as fetch, \
+                patch.object(mirror, 'verify_remote'):
+            mirror.sync(self.site, self.settings, self.client)
+        urls = [call.args[0] for call in fetch.call_args_list]
+        self.assertIn(url, urls)
+        self.assertIn(package['url'], urls)
+        mirror.stage(self.site, self.settings, '', a)
+        with patch.object(mirror, 'download', side_effect=ValueError('checksum mismatch')) as fetch, \
+                patch.object(mirror, 'verify_remote'):
+            with self.assertRaisesRegex(ValueError, 'checksum mismatch'):
+                mirror.sync(self.site, self.settings, self.client)
+        self.assertEqual(fetch.call_count, 1)
+
+    def test_frozen_upstream_survives_mirror_retention_and_repairs_primary_routes(self):
+        a, b, c, d = ('a'*32, 'b'*32, 'c'*32, 'd'*32)
+        package = self.snapshot(a, '1')[0]
+        package.update(upstream='fixture', repository='upstream/fixture', project='fixture')
+        manifest_path = self.site/'snapshots'/a/'manifest.json'
+        manifest = json.loads(manifest_path.read_text())
+        manifest['packages'] = [package]
+        repository.write_json(manifest_path, manifest)
+        mirror.stage(self.site, self.settings, '', a)
+        self.sync()
+        self.accept(a)
+        state = mirror.read_state(self.site, self.settings)
+        pinned = dict(package, **mirror.archived_urls(state, self.settings, package))
+        self.snapshot(b, '2')
+        path = self.site/'snapshots'/b/'manifest.json'
+        manifest = json.loads(path.read_text())
+        manifest['packages'].append(pinned)
+        repository.write_json(path, manifest)
+        repository.write_json(self.site/'snapshots.json', [a, b])
+        mirror.stage(self.site, self.settings, a, b)
+        self.sync()
+        self.accept(b)
+        # Later releases no longer include the old upstream. Its immutable
+        # copy must outlive the two mirror databases for cached primary DBs.
+        for previous, candidate, version in [(b, c, '3'), (c, d, '4')]:
+            self.snapshot(candidate, version)
+            index = json.loads((self.site/'snapshots.json').read_text())+[candidate]
+            repository.write_json(self.site/'snapshots.json', index)
+            mirror.stage(self.site, self.settings, previous, candidate)
+            self.sync()
+            self.accept(candidate)
+        state = mirror.read_state(self.site, self.settings)
+        self.assertEqual(state['successful'], [c, d])
+        self.assertIn(pinned['archive_url'], state['objects'])
+        for phase in ['prepare', 'active']:
+            output = self.site/(phase+'.mjs')
+            repository.worker(self.site, self.settings, c, d, phase, output)
+            config = json.loads(output.with_suffix('.json').read_text())
+            route = '/x86_64/'+package['filename']
+            self.assertEqual(config['assets'][route], pinned['archive_url'])
+            self.assertEqual(config['assets'][route+'.sig'], pinned['signature_archive_url'])
+        state['pinned'][route]['sha256'] = '0'*64
+        repository.write_json(self.site/mirror.STATE, state)
+        with self.assertRaisesRegex(ValueError, 'Pinned upstream'):
+            mirror.routes(self.site, self.settings, d)
 
     def test_capacity_failure_does_not_delete_protected_files(self):
         a = 'a'*32

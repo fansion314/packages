@@ -18,6 +18,7 @@ spec = importlib.util.spec_from_file_location('native_repository', ARCH/'reposit
 repository = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(repository)
 import upstream
+import mirror
 
 
 @unittest.skipUnless(os.environ.get('CI_ARCH_REPOSITORY') == '1' and shutil.which('repo-add'),
@@ -80,6 +81,9 @@ class NativeRepositoryTests(unittest.TestCase):
                 (payload/'.PKGINFO').write_text(metadata.replace('fixture', 'external').replace('1.0.0-1', '1:2.0-1'))
                 subprocess.run(['bsdtar', '--zstd', '-cf', str(external), '.PKGINFO', 'fixture.txt'], cwd=payload, check=True)
                 gpg('--local-user', signer+'!', '--detach-sign', str(external))
+                saved_external = root/'saved-external.pkg.tar.zst'
+                shutil.copy2(external, saved_external)
+                shutil.copy2(str(external)+'.sig', str(saved_external)+'.sig')
                 external_record = dict(package, name='external', upstream='fixture', project='fixture',
                     repository='upstream/fixture', tag='upstream-fixture-test', version='1:2.0-1',
                     filename=external.name, url='https://upstream.example/'+external.name,
@@ -87,6 +91,11 @@ class NativeRepositoryTests(unittest.TestCase):
                     sha256=repository.checksum(external), signature_sha256=repository.checksum(str(external)+'.sig'))
                 original_download = download
                 def download(url, destination, expected):
+                    if url.startswith('https://cnb.cool/'):
+                        source_path = Path(str(saved_external)+('.sig' if url.endswith('.sig') else ''))
+                        self.assertEqual(repository.checksum(source_path), expected)
+                        Path(destination).parent.mkdir(parents=True, exist_ok=True)
+                        return shutil.copy2(source_path, destination)
                     if url.startswith('https://upstream.example/'):
                         source_path = Path(str(external)+('.sig' if url.endswith('.sig') else ''))
                         self.assertEqual(repository.checksum(source_path), expected)
@@ -97,7 +106,7 @@ class NativeRepositoryTests(unittest.TestCase):
                              'ARCH_SIGNING_KEY_ID':signer, 'ARCH_SIGNING_PASSPHRASE':''}
                 site = root/'site'
                 with patch.object(repository, 'ROOT', arch), patch.object(upstream, 'ROOT', arch), \
-                     patch.object(repository, 'discover', return_value=[package, external_record]), \
+                     patch.object(repository, 'discover', return_value=[package, external_record]) as discover, \
                      patch.object(repository, 'download', side_effect=download), patch.dict(os.environ, variables), \
                      contextlib.redirect_stdout(io.StringIO()):
                     repository.build(site, settings, '')
@@ -138,6 +147,33 @@ class NativeRepositoryTests(unittest.TestCase):
                     repository.build(site, settings, snapshot)
                     self.assertEqual(signature, (files/'fansionia.db.sig').read_bytes())
                     self.assertEqual(json.loads((site/'snapshots.json').read_text()), [snapshot])
+                    # The same-version upstream now advertises different bytes,
+                    # and its original URL is already tampered. Rebuild a real
+                    # signed DB using the archived original, with its real key
+                    # and .PKGINFO verification still required.
+                    settings['mirror'] = {'repository': 'test/mirror'}
+                    routes, objects = {}, {}
+                    for suffix, prefix in [('', ''), ('.sig', 'signature_')]:
+                        item = {'tag': external_record['tag'], 'filename': external.name.replace(':', '_')+suffix,
+                                'sha256': external_record[prefix+'sha256']}
+                        routes['/x86_64/'+external.name+suffix] = item
+                        objects[mirror.location('test/mirror', item['tag'], item['filename'])] = dict(item, size=1)
+                    repository.write_json(site/'mirror-state.json', {'schema': 1, 'repository': 'test/mirror',
+                        'snapshots': {snapshot: {'verified': True, 'routes': routes}}, 'objects': objects})
+                    discover.return_value = [package, dict(external_record, sha256='e'*64, signature_sha256='f'*64)]
+                    repository.build(site, settings, snapshot)
+                    recovered = json.loads((site/'snapshots.json').read_text())[-1]
+                    self.assertNotEqual(recovered, snapshot)
+                    manifest = json.loads((site/'snapshots'/recovered/'manifest.json').read_text())
+                    frozen = next(p for p in manifest['packages'] if p['name'] == 'external')
+                    self.assertEqual(frozen['sha256'], external_record['sha256'])
+                    self.assertEqual(frozen['signature_sha256'], external_record['signature_sha256'])
+                    self.assertTrue(frozen['archive_url'].startswith('https://cnb.cool/'))
+                    recovered_db = site/'snapshots'/recovered/'x86_64/fansionia.db'
+                    upstream.verify(source, recovered_db, str(recovered_db)+'.sig')
+                    desc = subprocess.check_output(['bsdtar', '-xOf', str(recovered_db),
+                                                     'external-1:2.0-1/desc'], text=True)
+                    self.assertIn(external_record['sha256'], desc)
             finally:
                 subprocess.run(['gpgconf', '--homedir', str(home), '--kill', 'gpg-agent'], check=False)
 

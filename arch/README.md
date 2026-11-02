@@ -14,7 +14,13 @@ Initially enabled: `warpdotdev`, `denial`, and `home_msime_Arch`. All packages i
 these signed databases are merged, including future additions. Fansionia's own
 packages win name collisions; among upstreams the first configured source wins.
 Skipped names are logged. Duplicate filenames, architecture errors, missing hashes,
-invalid signatures, downgrades, and same-version replacements fail publication.
+invalid signatures and downgrades fail publication. Internal same-version
+replacements still fail. If a signed external source rebuilds or re-signs a
+package without changing its version, publication rejects the new inputs and
+retains the previously accepted package and signature, with a warning in the
+Actions summary. This requires both original objects to exist in a verified CNB
+snapshot and its object ledger; otherwise publication fails closed. Other
+applications can continue updating. A higher upstream version is checked normally.
 An unavailable upstream leaves the active snapshot in service.
 
 CI verifies each database signature before parsing metadata, then checks every
@@ -28,6 +34,16 @@ version/content, named `upstream-<repository>-<content ID>`, and use the existin
 shared-object retention and two-phase publication machinery.
 CNB attachment names replace epoch colons with underscores; the original pacman
 filename remains the public route and database identity, with unchanged bytes.
+
+For a retained same-version rebuild, both ordinary and mirror routes use the
+archived original CNB objects because the upstream URL may already have changed.
+The original upstream URLs remain recorded in the manifest; `archive_url` and
+`signature_archive_url` record the immutable download locations. Those objects
+remain protected while any of the up to 32 primary databases references them,
+even after they leave the two retained mirror databases. Mirror retries read
+existing immutable attachments before trying the original source; only HTTP 404
+from an interrupted first upload permits a source retry, with the original hash
+still enforced. Packages are never repacked, re-signed or silently replaced.
 
 `publish-pacman.yml` checks all sources twice an hour (UTC minutes 9 and 39;
 GitHub schedules may be delayed). Release dispatches still check immediately.

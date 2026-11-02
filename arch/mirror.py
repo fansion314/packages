@@ -55,6 +55,27 @@ def existing_tag(objects, legacy, readable):
     return legacy if any(o['tag'] == legacy for o in objects.values()) else readable
 
 
+def archived_urls(state, settings, package):
+    """Locate both original objects in a previously verified mirror snapshot."""
+    if state.get('repository') != settings.get('mirror', {}).get('repository'):
+        raise ValueError('No verified immutable mirror repository for upstream rebuild: '+package['name'])
+    result = {}
+    for suffix, prefix in [('', ''), ('.sig', 'signature_')]:
+        path = '/'+settings['architecture']+'/'+package['filename']+suffix
+        for snapshot in state.get('snapshots', {}).values():
+            item = snapshot['routes'].get(path)
+            if not snapshot['verified'] or not item or item['sha256'] != package[prefix+'sha256']:
+                continue
+            url = location(state['repository'], item['tag'], item['filename'])
+            ledger = state['objects'].get(url)
+            if ledger and all(ledger[k] == item[k] for k in ['tag', 'filename', 'sha256']):
+                result[prefix+'archive_url'] = url
+                break
+        else:
+            raise ValueError('No verified immutable mirror copy for upstream rebuild: '+package['name'])
+    return result
+
+
 def snapshot_plan(site, settings, snapshot, objects=None):
     if not re.fullmatch(r'[0-9a-f]{32}', snapshot):
         raise ValueError('Invalid mirror snapshot identity')
@@ -94,6 +115,31 @@ def snapshot_plan(site, settings, snapshot, objects=None):
     return result
 
 
+def pinned_plan(site, settings, objects):
+    """Protect frozen upstream bytes for every retained primary database."""
+    index = Path(site)/'snapshots.json'
+    snapshots = json.loads(index.read_text()) if index.exists() else []
+    result = {}
+    for snapshot in snapshots:
+        manifest = json.loads((Path(site)/'snapshots'/snapshot/'manifest.json').read_text())
+        pinned = [p for p in manifest['packages'] if p.get('upstream') and p.get('archive_url')]
+        if not pinned:
+            continue
+        plan = snapshot_plan(site, settings, snapshot, objects)
+        for package in pinned:
+            for suffix, prefix in [('', ''), ('.sig', 'signature_')]:
+                path = '/'+settings['architecture']+'/'+package['filename']+suffix
+                item = dict(plan[path])
+                url = location(settings['mirror']['repository'], item['tag'], item['filename'])
+                if url != package[prefix+'archive_url']:
+                    raise ValueError('Pinned upstream archive location changed')
+                item['source'] = url
+                if path in result and result[path] != item:
+                    raise ValueError('Conflicting pinned upstream archive')
+                result[path] = item
+    return result
+
+
 def key_plan(site, objects=None):
     keys = {p.name: checksum(p) for p in (Path(site)/'keys').iterdir() if p.is_file()}
     identity = hashlib.sha256(canonical(keys)).hexdigest()[:32]
@@ -119,13 +165,14 @@ def stage(site, settings, active, candidate):
     state['snapshots'] = {s: {'verified': False, 'routes': snapshot_plan(site, settings, s, state['objects'])}
                           for s in retained}
     state['keys'] = key_plan(site, state['objects'])
+    state['pinned'] = pinned_plan(site, settings, state['objects'])
     write_json(Path(site)/STATE, state)
     return state
 
 
 def references(state):
     result = {}
-    for routes in [state['keys'], *(s['routes'] for s in state['snapshots'].values())]:
+    for routes in [state['keys'], *(s['routes'] for s in state['snapshots'].values()), state.get('pinned', {})]:
         for item in routes.values():
             url = location(state['repository'], item['tag'], item['filename'])
             if url in result and result[url]['sha256'] != item['sha256']:
@@ -160,15 +207,26 @@ def sync(site, settings, client=None):
     client = client or Client(state['repository'])
     uploaded = reused = 0
     for url, item in references(state).items():
+        before = state['objects'].get(url)
+        if before is not None and any(before[k] != item[k] for k in ['tag', 'filename', 'sha256']):
+            raise ValueError('Refusing to replace an immutable mirrored object')
         if 'source' in item:
-            source = download(item['source'], ROOT.parent/'.cache/pacman-downloads'/item['sha256'], item['sha256'])
+            cache = ROOT.parent/'.cache/pacman-downloads'/item['sha256']
+            # Reuse permanent mirror bytes, even if the upstream has removed
+            # or rebuilt an old package. A journal may precede the first upload;
+            # only a missing attachment can fall back to the original source.
+            try:
+                source = download(url if before else item['source'], cache, item['sha256'])
+            except urllib.error.HTTPError as error:
+                if not before or error.code != 404 or item['source'] == url:
+                    raise
+                source = download(item['source'], cache, item['sha256'])
         else:
             source = Path(item['local'])
         if checksum(source) != item['sha256']:
             raise ValueError('Mirror source checksum mismatch')
         record = {k: item[k] for k in ['tag', 'filename', 'sha256']}
         record['size'] = source.stat().st_size
-        before = state['objects'].get(url)
         if before is not None and before != record:
             raise ValueError('Refusing to replace an immutable mirrored object')
         # A conservative repository budget leaves room for other shared
@@ -227,6 +285,16 @@ def routes(site, settings, selected):
         if item['sha256'] != checksum(Path(site)/path.lstrip('/')):
             raise ValueError('Mirror public key verification receipt changed')
         assets['/mirror'+path] = location(state['repository'], item['tag'], item['filename'])
+    pinned = pinned_plan(site, settings, state['objects'])
+    if pinned != state.get('pinned', {}):
+        raise ValueError('Pinned upstream mirror references do not match retained databases')
+    for path, item in pinned.items():
+        url = location(state['repository'], item['tag'], item['filename'])
+        if state['objects'][url]['sha256'] != item['sha256']:
+            raise ValueError('Pinned upstream mirror receipt changed')
+        # Both primary and mirror clients must get the original signed bytes.
+        # The mutable upstream URL no longer represents this database entry.
+        assets[path] = url
     return assets, retained
 
 

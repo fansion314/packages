@@ -4,6 +4,7 @@ import argparse
 import json
 import os
 from pathlib import Path
+import re
 import subprocess
 import urllib.error
 import urllib.request
@@ -31,17 +32,29 @@ def active_snapshot():
     return public_status().get('active', '')
 
 
-def mirror_state():
-    """Read persisted recovery state through the uncached GitHub API."""
+def generated_json(path, missing=False):
+    """Read persisted publication state through the uncached GitHub API."""
     result = subprocess.run(['gh', 'api', '-H', 'Cache-Control: no-cache',
-        'repos/fansion314/packages/contents/mirror-state.json?ref=pacman-pages'],
+        'repos/fansion314/packages/contents/'+path+'?ref=pacman-pages'],
         text=True, capture_output=True)
     if result.returncode:
-        if 'HTTP 404' in result.stderr:
+        if missing and 'HTTP 404' in result.stderr:
             return {}
-        raise RuntimeError('Cannot read persisted CNB mirror recovery state')
+        raise RuntimeError('Cannot read persisted publication state: '+path)
     import base64
     return json.loads(base64.b64decode(json.loads(result.stdout)['content']))
+
+
+def mirror_state():
+    return generated_json('mirror-state.json', missing=True)
+
+
+def snapshot_manifest(snapshot):
+    if not snapshot:
+        return None
+    if not re.fullmatch(r'[0-9a-f]{32}', snapshot):
+        raise ValueError('Invalid active snapshot identity')
+    return generated_json('snapshots/'+snapshot+'/manifest.json')
 
 
 def checkout(directory):
