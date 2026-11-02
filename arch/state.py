@@ -6,6 +6,7 @@ import os
 from pathlib import Path
 import re
 import subprocess
+import time
 import urllib.error
 import urllib.request
 
@@ -15,7 +16,9 @@ STATUS = 'https://packages.fansionia.world/status.json'
 
 def public_status():
     try:
-        with urllib.request.urlopen(STATUS, timeout=30) as response:
+        request = urllib.request.Request(STATUS+'?check='+str(time.time_ns()),
+                                         headers={'Cache-Control': 'no-cache'})
+        with urllib.request.urlopen(request, timeout=30) as response:
             return json.load(response)
     except urllib.error.HTTPError as error:
         if error.code == 404:

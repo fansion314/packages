@@ -248,6 +248,30 @@ class MirrorTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'pending'):
             mirror.stage(self.site, self.settings, '', b)
 
+    def test_cleanup_waits_for_retired_routes_to_disappear(self):
+        import state as publication_state
+        a, b = 'a'*32, 'b'*32
+        self.snapshot(a, '1')
+        self.snapshot(b, '2')
+        mirror.stage(self.site, self.settings, '', a)
+        self.sync()
+        self.accept(a)
+        mirror.stage(self.site, self.settings, a, b)
+        self.sync()
+        mirror.finish(self.site, self.settings, b, self.public(b, [a, b]))
+        stale = self.public(b, ['retired', a, b])
+        matching = self.public(b, [a, b])
+        with patch.object(publication_state, 'public_status', side_effect=[stale, matching]) as fetch, \
+                patch.object(mirror.time, 'sleep', side_effect=lambda _: self.assertFalse(self.client.deleted)) as sleep:
+            mirror.prune(self.site, self.settings, self.client)
+        self.assertEqual(fetch.call_count, 2)
+        sleep.assert_called_once()
+        self.assertFalse(mirror.read_state(self.site, self.settings)['cleanup_pending'])
+        with patch.object(publication_state, 'public_status', return_value=stale), \
+                patch.object(mirror.time, 'sleep'):
+            with self.assertRaisesRegex(ValueError, 'retained public'):
+                mirror.prune(self.site, self.settings, self.client)
+
     def test_epoch_filename_routes_to_cnb_safe_name_with_original_bytes(self):
         a = 'a'*32
         package = self.snapshot(a, '1')[0]

@@ -318,12 +318,25 @@ def finish(site, settings, candidate, public=None):
 def prune(site, settings, client=None, public=None):
     from state import public_status
     state = read_state(site, settings)
-    public = public if public is not None else public_status()
-    if state['pending'] or not state['successful'] or public.get('phase') != 'active' or \
-            public.get('active') != state['successful'][-1] or \
-            public.get('mirror', {}).get('active') != state['successful'][-1] or \
-            public.get('mirror', {}).get('snapshots') != state['successful']:
-        raise ValueError('Refusing cleanup before the retained public mirror mappings are deployed')
+    message = 'Refusing cleanup before the retained public mirror mappings are deployed'
+    if state['pending'] or not state['successful']:
+        raise ValueError(message)
+    def ready(status):
+        return status.get('phase') == 'active' and \
+            status.get('active') == state['successful'][-1] and \
+            status.get('mirror', {}).get('active') == state['successful'][-1] and \
+            status.get('mirror', {}).get('snapshots') == state['successful']
+    if public is None:
+        # The preceding deployment check and this request can reach different
+        # edges. Wait for the exact retained mappings; never delete early.
+        for attempt in range(12):
+            public = public_status()
+            if ready(public):
+                break
+            if attempt < 11:
+                time.sleep(5)
+    if not ready(public):
+        raise ValueError(message)
     client = client or Client(state['repository'])
     protected = references(state)
     for url, item in list(state['objects'].items()):

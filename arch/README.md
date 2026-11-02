@@ -157,6 +157,10 @@ retired snapshot, checks the published retained IDs, and only then deletes
 unreferenced journaled CNB attachments. Shared packages remain. Releases must
 carry the exact workflow ownership marker; unrelated releases and user-added
 attachments are left untouched. Failed cleanup remains journaled for retry.
+Status reads bypass caches. Before deleting retired attachments, cleanup waits
+up to 55 seconds for the exact retained IDs to appear on fresh public status
+reads; a mismatch after that still refuses deletion. A successful deployment
+check does not imply every edge has already switched at the next request.
 The mirror temporarily holds up to three snapshots; GitHub/Pages retains its
 existing 32-snapshot policy. Cached mirror databases older than the retained
 pair require `pacman -Syyu` before further installation.
