@@ -490,7 +490,7 @@
       "tag": "upstream-warpdotdev-c49299ac14e1294b0d5e207f13074e2e"
     }
   },
-  "pending": "7ac13c60d3325581afae8de883e49b19",
+  "pending": "",
   "pinned": {
     "/x86_64/msime-bin-0.15.0-1-x86_64.pkg.tar.zst": {
       "filename": "msime-bin-0.15.0-1-x86_64.pkg.tar.zst",
