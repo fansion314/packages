@@ -9,6 +9,8 @@ import json
 import os
 from pathlib import Path
 import re
+import shlex
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -166,6 +168,21 @@ def gh(*args):
     return json.loads(subprocess.check_output(['gh', *args], text=True, timeout=120))
 
 
+def git_shell(program='bash'):
+    if os.name != 'nt':
+        return shutil.which(program) or program
+    roots = [Path(value)/'Git' for key in ('ProgramW6432', 'ProgramFiles', 'ProgramFiles(x86)')
+             if (value := os.environ.get(key))]
+    if executable := shutil.which('git'):
+        roots.extend([Path(executable).parent.parent, Path(executable).parent])
+    for root in roots:
+        for relative in ('bin', 'usr/bin'):
+            candidate = root/relative/(program+'.exe')
+            if candidate.is_file():
+                return str(candidate.resolve())
+    raise RuntimeError('Git for Windows shell is required; refusing the Windows WSL shell stub')
+
+
 def source_release(tag=''):
     if tag:
         version_key(tag)
@@ -227,15 +244,22 @@ def source_file(assets, name, directory, expected=None, limit=2*1024**3):
     return target
 
 
+def askpass_environment(directory):
+    askpass = Path(directory)/'askpass.sh'
+    askpass.write_text('#!/bin/sh\ncase "$1" in\n *Username*) printf "%s\\n" cnb ;;\n *Password*) printf "%s\\n" "$CNB_MIRROR_TOKEN" ;;\n *) exit 1 ;;\nesac\n', newline='\n')
+    askpass.chmod(0o700)
+    invocation = askpass.as_posix()
+    if os.name == 'nt':
+        invocation = shlex.quote(Path(git_shell('sh')).as_posix())+' '+shlex.quote(invocation)
+    return {**os.environ, 'GIT_ASKPASS': invocation, 'GIT_TERMINAL_PROMPT': '0'}
+
+
 def authenticated_push(output, dry_run=False):
     token = os.environ.get('CNB_MIRROR_TOKEN')
     if not token:
         raise ValueError('CNB_MIRROR_TOKEN is required')
     with tempfile.TemporaryDirectory(prefix='fansionia-windows-auth-') as temporary:
-        askpass = Path(temporary)/'askpass.sh'
-        askpass.write_text('#!/bin/sh\ncase "$1" in\n *Username*) printf "%s\\n" cnb ;;\n *Password*) printf "%s\\n" "$CNB_MIRROR_TOKEN" ;;\n *) exit 1 ;;\nesac\n')
-        askpass.chmod(0o700)
-        env = {**os.environ, 'GIT_ASKPASS': askpass.as_posix(), 'GIT_TERMINAL_PROMPT': '0'}
+        env = askpass_environment(temporary)
         result = subprocess.run(['git', '-C', str(output), '-c', 'credential.helper=', 'push',
                                  *(['--dry-run'] if dry_run else []), 'origin', 'HEAD:refs/heads/'+BRANCH],
                                 env=env, capture_output=True, text=True, timeout=120)

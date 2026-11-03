@@ -313,6 +313,19 @@ process.stdout.write(c.sign(null,Buffer.from(v.payload,'base64'),key).toString('
             mirror.authenticated_push(self.candidate, dry_run=True)
         self.assertEqual(self.git(self.remote, 'show-ref'), before)
 
+    def test_git_credential_fill_executes_the_real_askpass_shell(self):
+        # A fake token and local credential fill prove Git executes the helper; no network is needed.
+        with tempfile.TemporaryDirectory(prefix='mirror auth space ') as directory, \
+                patch.dict(os.environ, CNB_MIRROR_TOKEN='test-only-credential'):
+            env = mirror.askpass_environment(directory)
+            result = subprocess.run(['git', '-c', 'credential.helper=', 'credential', 'fill'],
+                                    input='protocol=https\nhost=example.invalid\n\n', text=True,
+                                    env=env, capture_output=True, timeout=15)
+            self.assertEqual(result.returncode, 0, 'Git failed to execute the credential helper')
+            credentials = dict(line.split('=', 1) for line in result.stdout.splitlines() if '=' in line)
+            self.assertEqual(credentials.get('username'), 'cnb')
+            self.assertEqual(credentials.get('password'), 'test-only-credential')
+
     def test_public_feed_recheck_is_small_when_no_release_changed(self):
         self.prepare()
         self.publish()
@@ -371,7 +384,7 @@ class WindowsRoutingTests(unittest.TestCase):
                                             ('clash-momo', 'arch', {'aur': 'true', 'homebrew': 'false', 'windows': 'false'})]:
             with self.subTest(project=project, platform=platform), tempfile.TemporaryDirectory() as temporary:
                 output = Path(temporary)/'output'
-                subprocess.run(['bash', '-c', script], env={**os.environ, 'PROJECT': project, 'PLATFORM': platform,
+                subprocess.run([mirror.git_shell(), '-c', script], env={**os.environ, 'PROJECT': project, 'PLATFORM': platform,
                                'GITHUB_OUTPUT': str(output)}, check=True)
                 self.assertEqual(dict(line.split('=') for line in output.read_text().splitlines()), expected)
         self.assertIn("inputs.platform == 'arch'", workflow)
