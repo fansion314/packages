@@ -1,19 +1,18 @@
 pkgbase = mihomomo
 	pkgdesc = Mihomo-based proxy core for Clash Momo
 	pkgver = 1.19.33
-	pkgrel = 3
+	pkgrel = 4
 	url = https://github.com/fansion314/momo
 	install = mihomomo.install
 	arch = x86_64
 	license = GPL-3.0-only
 	makedepends = git
 	makedepends = go
-	makedepends = python
 	depends = glibc
 	depends = libcap
 	options = !debug
 	options = !strip
-	source = git+https://github.com/fansion314/momo.git#commit=1baac3bbd2099ccc41aeba9f25c07f8ffd116ec7
+	source = git+https://github.com/fansion314/momo.git#commit=bff94c11042c507ec0049bd43f8d495efd3e62d1
 	source = mihomomo.install
 	sha256sums = SKIP
 	sha256sums = b2eed56f6feafc8291adc22059ce37f27bb14464ae5b5bafa014acd85c8e02e6
