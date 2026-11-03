@@ -164,7 +164,8 @@ try {
 
 
 def gh(*args):
-    return json.loads(subprocess.check_output(['gh', *args], text=True, timeout=120))
+    # GitHub JSON is UTF-8 even when Windows' active ANSI code page is cp1252.
+    return json.loads(subprocess.check_output(['gh', *args], timeout=120))
 
 
 def git_shell(program='bash'):

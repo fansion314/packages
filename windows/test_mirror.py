@@ -374,6 +374,12 @@ process.stdout.write(c.sign(null,Buffer.from(v.payload,'base64'),key).toString('
 
 
 class WindowsRoutingTests(unittest.TestCase):
+    def test_github_json_decodes_utf8_independently_of_windows_code_page(self):
+        value = {'tag_name': 'clash-momo-v2.0.4-5', 'body': '\u4e2d\u6587\u66f4\u65b0\u8bf4\u660e \u201d'}
+        with patch.object(mirror.subprocess, 'check_output', return_value=json.dumps(value, ensure_ascii=False).encode('utf-8')) as run:
+            self.assertEqual(mirror.gh('api', 'repos/example/releases'), value)
+        self.assertNotIn('text', run.call_args.kwargs)
+
     def test_downstream_routes_windows_only_for_clash_momo(self):
         workflow = (mirror.ROOT/'.github/workflows/downstream.yml').read_text()
         block = workflow.split('        run: |\n', 1)[1].split('\n  aur:', 1)[0]
