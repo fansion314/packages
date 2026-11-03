@@ -1,29 +1,29 @@
 {
   "repository": "fansion314/packages",
-  "reference": "obsidian-v1.14.5-1",
+  "reference": "obsidian-v1.15.0-1",
   "packages": {
     "obsidian-electron": {
-      "version": "0:1.14.5-1",
+      "version": "0:1.15.0-1",
       "files": {
-        ".SRCINFO": "5a468b88aec9f74263ca3e210e694df97ad5f5a2dd2a85d63fc29b9bc2850997",
+        ".SRCINFO": "e0031000934b0463918fef59e304966a6fda67cf459f283105ca8f572a364d7d",
         "LICENSE-Obsidian": "d9fdc14f9c2fb95bb38310281268fdad413c1b49fa93213df3184f9b0ca1175c",
-        "PKGBUILD": "049d4aa405254f3df3022cf18e04036ca9957ac5b021fd72dc176fcb5099743b",
+        "PKGBUILD": "cdac1b870f4e9e9a9ef83f918391aa8cf175148327cdd298379d23bc0dd7bc47",
         "md.obsidian.Obsidian.desktop": "0251425a4f4efdc5efb0384eaee38dd2430107c5a43094877a4fa75b48e43020",
         "obsidian.sh": "5cab5220361350abc9f8faae746366f98f0db97ce9623736e1623f871e2000b9"
       },
       "assets": []
     },
     "obsidian-electron-bin": {
-      "version": "0:1.14.5-1",
+      "version": "0:1.15.0-1",
       "files": {
-        ".SRCINFO": "264cd77c04ad002bc712077c4072bc5dfccd78b3123750def1e90dd5d345d409",
-        "PKGBUILD": "ec16a37f7851542d213e5d0023b74f4d4c32a0b86a7e1299b8f688b5e3335a17"
+        ".SRCINFO": "94b90c91d8702b66e8367b4a952995ce764d488ea6900cadf9364ede803f3b27",
+        "PKGBUILD": "1e56f7eb04d0f1f9709fb005a24eb8ab6a7f8a72163c22bc6f5fe2e1dacdfc94"
       },
       "assets": [
         {
-          "url": "https://github.com/fansion314/packages/releases/download/obsidian-v1.14.5-1/obsidian-electron-1.14.5-1-x86_64.pkg.tar.zst",
-          "sha256": "3a3b74fc9fa83e2f5ee59e7eb861dcaaa7084c9d0822dbb1b9efb2aceb442f74",
-          "size": 8966284
+          "url": "https://github.com/fansion314/packages/releases/download/obsidian-v1.15.0-1/obsidian-electron-1.15.0-1-x86_64.pkg.tar.zst",
+          "sha256": "193fccfe94cbe25cc1b3edbf4d09ac47269a87ec7364ada512374e69df929d40",
+          "size": 8061269
         }
       ]
     }
