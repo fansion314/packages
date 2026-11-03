@@ -9,7 +9,6 @@ import json
 import os
 from pathlib import Path
 import re
-import shlex
 import shutil
 import subprocess
 import sys
@@ -248,10 +247,11 @@ def askpass_environment(directory):
     askpass = Path(directory)/'askpass.sh'
     askpass.write_text('#!/bin/sh\ncase "$1" in\n *Username*) printf "%s\\n" cnb ;;\n *Password*) printf "%s\\n" "$CNB_MIRROR_TOKEN" ;;\n *) exit 1 ;;\nesac\n', newline='\n')
     askpass.chmod(0o700)
-    invocation = askpass.as_posix()
     if os.name == 'nt':
-        invocation = shlex.quote(Path(git_shell('sh')).as_posix())+' '+shlex.quote(invocation)
-    return {**os.environ, 'GIT_ASKPASS': invocation, 'GIT_TERMINAL_PROMPT': '0'}
+        # GIT_ASKPASS is one executable path, not a shell command. Git for Windows
+        # resolves this script's /bin/sh shebang through its bundled shell.
+        git_shell('sh')
+    return {**os.environ, 'GIT_ASKPASS': askpass.as_posix(), 'GIT_TERMINAL_PROMPT': '0'}
 
 
 def authenticated_push(output, dry_run=False):
