@@ -1,6 +1,6 @@
 pkgname=clash-momo-bin
 pkgver=2.0.4
-pkgrel=4
+pkgrel=5
 pkgdesc='Desktop client for mihomomo (prebuilt)'
 arch=('x86_64')
 url='https://github.com/fansion314/momo'
@@ -12,7 +12,7 @@ options=('!strip' '!debug')
 _package="clash-momo-${pkgver}-${pkgrel}-x86_64.pkg.tar.zst"
 source_x86_64=("https://github.com/fansion314/momo/releases/download/clash-momo-v${pkgver}-${pkgrel}/${_package}")
 noextract=("${_package}")
-sha256sums_x86_64=('e93762806b753312c3ab0a4b79265bb892e3c10945fd7b0b7817d021cf9167e6')
+sha256sums_x86_64=('3b6c915bdbbadeb30614fa18f1cea5f7b090031a3fc64e2cb9a134de96cde272')
 
 package() {
   bsdtar -xf "$srcdir/$_package" -C "$pkgdir" usr

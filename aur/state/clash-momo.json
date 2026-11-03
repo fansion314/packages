@@ -1,28 +1,28 @@
 {
   "repository": "fansion314/momo",
-  "reference": "clash-momo-v2.0.4-4",
+  "reference": "clash-momo-v2.0.4-5",
   "packages": {
     "clash-momo": {
-      "version": "0:2.0.4-4",
+      "version": "0:2.0.4-5",
       "files": {
-        ".SRCINFO": "2177f1aad2e302756dc4b4b6a93f0fd83211fe2e2ce12ceb28f0a10f9a9b2c76",
-        "PKGBUILD": "0ae328423f1d9b8245dd7bcb5ec10ae7e83b9981a08be7b81a6024af771227ae",
+        ".SRCINFO": "08ea71145e1315e08c812b35cc378e90eff4b86905fd867caf0d04fe74733cc9",
+        "PKGBUILD": "d9356285a4bae0264694d07f5268f36adda0fae7c1d1eea518e7ae9a053c68c0",
         "clash-momo": "4ad8796991a21e5008570fa0be46f981fa36e4068f4e0c017899c7a9817dfc6f",
         "clash-momo.desktop": "3f54e2bb92469c094252c2ebd7b0c587218d8333b4cfc22c0328b869a94799d8"
       },
       "assets": []
     },
     "clash-momo-bin": {
-      "version": "0:2.0.4-4",
+      "version": "0:2.0.4-5",
       "files": {
-        ".SRCINFO": "297b8e192646da35b1a320d325a8746ff02a9b463bfbd3398c4aac7e62d35578",
-        "PKGBUILD": "347e7221c7a123b1a0125a54ea364937b13048e8ccb14ee85b88053afe3dd3ca"
+        ".SRCINFO": "496b58186196ada256122a7570bab2857eb78ce2b8182359a80fe7be19ff3a82",
+        "PKGBUILD": "d7d047d7d4a81a7deca7a222bbaa257faf463b867500e0d79c67f19535881745"
       },
       "assets": [
         {
-          "url": "https://github.com/fansion314/momo/releases/download/clash-momo-v2.0.4-4/clash-momo-2.0.4-4-x86_64.pkg.tar.zst",
-          "sha256": "e93762806b753312c3ab0a4b79265bb892e3c10945fd7b0b7817d021cf9167e6",
-          "size": 61466771
+          "url": "https://github.com/fansion314/momo/releases/download/clash-momo-v2.0.4-5/clash-momo-2.0.4-5-x86_64.pkg.tar.zst",
+          "sha256": "3b6c915bdbbadeb30614fa18f1cea5f7b090031a3fc64e2cb9a134de96cde272",
+          "size": 61606747
         }
       ]
     }
