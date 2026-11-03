@@ -321,7 +321,8 @@ process.stdout.write(c.sign(null,Buffer.from(v.payload,'base64'),key).toString('
             result = subprocess.run(['git', '-c', 'credential.helper=', 'credential', 'fill'],
                                     input='protocol=https\nhost=example.invalid\n\n', text=True,
                                     env=env, capture_output=True, timeout=15)
-            self.assertEqual(result.returncode, 0, 'Git failed to execute the credential helper')
+            diagnostics = result.stderr.replace('test-only-credential', '[test credential]')
+            self.assertEqual(result.returncode, 0, 'Git credential helper failed: '+diagnostics)
             credentials = dict(line.split('=', 1) for line in result.stdout.splitlines() if '=' in line)
             self.assertEqual(credentials.get('username'), 'cnb')
             self.assertEqual(credentials.get('password'), 'test-only-credential')
