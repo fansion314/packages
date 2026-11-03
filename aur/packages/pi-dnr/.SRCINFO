@@ -1,6 +1,6 @@
 pkgbase = pi-dnr
 	pkgdesc = Pi coding agent packaged as a single application for the shared dnr runtime
-	pkgver = 1.4.0
+	pkgver = 1.5.0
 	pkgrel = 1
 	url = https://github.com/fansion314/pi
 	arch = x86_64
@@ -21,11 +21,11 @@ pkgbase = pi-dnr
 	optdepends = npm: install dependencies for npm and Git extensions
 	optdepends = wl-clipboard: Wayland clipboard support
 	optdepends = xclip: X11 clipboard writes and fallback reads
-	provides = pi-coding-agent=1.4.0
+	provides = pi-coding-agent=1.5.0
 	conflicts = pi-coding-agent
 	options = !strip
 	options = !debug
-	source = pi::git+https://github.com/fansion314/pi.git#tag=pi-dnr-v1.4.0-1
+	source = pi::git+https://github.com/fansion314/pi.git#tag=pi-dnr-v1.5.0-1
 	sha256sums = SKIP
 
 pkgname = pi-dnr
