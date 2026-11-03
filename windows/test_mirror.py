@@ -200,6 +200,21 @@ process.stdout.write(c.sign(null,Buffer.from(v.payload,'base64'),key).toString('
         self.assertEqual(self.client.uploaded, uploads)
         self.assertEqual(self.git(self.remote, 'rev-parse', mirror.BRANCH), tip)
 
+    def test_repeat_sync_preserves_exact_signed_bytes_with_autocrlf_enabled(self):
+        self.envelope = (json.dumps(json.loads(self.envelope), indent=2)+'\n').encode()
+        self.release = self.release_files()
+        with patch.dict(os.environ, GIT_CONFIG_COUNT='1',
+                        GIT_CONFIG_KEY_0='core.autocrlf', GIT_CONFIG_VALUE_0='true'):
+            self.prepare()
+            self.publish()
+            tip = self.git(self.remote, 'rev-parse', mirror.BRANCH)
+            uploads = self.client.uploaded
+            self.candidate = self.root/'crlf-next'
+            self.assertFalse(self.prepare()['changed'])
+            self.assertEqual((self.candidate/mirror.FEED).read_bytes(), self.envelope)
+            self.assertEqual(self.client.uploaded, uploads)
+            self.assertEqual(self.git(self.remote, 'rev-parse', mirror.BRANCH), tip)
+
     def test_failed_mirror_download_retains_old_public_feed_and_retry_reuses(self):
         original = self.download
         with patch.object(mirror, 'download', side_effect=lambda url, *a, **k: (_ for _ in ()).throw(

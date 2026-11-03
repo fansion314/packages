@@ -50,7 +50,8 @@ def write_json(path, value):
 
 
 def git(directory, *args):
-    return subprocess.check_output(['git', '-C', str(directory), *args],
+    # The signed envelope is an immutable byte artifact, including its line endings.
+    return subprocess.check_output(['git', '-c', 'core.autocrlf=false', '-C', str(directory), *args],
                                    text=True, stderr=subprocess.DEVNULL, timeout=120).strip()
 
 
