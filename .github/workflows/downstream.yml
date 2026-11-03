@@ -16,7 +16,7 @@ on:
         default: ''
       platform:
         type: choice
-        options: [all, arch, macos]
+        options: [all, arch, macos, windows]
         default: all
   schedule:
     - cron: '4,19,34,49 * * * *'
@@ -28,6 +28,7 @@ jobs:
     outputs:
       aur: ${{ steps.inputs.outputs.aur }}
       homebrew: ${{ steps.inputs.outputs.homebrew }}
+      windows: ${{ steps.inputs.outputs.windows }}
     steps:
       - id: inputs
         env:
@@ -35,9 +36,11 @@ jobs:
           PLATFORM: ${{ inputs.platform || 'all' }}
         run: |
           case "$PROJECT" in ''|dnr|pi|etcher|motrix|deepseek-harness|bitwarden|obsidian|python-pptx|fansionia-keyring|clash-momo|mihomomo|mygo-cloudmusic) ;; *) exit 2;; esac
-          case "$PLATFORM" in all|arch|macos) ;; *) exit 2;; esac
-          echo "aur=$([[ $PLATFORM != macos && $PROJECT != python-pptx && $PROJECT != fansionia-keyring ]] && echo true || echo false)" >> "$GITHUB_OUTPUT"
-          echo "homebrew=$([[ $PLATFORM != arch && ( -z $PROJECT || $PROJECT == dnr || $PROJECT == pi || $PROJECT == etcher || $PROJECT == clash-momo || $PROJECT == mihomomo ) ]] && echo true || echo false)" >> "$GITHUB_OUTPUT"
+          case "$PLATFORM" in all|arch|macos|windows) ;; *) exit 2;; esac
+          if [[ $PLATFORM == windows && -n $PROJECT && $PROJECT != clash-momo ]]; then exit 2; fi
+          echo "aur=$([[ ( $PLATFORM == all || $PLATFORM == arch ) && $PROJECT != python-pptx && $PROJECT != fansionia-keyring ]] && echo true || echo false)" >> "$GITHUB_OUTPUT"
+          echo "homebrew=$([[ ( $PLATFORM == all || $PLATFORM == macos ) && ( -z $PROJECT || $PROJECT == dnr || $PROJECT == pi || $PROJECT == etcher || $PROJECT == clash-momo || $PROJECT == mihomomo ) ]] && echo true || echo false)" >> "$GITHUB_OUTPUT"
+          echo "windows=$([[ ( $PLATFORM == all || $PLATFORM == windows ) && ( -z $PROJECT || $PROJECT == clash-momo ) ]] && echo true || echo false)" >> "$GITHUB_OUTPUT"
   aur:
     needs: validate
     if: needs.validate.outputs.aur == 'true'
@@ -58,10 +61,16 @@ jobs:
   pacman:
     needs: validate
     # pacman has its own half-hour schedule; retain immediate release dispatches.
-    if: inputs.platform != 'macos' && github.event_name != 'schedule'
+    if: (inputs.platform == '' || inputs.platform == 'all' || inputs.platform == 'arch') && github.event_name != 'schedule'
     permissions:
       contents: write
       pages: write
       id-token: write
     uses: ./.github/workflows/publish-pacman.yml
+    secrets: inherit
+  windows:
+    needs: validate
+    # This single Windows package has its own half-hour recovery schedule.
+    if: needs.validate.outputs.windows == 'true' && github.event_name != 'schedule'
+    uses: ./.github/workflows/sync-windows-clash-momo.yml
     secrets: inherit

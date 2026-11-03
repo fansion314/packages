@@ -2,7 +2,7 @@ name: Validate package maintenance
 on:
   push:
     branches: [main]
-    paths: ['packages/**', 'scripts/**', 'tests/**', 'arch/**', '.github/workflows/**', 'homebrew/scripts/**', 'homebrew/templates/**', 'aur/scripts/**', 'aur/tests/**', 'aur/sources.json']
+    paths: ['packages/**', 'scripts/**', 'tests/**', 'arch/**', 'windows/**', '.github/workflows/**', 'homebrew/scripts/**', 'homebrew/templates/**', 'aur/scripts/**', 'aur/tests/**', 'aur/sources.json']
   pull_request:
   workflow_dispatch:
 permissions:
@@ -34,6 +34,7 @@ jobs:
         with:
           node-version: '24'
       - run: node --test arch/tests/*.test.mjs
+      - run: python3 -m unittest discover -s windows -p 'test_*.py' -v
       - name: Check shell syntax
         run: find scripts homebrew/scripts aur/scripts packages -type f -name '*.sh' -exec bash -n {} \;
   packages:

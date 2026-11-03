@@ -24,8 +24,10 @@ def main(argv=None):
     parser.add_argument('project', choices=['dnr', 'pi', 'etcher', 'motrix',
                                           'deepseek-harness', 'bitwarden', 'obsidian',
                                           'python-pptx', 'fansionia-keyring', 'clash-momo', 'mihomomo', 'mygo-cloudmusic'])
-    parser.add_argument('platform', choices=['arch', 'macos'])
+    parser.add_argument('platform', choices=['arch', 'macos', 'windows'])
     args = parser.parse_args(argv)
+    if args.platform == 'windows' and args.project != 'clash-momo':
+        parser.error('Windows distribution is limited to clash-momo')
     dispatch(args.project, args.platform)
 
 

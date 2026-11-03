@@ -68,3 +68,12 @@ class DispatchTests(unittest.TestCase):
             dispatch.dispatch('etcher', 'macos')
         self.assertEqual(run.call_count, 1)
         self.assertIn('platform=macos', run.call_args.args[0])
+
+    def test_windows_dispatch_is_limited_to_clash_momo(self):
+        with patch.object(dispatch.subprocess, 'check_output', return_value=json.dumps({'state':'active'})), \
+             patch.object(dispatch.subprocess, 'run') as run:
+            dispatch.main(['clash-momo', 'windows'])
+            self.assertIn('platform=windows', run.call_args.args[0])
+        with patch.object(dispatch, 'dispatch') as notify, self.assertRaises(SystemExit):
+            dispatch.main(['mihomomo', 'windows'])
+        notify.assert_not_called()

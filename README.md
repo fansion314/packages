@@ -23,6 +23,15 @@ GitHub 源码与发布地址：**https://github.com/fansion314/packages**。
 系统 Electron，包内不重复附带 Electron。MyGo 云音乐使用 Go 原生界面，
 仅通过可重放补丁增加设置中的界面缩放（75%–200%，立即生效并保存）。
 
+## Windows：Clash Momo 更新镜像
+
+仅为 Clash Momo Windows x64 提供 [CNB 更新镜像](windows/README.md)，
+与 GitHub Release 保持原始安装包、便携 ZIP 及内置 Mihomomo 内核字节一致。
+安装版支持应用内检查、下载和确认安装；便携版检查并下载 ZIP 后手动替换。
+默认来源为 CNB，可在客户端改为 GitHub；默认自动检查仅提示，不静默下载或安装。
+更新清单使用 Ed25519 验签；程序尚未使用 Windows Authenticode 签名。
+此镜像不引入 winget/Scoop，也不影响现有 Arch/macOS 分发。
+
 ## Arch Linux / CachyOS：直接用 pacman
 
 支持 x86_64，及可在其上安装的 `any` 包。下载源是准确版本的 GitHub Release

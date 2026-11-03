@@ -1,0 +1,72 @@
+name: Mirror Clash Momo Windows updates
+on:
+  workflow_call:
+    inputs:
+      release_tag:
+        type: string
+        default: ''
+    secrets:
+      CNB_MIRROR_TOKEN:
+        required: true
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: Optional exact public Clash Momo release tag
+        type: string
+        default: ''
+  schedule:
+    - cron: '11,41 * * * *'
+  push:
+    branches: [main]
+    paths: ['windows/**', 'scripts/cnb_release.py', '.github/workflows/sync-windows-clash-momo.yml']
+permissions:
+  contents: read
+concurrency:
+  group: windows-clash-momo-mirror
+  cancel-in-progress: false
+jobs:
+  mirror:
+    runs-on: windows-2025
+    timeout-minutes: 60
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: main
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with:
+          node-version: '26'
+          check-latest: true
+      - run: python -m unittest discover -s windows -p 'test_*.py' -v
+      - name: Upload and anonymously verify the immutable candidate
+        id: candidate
+        shell: pwsh
+        env:
+          CNB_MIRROR_TOKEN: ${{ secrets.CNB_MIRROR_TOKEN }}
+          RELEASE_TAG: ${{ inputs.release_tag }}
+        run: python windows/mirror.py prepare --release-tag "$env:RELEASE_TAG" --github-output "$env:GITHUB_OUTPUT"
+      - name: Check out the exact signed client source for native verification
+        if: steps.candidate.outputs.changed == 'true'
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          repository: fansion314/momo
+          ref: ${{ steps.candidate.outputs.source_sha }}
+          path: .work/windows-source
+          persist-credentials: false
+      - name: Verify the downloaded CNB client and its bundled core
+        if: steps.candidate.outputs.changed == 'true'
+        shell: pwsh
+        run: ./windows/verify-client.ps1
+      - name: Fast-forward the isolated signed update feed
+        if: steps.candidate.outputs.changed == 'true'
+        env:
+          CNB_MIRROR_TOKEN: ${{ secrets.CNB_MIRROR_TOKEN }}
+        run: python windows/mirror.py publish
+      - name: Verify the public feed and all public attachment bytes
+        if: steps.candidate.outputs.changed == 'true'
+        run: python windows/mirror.py verify-public
+      - name: Recheck the public feed when no release changed
+        if: steps.candidate.outputs.changed != 'true'
+        run: python windows/mirror.py verify-public --metadata-only
