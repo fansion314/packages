@@ -1,3 +1,48 @@
+diff --git a/apps/desktop/README.i18n.yaml b/apps/desktop/README.i18n.yaml
+index 3dfceaccd1dbd65bf2a7c485213321bff16848e8..c1cbe0f93a401d6dd447ec399698665e7fa34496 100644
+--- a/apps/desktop/README.i18n.yaml
++++ b/apps/desktop/README.i18n.yaml
+@@ -15,14 +15,14 @@
+   en: 127ea90553cb6af7
+   zh: 7b1c5aec8558c684
+ /deepseek-harness-desktop/application-overview:
+-  en: 1667e3d6ffddea4a
+-  zh: 4661a42b9ef4f673
++  en: f5b368e98060298d
++  zh: 78f9f0ab6f6c910e
+ /deepseek-harness-desktop/terminal-command:
+   en: 5f2d25a1d8472647
+   zh: 2acb5c5d7d1917e2
+ /deepseek-harness-desktop/closing-the-window-and-quitting:
+-  en: bb35a022c37955c9
+-  zh: ab2ef22d398d83a0
++  en: 7cb9c7db78dcce58
++  zh: de6722617a7767b6
+ /deepseek-harness-desktop/key-technical-decisions:
+   en: 3724c53da4f7647b
+   zh: 76ae549d43c99bb4
+@@ -33,8 +33,8 @@
+   en: 372297005b57a08b
+   zh: 074a635ac17e4362
+ /deepseek-harness-desktop/installation-ownership:
+-  en: 160b500cdcd6a39a
+-  zh: 6c267f1762ec3689
++  en: 726134b4f6cd471a
++  zh: 9674ee7ec9a0fb11
+ /deepseek-harness-desktop/installation-ownership/runtime-and-plugin-activation:
+   en: 4951cd3ee659eb33
+   zh: 96bdd6358dad587a
+@@ -42,8 +42,8 @@
+   en: 98cf848762482d48
+   zh: 74f9100a39ec8c2f
+ /deepseek-harness-desktop/develop:
+-  en: faf7676ba18bbf2f
+-  zh: f1d7b75ad348c548
++  en: 3257ecff1ebe34bc
++  zh: 07adbaba4aae6e39
+ /deepseek-harness-desktop/develop/startup-onboarding:
+   en: 67dc7ef3e293236a
+   zh: 1b224db684a2d1d7
 diff --git a/apps/web/tests/desktop-scale.e2e.ts b/apps/web/tests/desktop-scale.e2e.ts
 new file mode 100644
 index 0000000000000000000000000000000000000000..78d1595285b4216137ad6acbfb52eced23d5ef92
@@ -65,10 +110,10 @@ index 0000000000000000000000000000000000000000..b2e27689818a3deec9b730396cf8654f
 +  - menuitem "175%"
 +  - menuitem "200%"
 diff --git a/apps/web/tsconfig.json b/apps/web/tsconfig.json
-index b2911605b37ba593f80f1e70310c52f447320ee3..cce235293c945caa415ccd0e537dd4272a71d395 100644
+index 47acf9c48c7b391c98e990b24256527d4d509241..ec150525214a1ac9c454ff529122fafe2c15f730 100644
 --- a/apps/web/tsconfig.json
 +++ b/apps/web/tsconfig.json
-@@ -105,6 +105,7 @@
+@@ -131,6 +131,7 @@
      "tests/desktop-locale.e2e.ts",
      "tests/settings-import.e2e.ts",
      "tests/desktop-updates.e2e.ts",
@@ -77,12 +122,12 @@ index b2911605b37ba593f80f1e70310c52f447320ee3..cce235293c945caa415ccd0e537dd427
      "tests/models-settings.e2e.ts",
      "tests/deepseek-messages-settings.e2e.ts",
 diff --git a/packages/client/ui-settings-general/README.i18n.yaml b/packages/client/ui-settings-general/README.i18n.yaml
-index 0046781c3aeefc2d89fa2e661bcf383a374cf647..b3ea5805560ed56c011e99121e60b7dacb8c058f 100644
+index 3d8f2a3a55048d02c2f27b2e79b387e04f1b644d..c2bbb4c01337fc60b0981382c954991a910f4faf 100644
 --- a/packages/client/ui-settings-general/README.i18n.yaml
 +++ b/packages/client/ui-settings-general/README.i18n.yaml
 @@ -18,8 +18,8 @@
-   en: 2bc21e57fe17eab9
-   zh: e441cd313f747b22
+   en: d427d20b4dab6653
+   zh: 84e80592f0a30a9f
  /deepseek-ai-dsh-client-ui-settings-general/use-this-package/the-general-section:
 -  en: de35e867b2a56d73
 -  zh: 6d4e5c912636f889
@@ -92,10 +137,10 @@ index 0046781c3aeefc2d89fa2e661bcf383a374cf647..b3ea5805560ed56c011e99121e60b7da
    en: 597df68b5913e8d7
    zh: bc9114f3e877679a
 diff --git a/packages/client/ui-settings-general/README.md b/packages/client/ui-settings-general/README.md
-index 768614288e9887427eb8e534ab36032023e7dd96..1ed1b2540b361570704e29b47bb09e345be8270a 100644
+index 0cc3645d8edad0d4c5fb7d51f80104f8347b6db2..9aeaa526dc9ecbbca03cd98468a0c634074e99a5 100644
 --- a/packages/client/ui-settings-general/README.md
 +++ b/packages/client/ui-settings-general/README.md
-@@ -41,6 +41,8 @@ Settings visibility and section selection live in the shell owner store. The she
+@@ -45,6 +45,8 @@ Settings visibility and section selection live in the shell owner store. The she
  
  ### The General section
  
@@ -105,10 +150,10 @@ index 768614288e9887427eb8e534ab36032023e7dd96..1ed1b2540b361570704e29b47bb09e34
  
  The Coding Tools switch controls the shared `ui-settings.enabled` preference described by [ui-settings](../ui-settings/README.md#use-this-package). It is available in both Web and desktop, follows accepted changes immediately, and disables duplicate input while a write settles. A failed write displays localized retry guidance. On Desktop, a change made with this switch reports `code_work_view_toggle` with the new value through the optional [product analytics](../product-analytics/README.md) service, timestamped at the click. Only a write that changes a known value and leaves the preference at the requested value reports; requesting the current value, an unknown previous value, a failed write, and preference updates made elsewhere report nothing.
 diff --git a/packages/client/ui-settings-general/README.zh.md b/packages/client/ui-settings-general/README.zh.md
-index 8dfef6c858118483a85b142a8e7444160170abc7..000f02829353130cad103eab17cd2ef4797566cf 100644
+index 8ff8cc8e57ffd368cbd39232d971828d976c6b0c..5690d2121e3297cc19c8786b7d0585fbddcb8849 100644
 --- a/packages/client/ui-settings-general/README.zh.md
 +++ b/packages/client/ui-settings-general/README.zh.md
-@@ -41,6 +41,8 @@ kind: "package-reference"
+@@ -45,6 +45,8 @@ kind: "package-reference"
  
  ### 「通用」分区
  
@@ -302,10 +347,10 @@ index 0000000000000000000000000000000000000000..440d7daf679c22fd78b6d30af791f7e4
 +  dispose(): void { this.live = false; this.unsubscribe() }
 +}
 diff --git a/packages/client/ui-settings-general/src/client/index.ts b/packages/client/ui-settings-general/src/client/index.ts
-index 218f5c3cc8f2e34bb6cff9f237704ed6da0ba793..f619ecb12a260591def277caeb1a6bf15e607c0e 100644
+index 0e6fae5e58942a453798bfa6c2bf281920df63cb..5d8d64b243ef1103410fd9d23572b29b1c2ea6a2 100644
 --- a/packages/client/ui-settings-general/src/client/index.ts
 +++ b/packages/client/ui-settings-general/src/client/index.ts
-@@ -32,7 +32,9 @@ import type { ShortcutCommandId } from '@deepseek-ai/dsh-client-shortcuts/client
+@@ -34,7 +34,9 @@ import type { ShortcutCommandId } from '@deepseek-ai/dsh-client-shortcuts/client
  import { createSettingsShellStore } from './shell-store.ts'
  import { SettingsRoot } from './SettingsRoot.tsx'
  import { DesktopUpdateBadge } from './DesktopUpdateIndicator.tsx'
@@ -316,9 +361,9 @@ index 218f5c3cc8f2e34bb6cff9f237704ed6da0ba793..f619ecb12a260591def277caeb1a6bf1
  import { DesktopUpdateSource } from './desktop-update-source.ts'
  import { CloseLabel, HeaderContent, TriggerContent } from './chrome.tsx'
  import { GeneralSection } from './GeneralSection.tsx'
-@@ -99,7 +101,23 @@ export function apply(ctx: ClientContext): void {
+@@ -101,7 +103,23 @@ export function apply(ctx: ClientContext): void {
    }, CurrentVersionRow))
-   ctx.effect(() => ctx.locale.register(NS, { zh, en }), 'ui-settings-general: dictionaries')
+   ctx.effect(() => ctx.locale.register(NS, { zh, en, ja, es, fr, de, ru, pt }), 'ui-settings-general: dictionaries')
    const connection = ctx.get('connection') as ConnectionHandle
 -  const carrier = (globalThis as typeof globalThis & { dshDesktop?: { protocolVersion: number; updates?: DesktopUpdateBridge } }).dshDesktop
 +  const carrier = (globalThis as typeof globalThis & {
@@ -342,10 +387,10 @@ index 218f5c3cc8f2e34bb6cff9f237704ed6da0ba793..f619ecb12a260591def277caeb1a6bf1
    ctx.effect(() => () => { desktopUpdate.dispose() }, 'ui-settings-general: desktop update carrier')
    ctx.slots.inject('sidebar.toggle.badge', () => ctx.slots.register({
 diff --git a/packages/client/ui-settings-general/src/client/locales.ts b/packages/client/ui-settings-general/src/client/locales.ts
-index f12d407a74b4db1cf92e3a90e82cb02c9b6de828..79dc40cf82d47b254f424a33f70bddafb03c5c23 100644
+index 58afc6bba7414003165cc66a3f919697e26d782d..36973de00872873e1dd5d0c9a86f7a337f0a7395 100644
 --- a/packages/client/ui-settings-general/src/client/locales.ts
 +++ b/packages/client/ui-settings-general/src/client/locales.ts
-@@ -27,6 +27,11 @@ export const zh = {
+@@ -28,6 +28,11 @@ export const zh = {
    'openDocument': '打开配置文件',
    'openDocument.error': '无法打开配置文件',
    'general.nav': '通用设置',
@@ -357,7 +402,7 @@ index f12d407a74b4db1cf92e3a90e82cb02c9b6de828..79dc40cf82d47b254f424a33f70bddaf
    'general.currentVersion': '当前版本：{version}',
    'developerTools.title': '显示代码工作视图',
    'developerTools.error': '保存失败，请重试',
-@@ -75,6 +80,11 @@ export const en = {
+@@ -77,6 +82,11 @@ export const en = {
    'openDocument': 'Open configuration file',
    'openDocument.error': 'Could not open configuration file',
    'general.nav': 'General',
@@ -369,11 +414,83 @@ index f12d407a74b4db1cf92e3a90e82cb02c9b6de828..79dc40cf82d47b254f424a33f70bddaf
    'general.currentVersion': 'Current version: {version}',
    'developerTools.title': 'Show coding view',
    'developerTools.error': 'Could not save. Please try again.',
+@@ -97,6 +107,11 @@ export const en = {
+ 
+ /** Japanese copy, checked against the English keys. */
+ export const ja = {
++  'desktop.scale.title': "表示倍率",
++  'desktop.scale.description': "デスクトップ全体の表示サイズを調整します。この端末のみに保存されます",
++  'desktop.scale.retry': "表示倍率を再読み込み",
++  'desktop.scale.saved': "表示倍率を保存しました",
++  'desktop.scale.error': "表示倍率を保存できません。再試行してください",
+   'trigger': '設定',
+   'shortcut.open': '設定を開く',
+   'desktop.update.available': '更新',
+@@ -143,6 +158,11 @@ export const ja = {
+ 
+ /** Spanish dictionary, checked against the English keys. */
+ export const es = {
++  'desktop.scale.title': "Escala de la interfaz",
++  'desktop.scale.description': "Ajusta el tamaño del escritorio completo; se guarda solo en este dispositivo",
++  'desktop.scale.retry': "Recargar la escala",
++  'desktop.scale.saved': "Escala guardada",
++  'desktop.scale.error': "No se pudo guardar la escala. Inténtalo de nuevo",
+   'trigger': 'Configuración',
+   'shortcut.open': 'Abrir configuración',
+   'desktop.update.available': 'Actualizar',
+@@ -189,6 +209,11 @@ export const es = {
+ 
+ /** French dictionary, checked against the English keys. */
+ export const fr = {
++  'desktop.scale.title': "Échelle de l’interface",
++  'desktop.scale.description': "Ajuste la taille de tout le bureau, enregistrée uniquement sur cet appareil",
++  'desktop.scale.retry': "Recharger l’échelle",
++  'desktop.scale.saved': "Échelle enregistrée",
++  'desktop.scale.error': "Impossible d’enregistrer l’échelle. Réessayez",
+   'trigger': 'Paramètres',
+   'shortcut.open': 'Ouvrir les paramètres',
+   'desktop.update.available': 'Mise à jour',
+@@ -235,6 +260,11 @@ export const fr = {
+ 
+ /** German dictionary, checked against the English keys. */
+ export const de = {
++  'desktop.scale.title': "Oberflächenskalierung",
++  'desktop.scale.description': "Passt die Größe des gesamten Desktops an; nur auf diesem Gerät gespeichert",
++  'desktop.scale.retry': "Skalierung neu laden",
++  'desktop.scale.saved': "Skalierung gespeichert",
++  'desktop.scale.error': "Skalierung konnte nicht gespeichert werden. Bitte erneut versuchen",
+   'trigger': 'Einstellungen',
+   'shortcut.open': 'Einstellungen öffnen',
+   'desktop.update.available': 'Aktualisieren',
+@@ -281,6 +311,11 @@ export const de = {
+ 
+ /** Russian dictionary, checked against the English keys. */
+ export const ru = {
++  'desktop.scale.title': "Масштаб интерфейса",
++  'desktop.scale.description': "Размер всего рабочего пространства; сохраняется только на этом устройстве",
++  'desktop.scale.retry': "Перезагрузить масштаб",
++  'desktop.scale.saved': "Масштаб сохранён",
++  'desktop.scale.error': "Не удалось сохранить масштаб. Повторите попытку",
+   'trigger': 'Настройки',
+   'shortcut.open': 'Открыть настройки',
+   'desktop.update.available': 'Обновить',
+@@ -327,6 +362,11 @@ export const ru = {
+ 
+ /** Portuguese dictionary, checked against the English keys. */
+ export const pt = {
++  'desktop.scale.title': "Escala da interface",
++  'desktop.scale.description': "Ajusta o tamanho de todo o ambiente; salvo apenas neste dispositivo",
++  'desktop.scale.retry': "Recarregar escala",
++  'desktop.scale.saved': "Escala salva",
++  'desktop.scale.error': "Não foi possível salvar a escala. Tente novamente",
+   'trigger': 'Configurações',
+   'shortcut.open': 'Abrir configurações',
+   'desktop.update.available': 'Atualizar',
 diff --git a/packages/client/ui-settings-general/src/types.ts b/packages/client/ui-settings-general/src/types.ts
-index f9dae34f87cfbbc0e45e136082fb8f2e0fbf674e..a88a790ca095feaf2c0cbed326310087677ec440 100644
+index 9aa0ea95e328e7c20d13707e05edf7f00278a502..4466c8bdbedf3119860a793db4863983872f92ea 100644
 --- a/packages/client/ui-settings-general/src/types.ts
 +++ b/packages/client/ui-settings-general/src/types.ts
-@@ -33,3 +33,25 @@ export interface DesktopUpdateView {
+@@ -34,3 +34,25 @@ export interface DesktopUpdateView {
    readonly failed: boolean
    readonly opening: boolean
  }
@@ -504,68 +621,68 @@ index 0000000000000000000000000000000000000000..91fab0b17f84f5957283939276bb846f
 +  } finally { f.source.dispose() }
 +})
 diff --git a/packages/client/ui-sidebar/README.i18n.yaml b/packages/client/ui-sidebar/README.i18n.yaml
-index d10c5fa113bfb20f4b42d8868a6db45203f0436f..33207dcfaf84d3c80fa5916fb371de52ecde2de5 100644
+index 50458ab3dacc2ac54470cf839824edfabe2b2830..bf9cd8309b9a9246cd619cbf19efab832fc242d8 100644
 --- a/packages/client/ui-sidebar/README.i18n.yaml
 +++ b/packages/client/ui-sidebar/README.i18n.yaml
 @@ -18,8 +18,8 @@
-   en: a970f0547496634f
-   zh: 36ef9a85b26e19f1
+   en: bbd3b8e6b9d87124
+   zh: 9d387d1925599c13
  /deepseek-ai-dsh-client-ui-sidebar/use-this-package/brand-and-new-session:
--  en: 098f85b9287d3147
--  zh: b921c128ac37d2cd
-+  en: 333435aca3ef3694
-+  zh: 960cfab1a1d457a6
+-  en: 6bc49e22f0f73f07
+-  zh: 10883997ccb7d145
++  en: 91b3d0aa64a6e108
++  zh: 934f3ee5d30613f4
  /deepseek-ai-dsh-client-ui-sidebar/use-this-package/global-panel-entries:
    en: e7f316023445511b
    zh: 6271c8c011533877
 diff --git a/packages/client/ui-sidebar/README.md b/packages/client/ui-sidebar/README.md
-index ce59c01d4521788520710a086999fcca22ba3a9d..bfd5cda3ceeca2baf174f8c1e6c9464451f44922 100644
+index 8783f2622c341d0d73ddca7139c175156ce87088..a5c0d948e3a72eb1f3b850400c1cbb3548ce6f14 100644
 --- a/packages/client/ui-sidebar/README.md
 +++ b/packages/client/ui-sidebar/README.md
-@@ -31,7 +31,7 @@ The sidebar is the navigation shell: users see the brand, start new sessions, co
+@@ -35,7 +35,7 @@ Below 768px, without a native Windows caption, the sidebar keeps its expanded co
  
- ### Brand and New Session
+ When the sidebar is fully hidden, Web shows only the header's sidebar opener. Desktop hosts that mount this header seat also keep New Session; Windows with a native caption keeps its New Session control in that caption instead.
  
--The expanded brand row renders `sidebar.brand.mark` and `sidebar.brand.name` as independent single slots; the collapsed rail renders the same mark slot. On Web and Windows desktop, clicking the expanded brand starts a new session; hovering or focusing it shows no tooltip. Without occupants, the shell uses the fish mark and a localized local-build label. A complete build stacks a code badge below the label as `version[-commit][-dirty]`, using `DSH_CLIENT_VERSION`, the optional 7-character `DSH_CLIENT_COMMIT_HASH`, and `DSH_CLIENT_GIT_DIRTY=true`; missing version metadata omits the badge. New Session targets the explicit Workspace used by a scoped action, otherwise the current Session's Workspace, otherwise the most recently active Workspace; when none exists it clears into the blank New Session page. The expanded New Session button displays the effective binding as trailing grey text on hover or keyboard focus. While the shortcut is visible, the centered icon and label fade before it when space is narrow; CSS reserves the shortcut’s width without measuring the button. Icon-only controls retain tooltips with platform-formatted keycaps, including the resident macOS header control when the sidebar is hidden. All controls expose `aria-keyshortcuts`.
-+The expanded brand row renders `sidebar.brand.mark` and `sidebar.brand.name` as independent single slots; the collapsed rail renders the same mark slot. On Web and Windows desktop, clicking the expanded brand starts a new session; hovering or focusing it shows no tooltip. Without occupants, the shell uses the fish mark and `DSH_CLIENT_TITLE`, falling back to a localized local-build label when unset. A complete build stacks a code badge below the label as `version[-commit][-dirty]`, using `DSH_CLIENT_VERSION`, the optional 7-character `DSH_CLIENT_COMMIT_HASH`, and `DSH_CLIENT_GIT_DIRTY=true`; missing version metadata omits the badge. New Session targets the explicit Workspace used by a scoped action, otherwise the current Session's Workspace, otherwise the most recently active Workspace; when none exists it clears into the blank New Session page. The expanded New Session button displays the effective binding as trailing grey text on hover or keyboard focus. While the shortcut is visible, the centered icon and label fade before it when space is narrow; CSS reserves the shortcut’s width without measuring the button. Icon-only controls retain tooltips with platform-formatted keycaps, including the resident macOS header control when the sidebar is hidden. All controls expose `aria-keyshortcuts`.
+-The expanded brand row renders `sidebar.brand.mark` and `sidebar.brand.name` as independent single slots; the collapsed rail renders the same mark slot. On Web and Windows desktop, clicking the expanded brand starts a new session; hovering or focusing it shows no tooltip. Without occupants, the shell uses the fish mark and a localized local-build label. A complete build stacks a code badge below the label as `version[-commit][-dirty]`, using `DSH_CLIENT_VERSION`, the optional 7-character `DSH_CLIENT_COMMIT_HASH`, and `DSH_CLIENT_GIT_DIRTY=true`; missing version metadata omits the badge. Clicking the fallback mark or label of such a build copies that badge text instead of starting a session, also on macOS desktop, and a successful write shows a Version copied toast. New Session targets the explicit Workspace used by a scoped action, otherwise the current Session's Workspace, otherwise the most recently active Workspace; when none exists it clears into the blank New Session page. The expanded New Session button displays the effective binding as trailing grey text on keyboard focus regardless of hover capability, and on hover when the device supports it. While the shortcut is visible, the centered icon and label fade before it when space is narrow; CSS reserves the shortcut’s width without measuring the button. Icon-only controls retain tooltips with platform-formatted keycaps, including the resident macOS header control when the sidebar is hidden. All controls expose `aria-keyshortcuts`. While the global access snapshot excludes `session/create`, the brand row stays inert and neither the New Session button nor the window-chrome New Session control renders; the Host still decides every create request.
++The expanded brand row renders `sidebar.brand.mark` and `sidebar.brand.name` as independent single slots; the collapsed rail renders the same mark slot. On Web and Windows desktop, clicking the expanded brand starts a new session; hovering or focusing it shows no tooltip. Without occupants, the shell uses the fish mark and `DSH_CLIENT_TITLE`, falling back to a localized local-build label when unset. A complete build stacks a code badge below the label as `version[-commit][-dirty]`, using `DSH_CLIENT_VERSION`, the optional 7-character `DSH_CLIENT_COMMIT_HASH`, and `DSH_CLIENT_GIT_DIRTY=true`; missing version metadata omits the badge. Clicking the fallback mark or label of such a build copies that badge text instead of starting a session, also on macOS desktop, and a successful write shows a Version copied toast. New Session targets the explicit Workspace used by a scoped action, otherwise the current Session's Workspace, otherwise the most recently active Workspace; when none exists it clears into the blank New Session page. The expanded New Session button displays the effective binding as trailing grey text on keyboard focus regardless of hover capability, and on hover when the device supports it. While the shortcut is visible, the centered icon and label fade before it when space is narrow; CSS reserves the shortcut’s width without measuring the button. Icon-only controls retain tooltips with platform-formatted keycaps, including the resident macOS header control when the sidebar is hidden. All controls expose `aria-keyshortcuts`. While the global access snapshot excludes `session/create`, the brand row stays inert and neither the New Session button nor the window-chrome New Session control renders; the Host still decides every create request.
  
  ### Global panel entries
  
 diff --git a/packages/client/ui-sidebar/README.zh.md b/packages/client/ui-sidebar/README.zh.md
-index a5d6610fb9d76a3fbe522d71804da933094a4414..956620a0309ee58915325d099bdd74e97664ba62 100644
+index 15acbfc85965d2345024d1a0a7e29d0d02482bf7..1d6ffeb70244bd2f2479cc01b32507272211732b 100644
 --- a/packages/client/ui-sidebar/README.zh.md
 +++ b/packages/client/ui-sidebar/README.zh.md
-@@ -31,7 +31,7 @@ dsh Web 客户端的侧边栏让用户识别当前构建、启动新会话、将
+@@ -35,7 +35,7 @@ dsh Web 客户端的侧边栏让用户识别当前构建、启动新会话、将
  
- ### 品牌与 New Session
+ 侧边栏完全隐藏时，Web 的标题栏只显示展开侧边栏按钮。挂载该标题栏插槽的桌面宿主还会保留新建会话按钮；带有原生标题栏的 Windows 客户端则在原生标题栏中保留该按钮。
  
--展开的品牌行把 `sidebar.brand.mark` 与 `sidebar.brand.name` 渲染为两个独立的 single slot；收起轨道则渲染同一个 mark slot。在 Web 和 Windows 桌面端，点击展开态的品牌会新建会话，悬停或聚焦时不显示 tooltip。没有占位者时，外壳使用鱼形标记和本地化的本地构建标签。完整构建会在标签下方显示代码徽标；该徽标使用 `DSH_CLIENT_VERSION`、可选的 7 位 `DSH_CLIENT_COMMIT_HASH` 与 `DSH_CLIENT_GIT_DIRTY=true` 组装成 `version[-commit][-dirty]`；缺少版本元数据时不显示徽标。New Session 优先使用作用域操作明确指定的 Workspace，否则使用当前 Session 所属 Workspace，再否则使用最近活跃 Workspace；一个 Workspace 都没有时则清空选择，进入空白 New Session 页面。 展开态的新建会话按钮在悬停或键盘聚焦时于右侧以灰色文字显示当前有效绑定。快捷键可见且空间较窄时，居中的图标与文字在快捷键之前渐隐；CSS 为快捷键保留宽度，无需测量按钮。纯图标控件保留使用平台键位样式的 tooltip，侧栏隐藏时常驻的 macOS 头部控件也保持一致。所有控件均提供 `aria-keyshortcuts`。
-+展开的品牌行把 `sidebar.brand.mark` 与 `sidebar.brand.name` 渲染为两个独立的 single slot；收起轨道则渲染同一个 mark slot。在 Web 和 Windows 桌面端，点击展开态的品牌会新建会话，悬停或聚焦时不显示 tooltip。没有占位者时，外壳使用鱼形标记和 `DSH_CLIENT_TITLE`；未设置时使用本地化的本地构建标签。完整构建会在标签下方显示代码徽标；该徽标使用 `DSH_CLIENT_VERSION`、可选的 7 位 `DSH_CLIENT_COMMIT_HASH` 与 `DSH_CLIENT_GIT_DIRTY=true` 组装成 `version[-commit][-dirty]`；缺少版本元数据时不显示徽标。New Session 优先使用作用域操作明确指定的 Workspace，否则使用当前 Session 所属 Workspace，再否则使用最近活跃 Workspace；一个 Workspace 都没有时则清空选择，进入空白 New Session 页面。 展开态的新建会话按钮在悬停或键盘聚焦时于右侧以灰色文字显示当前有效绑定。快捷键可见且空间较窄时，居中的图标与文字在快捷键之前渐隐；CSS 为快捷键保留宽度，无需测量按钮。纯图标控件保留使用平台键位样式的 tooltip，侧栏隐藏时常驻的 macOS 头部控件也保持一致。所有控件均提供 `aria-keyshortcuts`。
+-展开的品牌行把 `sidebar.brand.mark` 与 `sidebar.brand.name` 渲染为两个独立的 single slot；收起轨道则渲染同一个 mark slot。在 Web 和 Windows 桌面端，点击展开态的品牌会新建会话，悬停或聚焦时不显示 tooltip。没有占位者时，外壳使用鱼形标记和本地化的本地构建标签。完整构建会在标签下方显示代码徽标；该徽标使用 `DSH_CLIENT_VERSION`、可选的 7 位 `DSH_CLIENT_COMMIT_HASH` 与 `DSH_CLIENT_GIT_DIRTY=true` 组装成 `version[-commit][-dirty]`；缺少版本元数据时不显示徽标。此类构建中点击回退的标记或标签会复制该徽标文本而非新建会话，macOS 桌面端同样适用；写入成功后弹出“版本号复制成功”toast。New Session 优先使用作用域操作明确指定的 Workspace，否则使用当前 Session 所属 Workspace，再否则使用最近活跃 Workspace；一个 Workspace 都没有时则清空选择，进入空白 New Session 页面。 展开态的新建会话按钮在键盘聚焦时于右侧以灰色文字显示当前有效绑定，不受设备悬停能力限制；支持悬停的设备也会在悬停时显示。快捷键可见且空间较窄时，居中的图标与文字在快捷键之前渐隐；CSS 为快捷键保留宽度，无需测量按钮。纯图标控件保留使用平台键位样式的 tooltip，侧栏隐藏时常驻的 macOS 头部控件也保持一致。所有控件均提供 `aria-keyshortcuts`。全局访问快照不含 `session/create` 时，品牌行不可点击，New Session 按钮和窗口标题栏中的 New Session 控件都不渲染；每个新建请求仍由 Host 判定。
++展开的品牌行把 `sidebar.brand.mark` 与 `sidebar.brand.name` 渲染为两个独立的 single slot；收起轨道则渲染同一个 mark slot。在 Web 和 Windows 桌面端，点击展开态的品牌会新建会话，悬停或聚焦时不显示 tooltip。没有占位者时，外壳使用鱼形标记和 `DSH_CLIENT_TITLE`；未设置时使用本地化的本地构建标签。完整构建会在标签下方显示代码徽标；该徽标使用 `DSH_CLIENT_VERSION`、可选的 7 位 `DSH_CLIENT_COMMIT_HASH` 与 `DSH_CLIENT_GIT_DIRTY=true` 组装成 `version[-commit][-dirty]`；缺少版本元数据时不显示徽标。此类构建中点击回退的标记或标签会复制该徽标文本而非新建会话，macOS 桌面端同样适用；写入成功后弹出“版本号复制成功”toast。New Session 优先使用作用域操作明确指定的 Workspace，否则使用当前 Session 所属 Workspace，再否则使用最近活跃 Workspace；一个 Workspace 都没有时则清空选择，进入空白 New Session 页面。 展开态的新建会话按钮在键盘聚焦时于右侧以灰色文字显示当前有效绑定，不受设备悬停能力限制；支持悬停的设备也会在悬停时显示。快捷键可见且空间较窄时，居中的图标与文字在快捷键之前渐隐；CSS 为快捷键保留宽度，无需测量按钮。纯图标控件保留使用平台键位样式的 tooltip，侧栏隐藏时常驻的 macOS 头部控件也保持一致。所有控件均提供 `aria-keyshortcuts`。全局访问快照不含 `session/create` 时，品牌行不可点击，New Session 按钮和窗口标题栏中的 New Session 控件都不渲染；每个新建请求仍由 Host 判定。
  
  ### 全局面板入口
  
 diff --git a/packages/client/ui-sidebar/src/client/SidebarRoot.tsx b/packages/client/ui-sidebar/src/client/SidebarRoot.tsx
-index 3f136913452cd572ce32eb17fc90382c421580df..d927b0a0a82bcf72ccd94ff60df55fc8b3cdcb11 100644
+index f03ecc32aae8728aa544307ced0e44cb49b3c999..e5b7f5fda60b9cc4d9a5656b06114897270134ec 100644
 --- a/packages/client/ui-sidebar/src/client/SidebarRoot.tsx
 +++ b/packages/client/ui-sidebar/src/client/SidebarRoot.tsx
-@@ -281,10 +281,10 @@ export function SidebarRoot({
+@@ -322,10 +322,10 @@ export function SidebarRoot({
                <span className={css.brandName}>
                  {renderSlot('sidebar.brand.name', {}, {
                    fallback: buildVersion === undefined
 -                    ? <span className={css.fallbackBrandName}>{t('brand.localBuild')}</span>
 +                    ? <span className={css.fallbackBrandName}>{process.env.DSH_CLIENT_TITLE ?? t('brand.localBuild')}</span>
                      : (
-                       <span className={css.localBuildBrand}>
+                       <span className={clsx(css.localBuildBrand, css.copyVersion)} data-copy-version onClick={copyVersion(buildVersion)}>
 -                        <span className={css.localBuildTitle}>{t('brand.localBuild')}</span>
 +                        <span className={css.localBuildTitle}>{process.env.DSH_CLIENT_TITLE ?? t('brand.localBuild')}</span>
                          <span className={css.buildVersion}>{buildVersion}</span>
                        </span>
                      ),
 diff --git a/packages/client/ui-sidebar/tests/__snapshots__/sidebar-snapshot.client.spec.tsx.snap b/packages/client/ui-sidebar/tests/__snapshots__/sidebar-snapshot.client.spec.tsx.snap
-index 652e9f6b393b2657926dd05f6cb2714d553eb6ec..0d679b332ab7de69a3cb02176f8d0e9e79a658f3 100644
+index 7f6e1ba454f229a76aa7685746c174ced407d4e8..1f0427201fe88938123095c92d7233aed8e7d32f 100644
 --- a/packages/client/ui-sidebar/tests/__snapshots__/sidebar-snapshot.client.spec.tsx.snap
 +++ b/packages/client/ui-sidebar/tests/__snapshots__/sidebar-snapshot.client.spec.tsx.snap
-@@ -628,3 +628,146 @@ exports[`sidebar shell snapshots > renders the expanded column in the default lo
+@@ -621,3 +621,152 @@ exports[`sidebar shell snapshots > renders the expanded column in the default lo
    </div>
  </div>
  `;
@@ -599,14 +716,19 @@ index 652e9f6b393b2657926dd05f6cb2714d553eb6ec..0d679b332ab7de69a3cb02176f8d0e9e
 +              data-slot="sidebar.brand.mark"
 +              style="display: contents;"
 +            >
-+              <svg
-+                aria-hidden="true"
-+                data-content="965fe321"
-+                fill="none"
-+                height="17.6580310880829"
-+                viewBox="0 0 23.16 17.04"
-+                width="24"
-+              />
++              <span
++                class="copyVersion"
++                data-copy-version="true"
++              >
++                <svg
++                  aria-hidden="true"
++                  data-content="965fe321"
++                  fill="none"
++                  height="17.6580310880829"
++                  viewBox="0 0 23.16 17.04"
++                  width="24"
++                />
++              </span>
 +            </div>
 +          </span>
 +          <span
@@ -617,7 +739,8 @@ index 652e9f6b393b2657926dd05f6cb2714d553eb6ec..0d679b332ab7de69a3cb02176f8d0e9e
 +              style="display: contents;"
 +            >
 +              <span
-+                class="localBuildBrand"
++                class="localBuildBrand copyVersion"
++                data-copy-version="true"
 +              >
 +                <span
 +                  class="localBuildTitle"
@@ -713,7 +836,7 @@ index 652e9f6b393b2657926dd05f6cb2714d553eb6ec..0d679b332ab7de69a3cb02176f8d0e9e
 +</div>
 +`;
 diff --git a/packages/client/ui-sidebar/tests/sidebar-snapshot.client.spec.tsx b/packages/client/ui-sidebar/tests/sidebar-snapshot.client.spec.tsx
-index 1b7ef3003e863c97e5c8d22cf84b4832695b943c..64674c259b5c5ba005fee268d1674dd8f0c814f6 100644
+index dfa756943b8d0df22e5b5f425ec241dcec64771b..281dcd6ad2ac0e026488289e0357b57b84e8a2e1 100644
 --- a/packages/client/ui-sidebar/tests/sidebar-snapshot.client.spec.tsx
 +++ b/packages/client/ui-sidebar/tests/sidebar-snapshot.client.spec.tsx
 @@ -54,6 +54,16 @@ async function bench(options: { locale?: 'en' } = {}) {
@@ -732,12 +855,12 @@ index 1b7ef3003e863c97e5c8d22cf84b4832695b943c..64674c259b5c5ba005fee268d1674dd8
 +  })
    it('renders the expanded column in the default locale (zh, no setLocale)', async () => {
      const { runtime } = await bench()
-     const slot = runtime.renderSlot('sidebar', { collapsed: false, width: 300 })
+     const slot = runtime.renderSlot('sidebar', { collapsed: false, width: 300, drawer: false })
 diff --git a/packages/extensions/cordis-client-runner/src/client/slot-catalog.ts b/packages/extensions/cordis-client-runner/src/client/slot-catalog.ts
-index 33794f1a7168d48bc364e38fe1d55005635fde1c..0a7c1ea8e58439fa1b93afda036e5c589644acd8 100644
+index 11311bce0764f2c1592a4f334fbe9b0c85ac0d5e..8f96d2fcaea426020f60292a53eded7a0610ee13 100644
 --- a/packages/extensions/cordis-client-runner/src/client/slot-catalog.ts
 +++ b/packages/extensions/cordis-client-runner/src/client/slot-catalog.ts
-@@ -2946,6 +2946,7 @@ export const CLIENT_SLOT_API: readonly ClientSlotEntry[] = [
+@@ -3207,6 +3207,7 @@ export const CLIENT_SLOT_API: readonly ClientSlotEntry[] = [
        'client-ui-permission-presets PermissionRow id \'permission\'',
        'client-ui-settings-general DeveloperToolsRow id \'developer-tools\'',
        'client-ui-settings-general CurrentVersionRow id \'current-version\'',
@@ -745,7 +868,7 @@ index 33794f1a7168d48bc364e38fe1d55005635fde1c..0a7c1ea8e58439fa1b93afda036e5c58
        'client-ui-settings-session-log UploadRow',
        'client-ui-shortcuts ShortcutsRow id \'shortcuts\'',
        'client-ui-theme AppearanceRow id \'appearance\'',
-@@ -3447,6 +3448,7 @@ export const CLIENT_SLOT_API: readonly ClientSlotEntry[] = [
+@@ -3774,6 +3775,7 @@ export const CLIENT_SLOT_API: readonly ClientSlotEntry[] = [
        'client-ui-schedule ScheduleDeleteToast id \'schedule.delete-toast\'',
        'client-ui-settings-account DesktopOnboardingEntry id \'desktop-onboarding\'',
        'client-ui-settings-account AccountPlatformHost id \'account.platform-page\'',

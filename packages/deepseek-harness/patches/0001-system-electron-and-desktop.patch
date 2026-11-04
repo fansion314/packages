@@ -1,8 +1,8 @@
 diff --git a/apps/desktop-host/src/index.ts b/apps/desktop-host/src/index.ts
-index 3086755b0bf5da567f01531cef2093ee597c2fbb..484e4d17ae59c95063f530af23a6aa3bcccdf472 100644
+index 31bbbffe151c7311b4c593187084971ac7e93113..3e806c78559b75a985427a6d108060105177033e 100644
 --- a/apps/desktop-host/src/index.ts
 +++ b/apps/desktop-host/src/index.ts
-@@ -95,7 +95,8 @@ async function main(): Promise<void> {
+@@ -134,7 +134,8 @@ async function main(): Promise<void> {
    await ctx.plugin(desktopOffice, {
      runtimeDir,
      source: process.argv[4] ?? join(runtimeDir, '..', 'runtime', 'primary-runtime'),
@@ -27,56 +27,11 @@ index 7ed14dd3b37fcc12ad65e1b55da2410dd755fbbe..6e27fe0cd6437161b4e5ca6b160a5cae
    /** Prepared or ASAR-contained application dependency directory. */
    readonly runtimeDir: string
  }
-diff --git a/apps/desktop/README.i18n.yaml b/apps/desktop/README.i18n.yaml
-index 6060f79da9559469cbb2f346d124c257e10796df..f7d471518f346c46ff1c603cf6a504eb4b5d201d 100644
---- a/apps/desktop/README.i18n.yaml
-+++ b/apps/desktop/README.i18n.yaml
-@@ -15,14 +15,14 @@
-   en: 05fd227f99ee535a
-   zh: 60d7d62bc0026973
- /deepseek-harness-desktop/application-overview:
--  en: e9b22f232837e131
--  zh: fc5f3834b969d2d2
-+  en: b6b2b75316635e99
-+  zh: b172a08249253c70
- /deepseek-harness-desktop/terminal-command:
-   en: 5f2d25a1d8472647
-   zh: 2acb5c5d7d1917e2
- /deepseek-harness-desktop/closing-the-window-and-quitting:
--  en: 24387a07ae4eb8e7
--  zh: 0119352685cf273c
-+  en: 62421c637dc5d449
-+  zh: 8377f214b53ababd
- /deepseek-harness-desktop/key-technical-decisions:
-   en: 3724c53da4f7647b
-   zh: 76ae549d43c99bb4
-@@ -33,8 +33,8 @@
-   en: 372297005b57a08b
-   zh: 074a635ac17e4362
- /deepseek-harness-desktop/installation-ownership:
--  en: 22153a298a6662e1
--  zh: 3600803c8c9d0274
-+  en: a6fd2038e9341aff
-+  zh: c79f86fa1e0f72f6
- /deepseek-harness-desktop/installation-ownership/runtime-and-plugin-activation:
-   en: a1a47b09f4a72ba4
-   zh: 7b1cf27f0b72cf31
-@@ -42,8 +42,8 @@
-   en: 98cf848762482d48
-   zh: 74f9100a39ec8c2f
- /deepseek-harness-desktop/develop:
--  en: fe6d23e6a3d3bc66
--  zh: d60c8d3a55747916
-+  en: 0e7366df9cc234ee
-+  zh: de0b04c6235634bb
- /deepseek-harness-desktop/develop/startup-onboarding:
-   en: a51346b8d880ddba
-   zh: 7913214c1c66063c
 diff --git a/apps/desktop/README.md b/apps/desktop/README.md
-index e0bb92c5b788190d7ae04eb986c1087f7700b378..2c70d13dfc83fd275587cd505a14e725cb2bfc08 100644
+index fe24b24568e1a28ae575dea5e705d6dad1916787..ed8cd229c09e5da03943a6d437fb459022832fff 100644
 --- a/apps/desktop/README.md
 +++ b/apps/desktop/README.md
-@@ -36,6 +36,8 @@ The desktop application is an Electron shell around the complete dsh Web applica
+@@ -39,6 +39,8 @@ The desktop application is an Electron shell around the complete dsh Web applica
  
  Desktop binds `127.0.0.1`, the address Electron dials for the ready URL and the WebSocket credential filter. WebSocket streams use `ws:` or `wss:` according to the Host listener; credentials require matching authority and scheme.
  
@@ -85,9 +40,9 @@ index e0bb92c5b788190d7ae04eb986c1087f7700b378..2c70d13dfc83fd275587cd505a14e725
  The first application-menu command, **About DeepSeek Harness**, opens Electron's native About panel with the application icon, product name, and installed release version. The menu follows the Desktop shell locale. On macOS, Hide, Hide Others, Show All, and Quit use localized labels; Hide and Quit include the DeepSeek Harness product name. These commands retain their native actions and shortcuts. macOS reads the icon from its application bundle, so an unpackaged development launch displays Electron's icon; Windows receives the packaged PNG.
  
  Desktop’s local native directory flow opens an Electron folder dialog attached to the application window, restoring, showing, and focusing that window first. Concurrent requests share one dialog; cancellation returns no path and failures remain retryable. Ordinary Web uses the Host chooser. Browse mode lists Host directories. On Linux without zenity or kdialog, automatic selection uses browse instead of the Electron dialog.
-@@ -52,6 +54,10 @@ Desktop microphone access is restricted to audio requests from the primary `dsh-
+@@ -55,6 +57,10 @@ Desktop microphone access is restricted to audio requests from the primary `dsh-
  
- Press F12 (Fn+F12 on media-key keyboards), Command+Option+I on macOS, or Ctrl+Shift+I on Windows to toggle DevTools for the focused application page, including in packaged builds. These native shortcuts use hidden application-menu items. Update overlays and packaged embedded browser guests disable DevTools.
+ Press F12 (Fn+F12 on media-key keyboards), Command+Option+I on macOS, or Ctrl+Shift+I on Windows to toggle DevTools for the focused application page, including in packaged builds. The application menu shows a localized “Developer tools” command in a separate group before Hide and Quit (before Exit on Windows). Windows exposes it in the titlebar application popup; its hidden native application menu registers the shortcuts. macOS and Linux keep a hidden F12 shortcut alias in their application menus. Update overlays and packaged embedded browser guests disable DevTools.
  
 +Desktop General Settings offers **Interface scale** from 75% to 200%, initially 100%. Changes apply to the entire workspace immediately and persist in Electron userData; they are independent of conversation font size and are not synchronized to other devices. Failed saves retain the accepted scale.
 +
@@ -96,7 +51,7 @@ index e0bb92c5b788190d7ae04eb986c1087f7700b378..2c70d13dfc83fd275587cd505a14e725
  <a id="terminal-command"></a>
  
  ## Terminal command
-@@ -66,6 +72,8 @@ Command registration is optional after installing Desktop. Use **Manage dsh Comm
+@@ -69,6 +75,8 @@ Command registration is optional after installing Desktop. Use **Manage dsh Comm
  
  ## Closing the window and quitting
  
@@ -105,7 +60,7 @@ index e0bb92c5b788190d7ae04eb986c1087f7700b378..2c70d13dfc83fd275587cd505a14e725
  Closing the main window (macOS close button and ⌘W; Windows ×, Alt+F4, and the taskbar Close window command) hides it; Windows asks for acknowledgement before the first hide. The page and the Host keep running, tasks continue, and the next show presents the same document with its session, drafts, and scroll position; a fullscreen macOS window leaves fullscreen before hiding. The window returns through the Dock icon, a second launch, or `dsh://open` on macOS, and through the tray on Windows. Minimize is unchanged. Closing the welcome window before the workspace opens quits on Windows and, on macOS, keeps the application in the Dock without a window.
  
  Windows keeps a tray icon for the whole run. Its tooltip is the product name, a single click shows and focuses the window, and the context menu offers Open DeepSeek Harness and Quit DeepSeek Harness in the shell locale. Before the first hide, the shared update-dialog overlay explains that running tasks continue and the window can be reopened from the system tray. Confirm hides the window and writes `background-close-confirmed` under Electron userData; Escape, dismissal, or dialog failure keeps the window visible and does not record acknowledgement. Repeated close requests focus the existing shell dialog. In-place updates retain the marker and uninstall removes it. The old `background-notice-shown` marker does not suppress this confirmation. Closing the window sends no system notification. The tray bitmaps are `resources/tray-windows.ico`, rendered from `resources/icon-windows.svg` at 16, 20, 24, 32, 40, 48, and 64 pixels by `pnpm run render:tray-icon`, and packaged as `resources/tray.ico`. macOS ships no menu bar icon.
-@@ -156,7 +164,7 @@ Windows and macOS relay native fullscreen transitions and the state after each p
+@@ -161,7 +169,7 @@ Windows and macOS relay native fullscreen transitions and the state after each p
  
  Windows uses a 40-DIP caption with native window controls and colors synchronized from the application palette. Localized Application and Edit entries beside the sidebar toggle open native popup menus. They mount only after the application frame publishes its shell overlay seat, and remain absent during startup loading. Application provides Check for Updates and Exit; Edit provides undo, redo, cut, copy, paste, delete, and select all by sending the corresponding keys to the focused editor, independently of custom shortcut bindings. Plugin management uses the main application's Plugins page. No separate native menu row appears on Alt. Other platforms retain their native menus. Editable fields retain keyboard commands and a context menu without shortcut labels; Chromium supplies command availability, and selected read-only text offers Copy.
  
@@ -114,7 +69,7 @@ index e0bb92c5b788190d7ae04eb986c1087f7700b378..2c70d13dfc83fd275587cd505a14e725
  
  ### Runtime and plugin activation
  
-@@ -186,7 +194,7 @@ macOS and Linux GUI launches inherit only the session manager's environment, wit
+@@ -185,7 +193,7 @@ macOS and Linux GUI launches inherit only the session manager's environment, wit
  
  ## Develop
  
@@ -124,10 +79,10 @@ index e0bb92c5b788190d7ae04eb986c1087f7700b378..2c70d13dfc83fd275587cd505a14e725
  `dev:desktop` builds the current Host, client bundles, Web frontend, and Electron shell, projects the built CLI and private Desktop Host packages with their workspace dependencies into a disposable desktop npm project, and launches Electron without resolving dsh from npm:
  
 diff --git a/apps/desktop/README.zh.md b/apps/desktop/README.zh.md
-index 430ac4ad3d02a32c77d95aa92b8367d6c59eeea1..eb16188463af1174dbf40bdb6191f06ce3e71450 100644
+index 933e329ce1829a3bd15febcbf902f67f2326e521..34fae2d2ba5d950039185ec85764c54ea8fe7c63 100644
 --- a/apps/desktop/README.zh.md
 +++ b/apps/desktop/README.zh.md
-@@ -36,6 +36,8 @@ Desktop 在原生应用中运行 Harness 工作区。本参考文档说明应用
+@@ -39,6 +39,8 @@ Electron 在 `userData/desktop/locale-cache` 缓存最近确认的界面语言
  
  Desktop 绑定 `127.0.0.1`，即 Electron 为就绪 URL 与 WebSocket 凭据过滤器拨号的地址。WebSocket 流按 Host 监听器使用 `ws:` 或 `wss:`；附加凭据要求 authority 与 scheme 均匹配。
  
@@ -136,9 +91,9 @@ index 430ac4ad3d02a32c77d95aa92b8367d6c59eeea1..eb16188463af1174dbf40bdb6191f06c
  应用菜单第一项“**关于 DeepSeek Harness**”打开 Electron 原生关于面板，展示应用图标、产品名称和当前安装的发布版本。菜单文案跟随桌面壳的语言。macOS 的隐藏、隐藏其他、显示全部和退出条目使用本地化文案，隐藏和退出条目包含 DeepSeek Harness 产品名称。这些条目保留原生动作和快捷键。macOS 从应用包读取图标，因此未打包的开发启动会显示 Electron 图标；Windows 使用随包分发的 PNG。
  
  Desktop 的本地原生目录流程打开绑定应用窗口的 Electron 文件夹对话框，并先恢复、显示和聚焦该窗口。并发请求共用一个对话框；取消不返回路径，失败后可以重试。普通 Web 使用 Host 选择器。浏览模式列出 Host 目录。Linux 缺少 zenity 或 kdialog 时，自动选择使用浏览模式，不使用 Electron 对话框。
-@@ -52,6 +54,10 @@ Desktop Host 的 Platform API 请求与更新策略请求用相同的 Platform 
+@@ -55,6 +57,10 @@ Desktop Host 的 Platform API 请求与更新策略请求用相同的 Platform 
  
- 按 F12（多媒体功能键键盘上为 Fn+F12）、macOS 的 Command+Option+I 或 Windows 的 Ctrl+Shift+I，可切换当前获得焦点的应用页面的 DevTools，打包版本同样支持。这些原生快捷键通过隐藏的应用菜单项注册。更新遮罩和打包版本的内嵌浏览器禁用 DevTools。
+ 按 F12（多媒体功能键键盘上为 Fn+F12）、macOS 的 Command+Option+I 或 Windows 的 Ctrl+Shift+I，可切换当前获得焦点的应用页面的 DevTools，打包版本同样支持。应用菜单在隐藏和退出命令之前的独立分组中显示本地化的“开发者工具”命令。Windows 在标题栏的应用弹出菜单中显示开关，通过隐藏的原生应用菜单注册快捷键；macOS 和 Linux 的应用菜单保留隐藏的 F12 快捷键别名。更新遮罩和打包版本的内嵌浏览器禁用 DevTools。
  
 +桌面版通用设置提供 **界面缩放**，范围为 75%–200%，初始值为 100%。修改立即应用于整个工作区，并保存在 Electron userData 中；它独立于对话字体大小，不同步到其他设备。保存失败时保留已接受的缩放比例。
 +
@@ -147,7 +102,7 @@ index 430ac4ad3d02a32c77d95aa92b8367d6c59eeea1..eb16188463af1174dbf40bdb6191f06c
  <a id="terminal-command"></a>
  
  ## 终端命令
-@@ -66,6 +72,8 @@ macOS 安装会创建 `/usr/local/bin/dsh`；目录权限需要时，系统会
+@@ -69,6 +75,8 @@ macOS 安装会创建 `/usr/local/bin/dsh`；目录权限需要时，系统会
  
  ## 关闭窗口与退出
  
@@ -156,7 +111,7 @@ index 430ac4ad3d02a32c77d95aa92b8367d6c59eeea1..eb16188463af1174dbf40bdb6191f06c
  关闭主窗口（macOS 的关闭按钮和 ⌘W；Windows 的 ×、Alt+F4 和任务栏"关闭窗口"）会隐藏窗口；Windows 首次隐藏前需要确认。页面和 Host 继续运行，任务不受影响，下次显示时仍是原来的文档，会话、草稿和滚动位置都保留；macOS 全屏窗口先退出全屏再隐藏。macOS 通过 Dock 图标、再次启动或 `dsh://open` 找回窗口，Windows 通过托盘找回。最小化行为不变。进入工作区前关闭欢迎窗口，Windows 上走退出流程，macOS 上应用留在 Dock 中且没有窗口。
  
  Windows 在整个运行期间常驻托盘图标。悬停提示为产品名，单击显示并聚焦窗口，右键菜单提供壳语言下的"打开 DeepSeek Harness"和"退出 DeepSeek Harness"。首次隐藏前复用更新弹窗，显示“正在运行的任务不会中断，可在系统托盘中重新打开窗口”和“确认”按钮。确认后隐藏窗口，并在 Electron userData 下写入 `background-close-confirmed`；Esc、关闭弹窗或加载失败均保持主窗口可见，不记录确认。重复关闭请求会聚焦已有壳弹窗。覆盖更新保留标记，卸载删除标记。旧的 `background-notice-shown` 标记不会跳过此确认。关闭窗口不发送系统通知。托盘位图是 `resources/tray-windows.ico`，由 `pnpm run render:tray-icon` 从 `resources/icon-windows.svg` 按 16、20、24、32、40、48、64 像素分别渲染，打包为 `resources/tray.ico`。macOS 不提供菜单栏图标。
-@@ -156,7 +164,7 @@ Windows 和 macOS 会在原生全屏切换及每次页面加载后向渲染器
+@@ -161,7 +169,7 @@ Windows 和 macOS 会在原生全屏切换及每次页面加载后向渲染器
  
  Windows 使用 40 DIP 顶栏，保留原生窗口按钮，颜色随应用调色板同步。侧栏开关旁的本地化“应用”和“编辑”入口打开原生弹出菜单。仅当应用框架发布 shell overlay 席位后才挂载菜单，启动加载期间不显示。“应用”提供检查更新和退出；“编辑”向当前编辑器发送对应按键，提供撤销、重做、剪切、复制、粘贴、删除和全选，不受自定义快捷键绑定影响。插件管理使用主应用的“插件”页面。按 Alt 不会出现额外的原生菜单行。其他平台保留原生菜单。可编辑区域保留快捷键和不带快捷键标注的右键菜单；命令可用状态由 Chromium 提供，选中的只读文本提供“复制”命令。
  
@@ -165,7 +120,7 @@ index 430ac4ad3d02a32c77d95aa92b8367d6c59eeea1..eb16188463af1174dbf40bdb6191f06c
  
  ### 运行时与插件激活
  
-@@ -186,7 +194,7 @@ macOS 和 Linux 从图形界面启动的程序只继承会话管理器提供的
+@@ -185,7 +193,7 @@ macOS 和 Linux 从图形界面启动的程序只继承会话管理器提供的
  
  ## 开发
  
@@ -220,10 +175,10 @@ index bbc2d3e7ae80e3870d415e1661de50b08f6bd0a2..a2c164acd8d67e85487490f06e1772fd
        headers: { cookie }, signal: AbortSignal.timeout(120_000),
      })
 diff --git a/apps/desktop/src/host-process.ts b/apps/desktop/src/host-process.ts
-index 948a88e6b0e3a439a719aea46e3b77843e412abc..d8b6e66f52027a1964bb5b8964b88b30602fe4b3 100644
+index 338f93bda45cf06c6d0924d719595225b8f64841..f16f8c3e0a1766602c1130820ca7519390fdd1e5 100644
 --- a/apps/desktop/src/host-process.ts
 +++ b/apps/desktop/src/host-process.ts
-@@ -196,6 +196,8 @@ export class DesktopHostProcess {
+@@ -219,6 +219,8 @@ export class DesktopHostProcess {
        ...this.packageManager === undefined ? [] : [this.packageManager.pnpm, this.packageManager.nodeBin],
      ], {
        cwd: this.projectDir,
@@ -295,44 +250,47 @@ index 0000000000000000000000000000000000000000..f73ddb599f01a381d125c4dab2c4dfd2
 +  }
 +}
 diff --git a/apps/desktop/src/ipc.ts b/apps/desktop/src/ipc.ts
-index fc19021fa6047bf5ef2a1c5e65c510adda71ee08..c213f4ca96a5a1fb1d843348a2f1e4c5b6470cdd 100644
+index a3c5f5d9352440bf67e40cdb07dde15a57712d3b..3fd25d2d6785f42c7d28fc327df12787724442af 100644
 --- a/apps/desktop/src/ipc.ts
 +++ b/apps/desktop/src/ipc.ts
-@@ -3,9 +3,13 @@
+@@ -4,12 +4,16 @@ import type { DesktopFileActions } from '@deepseek-ai/dsh-client-ui-file-actions
  import type { DesktopKeyboardApi, DesktopShortcutsApi } from '@deepseek-ai/dsh-client-shortcuts/protocol'
  import type { IpcMainInvokeEvent } from 'electron'
  import type { DesktopBrowserBridge } from '@deepseek-ai/dsh-client-ui-sidebar-browser/types'
 +import type { DesktopScaleBridge } from '@deepseek-ai/dsh-client-ui-settings-general/types'
+ import type { DesktopFileDrag } from '@deepseek-ai/dsh-util-file-drag'
  
  /** IPC channel names kept private to the desktop application bundle. */
  export const DESKTOP_IPC = {
+   fileSave: 'dsh-desktop:file-save',
+   clipboardImageRead: 'dsh-desktop:clipboard-image-read',
 +  scaleStatus: 'dsh-desktop:scale-status',
 +  scaleSet: 'dsh-desktop:scale-set',
 +  scaleChanged: 'dsh-desktop:scale-changed',
    shortcutsInput: 'dsh-desktop:shortcuts-input',
    shortcutsCloseWindow: 'dsh-desktop:shortcuts-close-window',
    shortcutsGet: 'dsh-desktop:shortcuts-get',
-@@ -71,6 +75,7 @@ export interface DesktopUpdatePresentation {
- /** Product documents cannot supply update versions, package URLs, or installation authorization. */
+@@ -81,6 +85,7 @@ export interface DesktopUpdatePresentation {
  export interface DshDesktopProductApi {
+   readonly fileActions: DesktopFileActions
    readonly protocolVersion: 1
 +  readonly scale: DesktopScaleBridge
    readonly browser: DesktopBrowserBridge
+   readonly fileDrag: DesktopFileDrag
    readonly keyboard: DesktopKeyboardApi
-   readonly shortcuts: DesktopShortcutsApi
 diff --git a/apps/desktop/src/main.ts b/apps/desktop/src/main.ts
-index 2afdfd71948053aedd65f6a04a9ed9b279e13376..fd87b832a1bbb1bea5249ddeb4cf5aed8ed2e504 100644
+index d8d0e30c4c73d6c2e839de60d1b6c04708457c61..12e4741ecb3ebb2b0b32ee2540a88c3c683b0f57 100644
 --- a/apps/desktop/src/main.ts
 +++ b/apps/desktop/src/main.ts
-@@ -5,6 +5,7 @@ import { WINDOWS_TITLEBAR_HEIGHT } from './windows-layout.ts'
- import { readFile, writeFile } from 'node:fs/promises'
+@@ -6,6 +6,7 @@ import { WINDOWS_TITLEBAR_HEIGHT } from './windows-layout.ts'
+ import { access, readFile, writeFile } from 'node:fs/promises'
  import { join } from 'node:path'
  import { fileURLToPath } from 'node:url'
 +import processSignals from 'node:process'
  import {
    app,
    BrowserWindow,
-@@ -17,12 +18,14 @@ import {
+@@ -18,12 +19,14 @@ import {
    nativeTheme,
    net,
    protocol,
@@ -347,7 +305,7 @@ index 2afdfd71948053aedd65f6a04a9ed9b279e13376..fd87b832a1bbb1bea5249ddeb4cf5aed
  import { DesktopProjectManager } from './project-manager.ts'
  import { DesktopHostFatalError, DesktopHostProcess, DesktopHostUncleanExitError } from './host-process.ts'
  import { DesktopPlatformView, PLATFORM_IPC, platformBounds } from './platform-view.ts'
-@@ -61,6 +64,8 @@ import { DesktopUpdateOverlays } from './update-overlay.ts'
+@@ -67,6 +70,8 @@ import { DesktopUpdateOverlays } from './update-overlay.ts'
  import { DesktopQuitConfirmation } from './quit-confirmation.ts'
  import { DesktopTray } from './tray.ts'
  import { DesktopBackgroundNotice } from './background-notice.ts'
@@ -355,8 +313,8 @@ index 2afdfd71948053aedd65f6a04a9ed9b279e13376..fd87b832a1bbb1bea5249ddeb4cf5aed
 +import { DesktopInterfaceScale } from './interface-scale.ts'
  
  let focusPrimaryWindow = (): void => {}
- let stopForRecovery = async (): Promise<void> => {}
-@@ -152,8 +157,9 @@ interface RuntimeResources {
+ let stopForRecovery = async (): Promise<void> => { await stopOperationReports() }
+@@ -203,8 +208,9 @@ interface RuntimeResources {
  
  function runtimeResources(): RuntimeResources {
    const development = !app.isPackaged
@@ -368,7 +326,7 @@ index 2afdfd71948053aedd65f6a04a9ed9b279e13376..fd87b832a1bbb1bea5249ddeb4cf5aed
    const pnpm = (development ? process.env.DSH_DESKTOP_PNPM_ENTRY : undefined)
      ?? (development ? join(app.getAppPath(), 'node_modules', 'pnpm', 'bin', 'pnpm.mjs')
        : join(process.resourcesPath, 'runtime', 'primary-runtime', 'dependencies', 'pnpm', 'bin', 'pnpm.mjs'))
-@@ -205,10 +211,9 @@ function platformLoginUrl(authorizeUrl: string): string {
+@@ -256,10 +262,9 @@ function platformLoginUrl(authorizeUrl: string): string {
    return url.href
  }
  
@@ -381,7 +339,7 @@ index 2afdfd71948053aedd65f6a04a9ed9b279e13376..fd87b832a1bbb1bea5249ddeb4cf5aed
      minWidth: 520,
      minHeight: 600,
      show,
-@@ -343,6 +348,18 @@ async function main(): Promise<void> {
+@@ -394,6 +399,18 @@ async function main(): Promise<void> {
    let startup: Promise<void> | undefined
    let workspaceRecovery: Promise<void> | undefined
    let mainWindow: BrowserWindow | undefined
@@ -398,27 +356,27 @@ index 2afdfd71948053aedd65f6a04a9ed9b279e13376..fd87b832a1bbb1bea5249ddeb4cf5aed
 +    mainWindow.webContents.send(DESKTOP_IPC.scaleChanged, state)
 +  })
    let welcomeWindow: BrowserWindow | undefined
-   let enteredWorkspace = false
-   // NSIS passes --updated when it launches the application after installation.
-@@ -628,6 +645,8 @@ async function main(): Promise<void> {
-         const stopFailure = updateStopFailure as DesktopHostUncleanExitError | undefined
+   const installFileDrag = (): (() => Promise<void>) => installDesktopFileDrag(
+     event => assertProductSender(event),
+@@ -721,6 +738,8 @@ async function main(): Promise<void> {
          if (stopFailure !== undefined) throw new DesktopUpdatePreparationError('stop-failed', locale.messages.updateStopFailed, stopFailure.message)
+         await operationJournal?.drain(500)
          updateJournal?.action('install-confirmed')
 +        captureWindowState()
 +        await windowState.save().catch((error: unknown) => { console.error(error) })
          shellInstallerOwnsQuit = true
        } catch (error) {
-         if (!updateStoppedHost) await host.updateTasks('unlock').catch((unlockError: unknown) => { console.error(unlockError) })
-@@ -731,6 +750,8 @@ async function main(): Promise<void> {
-       || !event.senderFrame.url.startsWith('dsh-app://app/')) throw new Error('Rejected Platform command')
+         operationReportsStopping = shuttingDown
+@@ -828,6 +847,8 @@ async function main(): Promise<void> {
      return owner
    }
+   installFileActions(assertMainApplication, () => hostUrl)
 +  ipcMain.handle(DESKTOP_IPC.scaleStatus, (event) => { assertMainApplication(event); return interfaceScale.state })
 +  ipcMain.handle(DESKTOP_IPC.scaleSet, (event, value: unknown) => { assertMainApplication(event); return interfaceScale.set(value) })
    ipcMain.on(PLATFORM_IPC.bootstrap, (event) => {
      try { event.returnValue = platformView.bootstrap(event) }
      catch { event.returnValue = null }
-@@ -738,11 +759,11 @@ async function main(): Promise<void> {
+@@ -835,11 +856,11 @@ async function main(): Promise<void> {
    ipcMain.handle(PLATFORM_IPC.open, (event, page: unknown, bounds: unknown) => {
      const owner = assertMainApplication(event)
      if (page !== 'usage' && page !== 'top-up') throw new Error('Invalid Platform page')
@@ -433,15 +391,16 @@ index 2afdfd71948053aedd65f6a04a9ed9b279e13376..fd87b832a1bbb1bea5249ddeb4cf5aed
    })
    ipcMain.handle(PLATFORM_IPC.close, (event) => { assertMainApplication(event); platformView.close() })
    // Only the main window may synchronize its palette with the native material.
-@@ -981,18 +1002,24 @@ async function main(): Promise<void> {
-     { role: 'toggleDevTools', visible: false, accelerator: 'F12' },
+@@ -1081,7 +1102,7 @@ async function main(): Promise<void> {
+     devToolsF12Shortcut,
    ]
    const refreshApplicationMenu = (): void => {
--    Menu.setApplicationMenu(Menu.buildFromTemplate(process.platform === 'win32' ? devToolsItems : [{
-+    Menu.setApplicationMenu(process.platform === 'linux' ? null : Menu.buildFromTemplate(process.platform === 'win32' ? devToolsItems : [{
-       label: darwin ? app.name : currentDesktopLocale().messages.application,
-       submenu: [...applicationItems(), ...devToolsItems],
-     }, ...platformMenus()]))
+-    Menu.setApplicationMenu(Menu.buildFromTemplate(process.platform === 'win32'
++    Menu.setApplicationMenu(process.platform === 'linux' ? null : Menu.buildFromTemplate(process.platform === 'win32'
+       ? windowsDevToolsShortcuts : [{
+         label: darwin ? app.name : currentDesktopLocale().messages.application,
+         submenu: [...applicationItems(), devToolsF12Shortcut],
+@@ -1089,11 +1110,17 @@ async function main(): Promise<void> {
      tray?.relabel()
    }
    refreshApplicationMenu()
@@ -461,7 +420,7 @@ index 2afdfd71948053aedd65f6a04a9ed9b279e13376..fd87b832a1bbb1bea5249ddeb4cf5aed
          open: () => { focusPrimaryWindow() }, quit: () => { app.quit() } })
      } catch (error) { console.warn('desktop tray: unavailable', error) }
    }
-@@ -1070,16 +1097,30 @@ async function main(): Promise<void> {
+@@ -1169,16 +1196,30 @@ async function main(): Promise<void> {
      }
    }
    const createMainWindow = (): BrowserWindow => {
@@ -494,7 +453,7 @@ index 2afdfd71948053aedd65f6a04a9ed9b279e13376..fd87b832a1bbb1bea5249ddeb4cf5aed
        const hide = (): void => {
          if (!quitting && !shellInstallerOwnsQuit && !sessionEnding && !window.isDestroyed()) hideMainWindow(window)
        }
-@@ -1182,6 +1223,11 @@ async function main(): Promise<void> {
+@@ -1281,6 +1322,11 @@ async function main(): Promise<void> {
          skip: enterWorkspace,
        })
        const window = welcomeWindow
@@ -506,7 +465,7 @@ index 2afdfd71948053aedd65f6a04a9ed9b279e13376..fd87b832a1bbb1bea5249ddeb4cf5aed
        window.once('closed', () => {
          void welcomeBackend?.account.state().then((state) => {
            if (state.attempt !== null && !enteredWorkspace) return welcomeBackend?.account.cancel(state.attempt.id)
-@@ -1246,6 +1292,7 @@ async function main(): Promise<void> {
+@@ -1346,6 +1392,7 @@ async function main(): Promise<void> {
    })
    if (process.platform !== 'win32') powerMonitor.on('shutdown', () => { sessionEnding = true })
    const finishQuit = (): void => {
@@ -514,17 +473,16 @@ index 2afdfd71948053aedd65f6a04a9ed9b279e13376..fd87b832a1bbb1bea5249ddeb4cf5aed
      quitting = true
      shuttingDown = true
      updateJournal?.action('quit-requested')
-@@ -1258,7 +1305,8 @@ async function main(): Promise<void> {
+@@ -1358,7 +1405,7 @@ async function main(): Promise<void> {
      updateSchedule.dispose()
      updateDialog.dispose()
      mandatoryUI?.dispose()
--    void Promise.all([Promise.resolve(mandatoryPolicy?.dispose()).then(() => policyAuth?.dispose()), backend.close(),
-+    void Promise.all([windowState.save().catch((error: unknown) => { console.error(error) }),
-+      Promise.resolve(mandatoryPolicy?.dispose()).then(() => policyAuth?.dispose()), backend.close(),
-       // A Platform cleanup failure is logged without cutting the remaining Host shutdown short.
-       platformView.dispose().catch((error: unknown) => { console.error(error) })])
-       .catch((error: unknown) => { console.error(error) }).finally(() => { app.quit() })
-@@ -1287,6 +1335,16 @@ async function main(): Promise<void> {
+-    void Promise.all([stopOperationReports(), Promise.resolve(mandatoryPolicy?.dispose()).then(() => policyAuth?.dispose()),
++    void Promise.all([windowState.save(), stopOperationReports(), Promise.resolve(mandatoryPolicy?.dispose()).then(() => policyAuth?.dispose()),
+       backend.close().then(async () => { await operationJournal?.drain(500) }, async (error: unknown) => {
+         await operationJournal?.drain(500)
+         throw error
+@@ -1392,6 +1439,16 @@ async function main(): Promise<void> {
      }).catch((error: unknown) => { console.error(error); if (!quitting && !shellInstallerOwnsQuit) finishQuit() })
    })
  
@@ -542,7 +500,7 @@ index 2afdfd71948053aedd65f6a04a9ed9b279e13376..fd87b832a1bbb1bea5249ddeb4cf5aed
    if (typeof manifest !== 'object' || manifest === null) throw new Error('desktop policy: invalid application manifest')
    const developmentPolicy = app.isPackaged ? undefined : process.env.DSH_DESKTOP_MANDATORY_UPDATE_CONFIG
 diff --git a/apps/desktop/src/platform-view.ts b/apps/desktop/src/platform-view.ts
-index ce759c61b17a9851a44755851acc53d15e619cb4..bb8c9c282ebf611f27161e401dc6cea20c249b07 100644
+index daf455ed0953ce672616e1f9f3fad46bcc569650..2acbb805bfa17dd6b068438fb0e4931ba073c503 100644
 --- a/apps/desktop/src/platform-view.ts
 +++ b/apps/desktop/src/platform-view.ts
 @@ -15,16 +15,17 @@ export interface PlatformBounds { x: number; y: number; width: number; height: n
@@ -566,10 +524,10 @@ index ce759c61b17a9851a44755851acc53d15e619cb4..bb8c9c282ebf611f27161e401dc6cea2
    return result
  }
 diff --git a/apps/desktop/src/preload-app.ts b/apps/desktop/src/preload-app.ts
-index f590b8bc8b80a6ee007a0f36249097c77fb0b974..0c75e65463b8509ec50cbfc50feba60d0155572c 100644
+index 26266b4f1c8a497c3cc5c94d19a06a4b5ee3bf49..674e0c7828c64fffc8f25bd3b9767be56976004f 100644
 --- a/apps/desktop/src/preload-app.ts
 +++ b/apps/desktop/src/preload-app.ts
-@@ -1,6 +1,7 @@
+@@ -2,6 +2,7 @@ import type { FileSaveResult } from '@deepseek-ai/dsh-client-ui-file-actions/typ
  /** Origin-scoped boot, native directory selection, host paths of picked files, and update presentation with native confirmation actions. */
  
  import type { DesktopShortcutInput, ShortcutConfigSnapshot, ShortcutSaveResult } from '@deepseek-ai/dsh-client-shortcuts/protocol'
@@ -577,10 +535,10 @@ index f590b8bc8b80a6ee007a0f36249097c77fb0b974..0c75e65463b8509ec50cbfc50feba60d
  import { contextBridge, ipcRenderer, webUtils } from 'electron'
  import { DESKTOP_IPC, SCHEME, type DshDesktopProductApi, type DesktopUpdatePresentation } from './ipc.ts'
  import { PLATFORM_IPC } from './platform-ipc.ts'
-@@ -13,6 +14,15 @@ import { createDesktopBrowserBridge } from './preload-browser.ts'
- function createProductApi(): DshDesktopProductApi {
-   return {
-     protocolVersion: 1,
+@@ -20,6 +21,15 @@ function createProductApi(): DshDesktopProductApi {
+       readClipboardImage: url => ipcRenderer.invoke(DESKTOP_IPC.clipboardImageRead, url) as
+         Promise<{ bytes: Uint8Array; mediaType: string }>,
+     },
 +    scale: {
 +      status: () => ipcRenderer.invoke(DESKTOP_IPC.scaleStatus) as Promise<DesktopScaleState>,
 +      set: factor => ipcRenderer.invoke(DESKTOP_IPC.scaleSet, factor) as Promise<DesktopScaleState>,
@@ -591,8 +549,8 @@ index f590b8bc8b80a6ee007a0f36249097c77fb0b974..0c75e65463b8509ec50cbfc50feba60d
 +      },
 +    },
      browser: createDesktopBrowserBridge(),
-     deviceInfo: () => ipcRenderer.invoke(DESKTOP_IPC.deviceInfo) as Promise<string>,
-     keyboard: {
+     fileDrag: {
+       prepare: (source, requestId) => ipcRenderer.invoke(DESKTOP_IPC.fileDragPrepare, source, requestId) as
 diff --git a/apps/desktop/src/termination.ts b/apps/desktop/src/termination.ts
 new file mode 100644
 index 0000000000000000000000000000000000000000..c127978707aa8f23b0d28a9c9ba63d146abf466a
@@ -812,10 +770,10 @@ index 0000000000000000000000000000000000000000..5cfae64fb657495d77f5e6497cce544a
 +  expect(scale.state.factor).toBe(1.5)
 +})
 diff --git a/apps/desktop/tests/main-startup.spec.ts b/apps/desktop/tests/main-startup.spec.ts
-index d9a8f3103b2a963ebf6825c62a86e8ee12064deb..ad49a7c3d955fcd9018ae060c785335b5b237551 100644
+index 3b1e63e00cf22f69e7849430771fc3fc7ddd4945..19758b6dcdb832530e11b30ec48b348416398f3a 100644
 --- a/apps/desktop/tests/main-startup.spec.ts
 +++ b/apps/desktop/tests/main-startup.spec.ts
-@@ -79,6 +79,8 @@ const harness = await vi.hoisted(async () => {
+@@ -87,6 +87,8 @@ const harness = await vi.hoisted(async () => {
        getURL: () => this.urls.at(-1) ?? '',
        mainFrame: { url: '' },
        getZoomFactor: () => 1,
@@ -824,7 +782,7 @@ index d9a8f3103b2a963ebf6825c62a86e8ee12064deb..ad49a7c3d955fcd9018ae060c785335b
        isDestroyed: () => this.destroyed,
        setIgnoreMenuShortcuts: vi.fn(),
        focus: vi.fn(),
-@@ -96,6 +98,10 @@ const harness = await vi.hoisted(async () => {
+@@ -104,6 +106,10 @@ const harness = await vi.hoisted(async () => {
      readonly restore = vi.fn()
      readonly setSize = vi.fn()
      readonly getBounds = vi.fn(() => ({ x: 0, y: 0, width: 800, height: 700 }))
@@ -835,7 +793,7 @@ index d9a8f3103b2a963ebf6825c62a86e8ee12064deb..ad49a7c3d955fcd9018ae060c785335b
      readonly setMinimumSize = vi.fn()
      readonly setTitleBarOverlay = vi.fn()
      readonly setVibrancy = vi.fn()
-@@ -181,15 +187,17 @@ const harness = await vi.hoisted(async () => {
+@@ -203,15 +209,17 @@ const harness = await vi.hoisted(async () => {
    const analytics = vi.fn(async (_event: unknown) => {})
    const nativeTheme = { themeSource: 'system', shouldUseDarkColors: false }
    const trays: FakeTray[] = []
@@ -852,17 +810,17 @@ index d9a8f3103b2a963ebf6825c62a86e8ee12064deb..ad49a7c3d955fcd9018ae060c785335b
    return {
 +    failTray(error: Error) { trayError = error },
      failWindow(error: Error) { windowFailure = error },
-     windows, hosts, handlers, app, FakeWindow, FakeHost, powerMonitor, nativeTheme, analytics,
+     windows, views, hosts, handlers, app, FakeWindow, FakeView, FakeHost, powerMonitor, nativeTheme, analytics,
      trays, FakeTray, backgroundNotice, shellDialog,
-@@ -240,6 +248,7 @@ const harness = await vi.hoisted(async () => {
-       accountListener = undefined
-       windows.length = 0; hosts.length = 0; handlers.clear(); app.removeAllListeners()
+@@ -263,6 +271,7 @@ const harness = await vi.hoisted(async () => {
+       windows.length = 0
+       views.length = 0; hosts.length = 0; handlers.clear(); app.removeAllListeners()
        trays.length = 0
 +      trayError = undefined
        backgroundNotice.markerPath = undefined
        shellDialog.isOpen = false
        powerMonitor.removeAllListeners()
-@@ -280,6 +289,7 @@ vi.mock('electron', () => ({
+@@ -306,6 +315,7 @@ vi.mock('electron', () => ({
    dialog: harness.dialog,
    shell: { openExternal: harness.openExternal },
    nativeTheme: harness.nativeTheme,
@@ -870,7 +828,7 @@ index d9a8f3103b2a963ebf6825c62a86e8ee12064deb..ad49a7c3d955fcd9018ae060c785335b
    net: { fetch: vi.fn() },
    ipcMain: {
      on: harness.ipcOn,
-@@ -317,6 +327,10 @@ vi.mock('../src/login-shell-environment.ts', async importOriginal => ({
+@@ -344,6 +354,10 @@ vi.mock('../src/login-shell-environment.ts', async importOriginal => ({
    readDesktopLoginShellEnvironment: harness.loginShell,
  }))
  vi.mock('../src/runtime-tree.ts', () => ({ readDesktopRuntime: () => ({ release: { version: '1.0.0' } }) }))
@@ -881,7 +839,7 @@ index d9a8f3103b2a963ebf6825c62a86e8ee12064deb..ad49a7c3d955fcd9018ae060c785335b
  vi.mock('../src/paths.ts', () => ({ resolveDesktopPaths: () => ({ profile: 'desktop-test-profile' }) }))
  vi.mock('../src/project-manager.ts', () => ({
    DesktopProjectManager: class {
-@@ -435,6 +449,7 @@ afterEach(async () => {
+@@ -464,6 +478,7 @@ afterEach(async () => {
    await vi.advanceTimersByTimeAsync(0)
    for (const host of harness.hosts) { host.ready.resolve(); host.exited.resolve() }
    await harness.quitCompleted.promise
@@ -889,7 +847,7 @@ index d9a8f3103b2a963ebf6825c62a86e8ee12064deb..ad49a7c3d955fcd9018ae060c785335b
    vi.restoreAllMocks()
    vi.clearAllTimers()
    vi.useRealTimers()
-@@ -443,6 +458,17 @@ afterEach(async () => {
+@@ -472,6 +487,17 @@ afterEach(async () => {
  })
  
  describe('desktop main startup', () => {
@@ -907,7 +865,7 @@ index d9a8f3103b2a963ebf6825c62a86e8ee12064deb..ad49a7c3d955fcd9018ae060c785335b
    it.each([true, false])('selects the package manager before Host startup (packaged=%s)', async (packaged) => {
      harness.app.isPackaged = packaged
      await readyForUpdate()
-@@ -1004,6 +1030,12 @@ describe('desktop main startup', () => {
+@@ -1099,6 +1125,12 @@ describe('desktop main startup', () => {
      const template = harness.menu.buildFromTemplate.mock.calls
        .map(call => call[0])
        .find(items => items.some(item => item.role === 'editMenu'))
@@ -920,8 +878,8 @@ index d9a8f3103b2a963ebf6825c62a86e8ee12064deb..ad49a7c3d955fcd9018ae060c785335b
      if (template === undefined) throw new Error('application menu missing')
      expect(template.map(describeItem)).toEqual(platform === 'darwin'
        ? ['Desktop test', en.fileMenu, 'editMenu', 'windowMenu']
-@@ -1280,6 +1312,38 @@ describe('desktop main startup', () => {
-     expect(harness.trays[0]!.setContextMenu.mock.calls.length).toBe(relabels + 1)
+@@ -1393,6 +1425,38 @@ describe('desktop main startup', () => {
+     expect(window.show).toHaveBeenCalled()
    })
  
 +  it('hides on Linux window close, reopens from the tray, and waits for the Host on explicit quit', async () => {
@@ -960,10 +918,10 @@ index d9a8f3103b2a963ebf6825c62a86e8ee12064deb..ad49a7c3d955fcd9018ae060c785335b
      await readyWorkspace()
      const window = harness.windows[0]!
 diff --git a/apps/desktop/tests/platform-view.spec.ts b/apps/desktop/tests/platform-view.spec.ts
-index f62987d0e51d7d0aa3b8f47fdeb4928fc5822593..c67f131192d0d025014c0a02863a1e03d6417626 100644
+index 708e471278a9ce653c8c3bdfa86a4445bd0db0d6..f0de687231662534f88e2c1552c55ef946531970 100644
 --- a/apps/desktop/tests/platform-view.spec.ts
 +++ b/apps/desktop/tests/platform-view.spec.ts
-@@ -174,6 +174,11 @@ it.each([null, {}, { ...bounds, width: NaN }, { ...bounds, x: -1 }, { ...bounds,
+@@ -175,6 +175,11 @@ it.each([null, {}, { ...bounds, width: NaN }, { ...bounds, x: -1 }, { ...bounds,
    expect(() => platformBounds(value)).toThrow()
  })
  
@@ -1020,7 +978,7 @@ index 11c3a48865919d6a53b6cb8a1f70c123ef2f0a63..3e2de5a235cfabd62ea0eb8faa281214
 +  tray.dispose()
 +})
 diff --git a/apps/desktop/tests/welcome-startup.spec.ts b/apps/desktop/tests/welcome-startup.spec.ts
-index 7915248243e408841a829b4f887face59d7bf419..18bb03b11c5f546a38dc4456a177128801246506 100644
+index 4ae8743e2ecf394fb2fb7caece0cd02e70f55e63..636f41e3dbf42d07942cd4a73fdbb27bc1205652 100644
 --- a/apps/desktop/tests/welcome-startup.spec.ts
 +++ b/apps/desktop/tests/welcome-startup.spec.ts
 @@ -62,15 +62,18 @@ vi.mock('electron', () => ({
@@ -1043,7 +1001,7 @@ index 7915248243e408841a829b4f887face59d7bf419..18bb03b11c5f546a38dc4456a1771288
      static getAllWindows() { return [] }
      once(name: string, callback: () => void) { if (name === 'ready-to-show') this.ready = callback; return this }
      on() { return this }
-@@ -143,7 +146,9 @@ vi.mock('../src/welcome-backend.ts', () => ({
+@@ -144,7 +147,9 @@ vi.mock('../src/welcome-backend.ts', () => ({
  }))
  vi.mock('node:fs/promises', async importOriginal => ({
    ...await importOriginal<typeof import('node:fs/promises')>(),
@@ -1054,7 +1012,7 @@ index 7915248243e408841a829b4f887face59d7bf419..18bb03b11c5f546a38dc4456a1771288
  }))
  vi.mock('../src/update-dialog.ts', () => ({ DesktopUpdateDialog: class {
    constructor(_preload: string, locale: () => DesktopLocale) { state.dialogLocale = locale }
-@@ -159,12 +164,13 @@ vi.mock('../src/welcome-window.ts', () => ({
+@@ -160,12 +165,13 @@ vi.mock('../src/welcome-window.ts', () => ({
      state.welcomeLocale = locale
      state.operations = operations
      await state.beforeWelcome()
@@ -1070,7 +1028,7 @@ index 7915248243e408841a829b4f887face59d7bf419..18bb03b11c5f546a38dc4456a1771288
    vi.clearAllTimers()
    vi.useRealTimers()
    vi.unstubAllEnvs()
-@@ -262,7 +268,7 @@ it.each([false, true])('starts welcome onboarding without carrying update focus
+@@ -263,7 +269,7 @@ it.each([false, true])('starts welcome onboarding without carrying update focus
    expect(state.menu).toHaveBeenCalledTimes(initialMenus)
    changed(event, 'en')
    expect(state.dialogLocale!().id).toBe('en')
@@ -1146,10 +1104,10 @@ index 0000000000000000000000000000000000000000..508e214effd4e5619d5fdb0a455bfdea
 +  expect(JSON.parse(await readFile(path, 'utf8'))).toEqual(saved)
 +})
 diff --git a/apps/desktop/tsconfig.host.json b/apps/desktop/tsconfig.host.json
-index 982d7835ee367e9acffd18d73963ae2313791df7..83c648a9f1cb91b8dd252a8a32087f2eba6ef4d1 100644
+index 7078ac819896e8acf57b08e8efd965edef3cbd14..ab23acee024ad2d642bf859e4ad382f67106bf6f 100644
 --- a/apps/desktop/tsconfig.host.json
 +++ b/apps/desktop/tsconfig.host.json
-@@ -26,6 +26,9 @@
+@@ -29,6 +29,9 @@
      {
        "path": "../../packages/client/shortcuts/tsconfig.host.json"
      },
@@ -1160,14 +1118,14 @@ index 982d7835ee367e9acffd18d73963ae2313791df7..83c648a9f1cb91b8dd252a8a32087f2e
        "path": "../../packages/util/atomic-write"
      },
 diff --git a/tsconfig.host.json b/tsconfig.host.json
-index 6eb4662f88e97ab35f20adfea3a8251cde72280f..4aeb3314c3dc905beb07e7a1c655b0b14b4e1922 100644
+index b3a36750e6ebd4a5d82f257e6ef654d17bf351aa..c2e4ee944b16b00b1713b059986340061f3c9cb0 100644
 --- a/tsconfig.host.json
 +++ b/tsconfig.host.json
-@@ -26,6 +26,7 @@
+@@ -35,6 +35,7 @@
      "apps/web/tests/code-card-layout.e2e.ts",
      "apps/web/tests/code-language.snapshot.ts",
      "apps/web/tests/scaffold.ts",
 +    "apps/web/tests/desktop-scale.e2e.ts",
+     "apps/web/tests/clock.e2e.ts",
      "apps/web/tests/voice-input.e2e.ts",
      "apps/web/tests/cot-translation.e2e.ts",
-     "apps/web/tests/cot-translation-paid.e2e.ts",

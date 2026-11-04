@@ -32,6 +32,8 @@ case "$project" in
       pnpm run check:file-names
       pnpm run check:i18n
       pnpm exec vitest run tests/scripts/arch-package.test.ts tests/scripts/stage-electron-app.test.ts tests/scripts/postinstall-flow.test.ts src/core/settings/settings-manager.test.ts src/shared/schemas/app-settings.test.ts src/main/window/window-manager.test.ts src/main/platform/tray-icon.test.ts src/main/platform/tray.test.ts src/renderer/routes/settings/cards/appearance-dialog.test.tsx
+      pnpm exec vitest run src/core/task/direct-task-retry.test.ts src/core/engine/aria2/aria2-sqlite-recovery.test.ts src/core/engine/aria2/aria2-session-identity-recovery.test.ts src/renderer/routes/downloads/inspector/retry-parameters-dialog-host.test.tsx
+      MOTRIX_REQUIRE_HTTP_RETRY_TEST=1 pnpm exec vitest run src/core/task/direct-task-retry.integration.test.ts src/core/engine/aria2/aria2-session-identity-recovery.integration.test.ts
       desktop-file-validate build/arch/motrix.desktop
       dbus-run-session -- xvfb-run -a pnpm run verify:arch -- release/*.asar --smoke
     else

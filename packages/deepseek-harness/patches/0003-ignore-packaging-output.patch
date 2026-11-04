@@ -1,11 +1,11 @@
 diff --git a/.gitignore b/.gitignore
-index 3cb86ce87d98d7d68c3649cc0a3ae415aa822462..264ba03b20a982e94bf8dc941d786bfc0526720b 100644
+index 4d52487a062851b12daf464fe5b862bad6b1885d..12b970bcfca55a001ed6ec6be98c65d1822e9f38 100644
 --- a/.gitignore
 +++ b/.gitignore
-@@ -47,3 +47,10 @@ worktrees/
- .agents/worktrees/
- .typert-*/
- native/system/test/bin/
+@@ -50,3 +50,10 @@ native/system/test/bin/
+ 
+ # Generated company-signed CUA release record.
+ /packages/experimental/cua-macos/cua-helper.json
 +/.arch-build/
 +/release/
 +/aur/*/src/
