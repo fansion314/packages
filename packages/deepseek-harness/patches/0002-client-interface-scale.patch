@@ -518,7 +518,7 @@ index 9aa0ea95e328e7c20d13707e05edf7f00278a502..4466c8bdbedf3119860a793db4863983
 +}
 diff --git a/packages/client/ui-settings-general/tests/desktop-scale.client.spec.tsx b/packages/client/ui-settings-general/tests/desktop-scale.client.spec.tsx
 new file mode 100644
-index 0000000000000000000000000000000000000000..91fab0b17f84f5957283939276bb846ff1bcd910
+index 0000000000000000000000000000000000000000..e31ed88b9875bc0e30d060850410df1dc906a03f
 --- /dev/null
 +++ b/packages/client/ui-settings-general/tests/desktop-scale.client.spec.tsx
 @@ -0,0 +1,98 @@
@@ -537,7 +537,7 @@ index 0000000000000000000000000000000000000000..91fab0b17f84f5957283939276bb846f
 +const unused = (): never => { throw new Error('Unused standard hook in scale controls') }
 +const kit: GlobalStandardProps = { usePanelInfo: unused, useSessions: unused, useSessionStatus: unused,
 +  useSessionRetainInfo: unused, useResource: unused, useWorkspaces: unused,
-+  useRemoteAccess: unused, useSessionAccess: unused, useWorkspaceAccess: unused }
++  useRemoteAccess: unused, useSessionAccess: unused, useWorkspaceAccess: unused, useContextMenu: unused }
 +
 +function fixture() {
 +  let listener: ((state: DesktopScaleState) => void) | undefined
@@ -679,10 +679,10 @@ index f03ecc32aae8728aa544307ced0e44cb49b3c999..e5b7f5fda60b9cc4d9a5656b06114897
                        </span>
                      ),
 diff --git a/packages/client/ui-sidebar/tests/__snapshots__/sidebar-snapshot.client.spec.tsx.snap b/packages/client/ui-sidebar/tests/__snapshots__/sidebar-snapshot.client.spec.tsx.snap
-index 7f6e1ba454f229a76aa7685746c174ced407d4e8..1f0427201fe88938123095c92d7233aed8e7d32f 100644
+index 7f6e1ba454f229a76aa7685746c174ced407d4e8..6cdbed63b023a21bce1519a5e8def59de4e0712a 100644
 --- a/packages/client/ui-sidebar/tests/__snapshots__/sidebar-snapshot.client.spec.tsx.snap
 +++ b/packages/client/ui-sidebar/tests/__snapshots__/sidebar-snapshot.client.spec.tsx.snap
-@@ -621,3 +621,152 @@ exports[`sidebar shell snapshots > renders the expanded column in the default lo
+@@ -621,3 +621,147 @@ exports[`sidebar shell snapshots > renders the expanded column in the default lo
    </div>
  </div>
  `;
@@ -760,18 +760,16 @@ index 7f6e1ba454f229a76aa7685746c174ced407d4e8..1f0427201fe88938123095c92d7233ae
 +      <button
 +        aria-label="收起侧边栏"
 +        class="iconButton toggle"
++        data-sidebar-toggle="true"
 +        type="button"
 +      >
 +        <svg
 +          aria-hidden="true"
 +          class="panelIcon"
-+          data-content="88020f34"
-+          fill="none"
++          data-content="d95b7908"
++          data-icon="dsw-icon-panel-left-outline-regular"
 +          height="16"
-+          stroke-width="1"
-+          viewBox="0 0 16 16"
 +          width="16"
-+          xmlns="http://www.w3.org/2000/svg"
 +        />
 +      </button>
 +    </div>
@@ -788,13 +786,10 @@ index 7f6e1ba454f229a76aa7685746c174ced407d4e8..1f0427201fe88938123095c92d7233ae
 +        >
 +          <svg
 +            aria-hidden="true"
-+            data-content="47b5e433"
-+            fill="none"
++            data-content="532cf99a"
++            data-icon="dsw-icon-new-chat-outline-medium"
 +            height="14"
-+            stroke-width="1.3"
-+            viewBox="0 0 16 16"
 +            width="14"
-+            xmlns="http://www.w3.org/2000/svg"
 +          />
 +          <span
 +            class="newSessionLabel wide"
@@ -836,7 +831,7 @@ index 7f6e1ba454f229a76aa7685746c174ced407d4e8..1f0427201fe88938123095c92d7233ae
 +</div>
 +`;
 diff --git a/packages/client/ui-sidebar/tests/sidebar-snapshot.client.spec.tsx b/packages/client/ui-sidebar/tests/sidebar-snapshot.client.spec.tsx
-index dfa756943b8d0df22e5b5f425ec241dcec64771b..281dcd6ad2ac0e026488289e0357b57b84e8a2e1 100644
+index dfa756943b8d0df22e5b5f425ec241dcec64771b..44ae3751a6b2d75331183d78a90ab1c307498361 100644
 --- a/packages/client/ui-sidebar/tests/sidebar-snapshot.client.spec.tsx
 +++ b/packages/client/ui-sidebar/tests/sidebar-snapshot.client.spec.tsx
 @@ -54,6 +54,16 @@ async function bench(options: { locale?: 'en' } = {}) {
@@ -847,7 +842,7 @@ index dfa756943b8d0df22e5b5f425ec241dcec64771b..281dcd6ad2ac0e026488289e0357b57b
 +    vi.stubEnv('DSH_CLIENT_TITLE', 'DeepSeek Harness Desktop')
 +    const { runtime } = await bench()
 +    try {
-+      const slot = runtime.renderSlot('sidebar', { collapsed: false, width: 300 })
++      const slot = runtime.renderSlot('sidebar', { collapsed: false, width: 300, drawer: false })
 +      expect(slot.view.getByText('DeepSeek Harness Desktop')).toBeTruthy()
 +      expect(slot.view.queryByText('DSH 本地构建')).toBeNull()
 +      expect(slot.container).toMatchSnapshot()
