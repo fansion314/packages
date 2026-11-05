@@ -387,7 +387,7 @@ index 0e6fae5e58942a453798bfa6c2bf281920df63cb..5d8d64b243ef1103410fd9d23572b29b
    ctx.effect(() => () => { desktopUpdate.dispose() }, 'ui-settings-general: desktop update carrier')
    ctx.slots.inject('sidebar.toggle.badge', () => ctx.slots.register({
 diff --git a/packages/client/ui-settings-general/src/client/locales.ts b/packages/client/ui-settings-general/src/client/locales.ts
-index 58afc6bba7414003165cc66a3f919697e26d782d..36973de00872873e1dd5d0c9a86f7a337f0a7395 100644
+index 58afc6bba7414003165cc66a3f919697e26d782d..38f5df4b94eeae124a1b67afa91dd5d6017ba0e8 100644
 --- a/packages/client/ui-settings-general/src/client/locales.ts
 +++ b/packages/client/ui-settings-general/src/client/locales.ts
 @@ -28,6 +28,11 @@ export const zh = {
@@ -418,11 +418,11 @@ index 58afc6bba7414003165cc66a3f919697e26d782d..36973de00872873e1dd5d0c9a86f7a33
  
  /** Japanese copy, checked against the English keys. */
  export const ja = {
-+  'desktop.scale.title': "表示倍率",
-+  'desktop.scale.description': "デスクトップ全体の表示サイズを調整します。この端末のみに保存されます",
-+  'desktop.scale.retry': "表示倍率を再読み込み",
-+  'desktop.scale.saved': "表示倍率を保存しました",
-+  'desktop.scale.error': "表示倍率を保存できません。再試行してください",
++  'desktop.scale.title': '表示倍率',
++  'desktop.scale.description': 'デスクトップ全体の表示サイズを調整します。この端末のみに保存されます',
++  'desktop.scale.retry': '表示倍率を再読み込み',
++  'desktop.scale.saved': '表示倍率を保存しました',
++  'desktop.scale.error': '表示倍率を保存できません。再試行してください',
    'trigger': '設定',
    'shortcut.open': '設定を開く',
    'desktop.update.available': '更新',
@@ -430,11 +430,11 @@ index 58afc6bba7414003165cc66a3f919697e26d782d..36973de00872873e1dd5d0c9a86f7a33
  
  /** Spanish dictionary, checked against the English keys. */
  export const es = {
-+  'desktop.scale.title': "Escala de la interfaz",
-+  'desktop.scale.description': "Ajusta el tamaño del escritorio completo; se guarda solo en este dispositivo",
-+  'desktop.scale.retry': "Recargar la escala",
-+  'desktop.scale.saved': "Escala guardada",
-+  'desktop.scale.error': "No se pudo guardar la escala. Inténtalo de nuevo",
++  'desktop.scale.title': 'Escala de la interfaz',
++  'desktop.scale.description': 'Ajusta el tamaño del escritorio completo; se guarda solo en este dispositivo',
++  'desktop.scale.retry': 'Recargar la escala',
++  'desktop.scale.saved': 'Escala guardada',
++  'desktop.scale.error': 'No se pudo guardar la escala. Inténtalo de nuevo',
    'trigger': 'Configuración',
    'shortcut.open': 'Abrir configuración',
    'desktop.update.available': 'Actualizar',
@@ -442,11 +442,11 @@ index 58afc6bba7414003165cc66a3f919697e26d782d..36973de00872873e1dd5d0c9a86f7a33
  
  /** French dictionary, checked against the English keys. */
  export const fr = {
-+  'desktop.scale.title': "Échelle de l’interface",
-+  'desktop.scale.description': "Ajuste la taille de tout le bureau, enregistrée uniquement sur cet appareil",
-+  'desktop.scale.retry': "Recharger l’échelle",
-+  'desktop.scale.saved': "Échelle enregistrée",
-+  'desktop.scale.error': "Impossible d’enregistrer l’échelle. Réessayez",
++  'desktop.scale.title': 'Échelle de l’interface',
++  'desktop.scale.description': 'Ajuste la taille de tout le bureau, enregistrée uniquement sur cet appareil',
++  'desktop.scale.retry': 'Recharger l’échelle',
++  'desktop.scale.saved': 'Échelle enregistrée',
++  'desktop.scale.error': 'Impossible d’enregistrer l’échelle. Réessayez',
    'trigger': 'Paramètres',
    'shortcut.open': 'Ouvrir les paramètres',
    'desktop.update.available': 'Mise à jour',
@@ -454,11 +454,11 @@ index 58afc6bba7414003165cc66a3f919697e26d782d..36973de00872873e1dd5d0c9a86f7a33
  
  /** German dictionary, checked against the English keys. */
  export const de = {
-+  'desktop.scale.title': "Oberflächenskalierung",
-+  'desktop.scale.description': "Passt die Größe des gesamten Desktops an; nur auf diesem Gerät gespeichert",
-+  'desktop.scale.retry': "Skalierung neu laden",
-+  'desktop.scale.saved': "Skalierung gespeichert",
-+  'desktop.scale.error': "Skalierung konnte nicht gespeichert werden. Bitte erneut versuchen",
++  'desktop.scale.title': 'Oberflächenskalierung',
++  'desktop.scale.description': 'Passt die Größe des gesamten Desktops an; nur auf diesem Gerät gespeichert',
++  'desktop.scale.retry': 'Skalierung neu laden',
++  'desktop.scale.saved': 'Skalierung gespeichert',
++  'desktop.scale.error': 'Skalierung konnte nicht gespeichert werden. Bitte erneut versuchen',
    'trigger': 'Einstellungen',
    'shortcut.open': 'Einstellungen öffnen',
    'desktop.update.available': 'Aktualisieren',
@@ -466,11 +466,11 @@ index 58afc6bba7414003165cc66a3f919697e26d782d..36973de00872873e1dd5d0c9a86f7a33
  
  /** Russian dictionary, checked against the English keys. */
  export const ru = {
-+  'desktop.scale.title': "Масштаб интерфейса",
-+  'desktop.scale.description': "Размер всего рабочего пространства; сохраняется только на этом устройстве",
-+  'desktop.scale.retry': "Перезагрузить масштаб",
-+  'desktop.scale.saved': "Масштаб сохранён",
-+  'desktop.scale.error': "Не удалось сохранить масштаб. Повторите попытку",
++  'desktop.scale.title': 'Масштаб интерфейса',
++  'desktop.scale.description': 'Размер всего рабочего пространства; сохраняется только на этом устройстве',
++  'desktop.scale.retry': 'Перезагрузить масштаб',
++  'desktop.scale.saved': 'Масштаб сохранён',
++  'desktop.scale.error': 'Не удалось сохранить масштаб. Повторите попытку',
    'trigger': 'Настройки',
    'shortcut.open': 'Открыть настройки',
    'desktop.update.available': 'Обновить',
@@ -478,11 +478,11 @@ index 58afc6bba7414003165cc66a3f919697e26d782d..36973de00872873e1dd5d0c9a86f7a33
  
  /** Portuguese dictionary, checked against the English keys. */
  export const pt = {
-+  'desktop.scale.title': "Escala da interface",
-+  'desktop.scale.description': "Ajusta o tamanho de todo o ambiente; salvo apenas neste dispositivo",
-+  'desktop.scale.retry': "Recarregar escala",
-+  'desktop.scale.saved': "Escala salva",
-+  'desktop.scale.error': "Não foi possível salvar a escala. Tente novamente",
++  'desktop.scale.title': 'Escala da interface',
++  'desktop.scale.description': 'Ajusta o tamanho de todo o ambiente; salvo apenas neste dispositivo',
++  'desktop.scale.retry': 'Recarregar escala',
++  'desktop.scale.saved': 'Escala salva',
++  'desktop.scale.error': 'Não foi possível salvar a escala. Tente novamente',
    'trigger': 'Configurações',
    'shortcut.open': 'Abrir configurações',
    'desktop.update.available': 'Atualizar',

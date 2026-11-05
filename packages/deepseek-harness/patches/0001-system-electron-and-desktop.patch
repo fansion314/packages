@@ -288,7 +288,7 @@ index a3c5f5d9352440bf67e40cdb07dde15a57712d3b..3fd25d2d6785f42c7d28fc327df12787
    readonly fileDrag: DesktopFileDrag
    readonly keyboard: DesktopKeyboardApi
 diff --git a/apps/desktop/src/main.ts b/apps/desktop/src/main.ts
-index d8d0e30c4c73d6c2e839de60d1b6c04708457c61..12e4741ecb3ebb2b0b32ee2540a88c3c683b0f57 100644
+index d8d0e30c4c73d6c2e839de60d1b6c04708457c61..19a43c2c98289ae12f538b53a45d434a38d63a22 100644
 --- a/apps/desktop/src/main.ts
 +++ b/apps/desktop/src/main.ts
 @@ -6,6 +6,7 @@ import { WINDOWS_TITLEBAR_HEIGHT } from './windows-layout.ts'
@@ -482,16 +482,17 @@ index d8d0e30c4c73d6c2e839de60d1b6c04708457c61..12e4741ecb3ebb2b0b32ee2540a88c3c
      quitting = true
      shuttingDown = true
      updateJournal?.action('quit-requested')
-@@ -1358,7 +1405,7 @@ async function main(): Promise<void> {
+@@ -1358,7 +1405,8 @@ async function main(): Promise<void> {
      updateSchedule.dispose()
      updateDialog.dispose()
      mandatoryUI?.dispose()
 -    void Promise.all([stopOperationReports(), Promise.resolve(mandatoryPolicy?.dispose()).then(() => policyAuth?.dispose()),
-+    void Promise.all([windowState.save(), stopOperationReports(), Promise.resolve(mandatoryPolicy?.dispose()).then(() => policyAuth?.dispose()),
++    void Promise.all([windowState.save(), stopOperationReports(),
++      Promise.resolve(mandatoryPolicy?.dispose()).then(() => policyAuth?.dispose()),
        backend.close().then(async () => { await operationJournal?.drain(500) }, async (error: unknown) => {
          await operationJournal?.drain(500)
          throw error
-@@ -1392,6 +1439,16 @@ async function main(): Promise<void> {
+@@ -1392,6 +1440,16 @@ async function main(): Promise<void> {
      }).catch((error: unknown) => { console.error(error); if (!quitting && !shellInstallerOwnsQuit) finishQuit() })
    })
  
