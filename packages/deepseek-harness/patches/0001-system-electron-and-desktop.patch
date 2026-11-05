@@ -130,23 +130,31 @@ index 933e329ce1829a3bd15febcbf902f67f2326e521..34fae2d2ba5d950039185ec85764c54e
  `dev:desktop` 会构建当前 Host、客户端 bundle、Web 前端和 Electron 壳，把已构建的 CLI 包、私有 Desktop Host 包及其 workspace 依赖投影为一次性桌面 npm 项目，然后直接启动 Electron；这条路径不从 npm 解析 dsh：
  
 diff --git a/apps/desktop/scripts/smoke-runtime.ts b/apps/desktop/scripts/smoke-runtime.ts
-index bbc2d3e7ae80e3870d415e1661de50b08f6bd0a2..a2c164acd8d67e85487490f06e1772fd4e150181 100644
+index bbc2d3e7ae80e3870d415e1661de50b08f6bd0a2..5af99b6b15ad0955be43a216260528baf2fc1044 100644
 --- a/apps/desktop/scripts/smoke-runtime.ts
 +++ b/apps/desktop/scripts/smoke-runtime.ts
-@@ -92,6 +92,12 @@ export function apply(ctx) {
+@@ -92,6 +92,20 @@ export function apply(ctx) {
    if (!(ctx instanceof Context)) throw new Error('desktop runtime: external plugin loaded another Cordis instance')
    ctx.effect(() => ctx.webServer.register({ kind: 'exact', path: '/desktop-smoke',
      handler(_request, response) { response.end('plugin route ready') } }))
 +  ctx.effect(() => ctx.webServer.register({ kind: 'exact', path: '/desktop-smoke-dependencies',
 +    async handler(_request, response) {
-+      const result = await ctx.tools.execute({ name: 'load_workspace_dependencies', arguments: {},
-+        callId: 'desktop-runtime-smoke', signal: new AbortController().signal })
-+      response.end(JSON.stringify(result))
++      try {
++        const batch = await ctx.tools.execute({
++          calls: [{ type: 'tool-call', id: 'desktop-runtime-smoke', name: 'load_workspace_dependencies', arguments: '{}' }],
++          signal: new AbortController().signal,
++        })
++        if (batch.results.length !== 1) throw new Error('desktop runtime: dependency tool returned an invalid batch')
++        response.end(JSON.stringify(batch.results[0].result))
++      } catch (error) {
++        response.statusCode = 500
++        response.end(inspect(error, { depth: 5 }))
++      }
 +    } }))
    ctx.effect(() => ctx.webServer.register({ kind: 'exact', path: '/desktop-smoke-install',
      async handler(_request, response) {
        try {
-@@ -135,7 +141,7 @@ export function apply(ctx) {
+@@ -135,7 +149,7 @@ export function apply(ctx) {
    }
  }
  `)
@@ -155,13 +163,14 @@ index bbc2d3e7ae80e3870d415e1661de50b08f6bd0a2..a2c164acd8d67e85487490f06e1772fd
      cpSync(plugin, join(profile, 'node_modules', pluginName), { recursive: true })
      const manifest = JSON.parse(readFileSync(join(profile, 'package.json'), 'utf8')) as {
        dependencies?: Record<string, string>
-@@ -157,6 +163,18 @@ export function apply(ctx) {
+@@ -157,6 +171,19 @@ export function apply(ctx) {
      }
      const pluginResponse = await fetch(new URL('/desktop-smoke', ready.url), { headers: { cookie } })
      if (await pluginResponse.text() !== 'plugin route ready') throw new Error('desktop runtime: plugin HTTP route failed')
 +    const dependencyResponse = await fetch(new URL('/desktop-smoke-dependencies', ready.url), {
 +      headers: { cookie }, signal: AbortSignal.timeout(120_000),
 +    })
++    if (!dependencyResponse.ok) throw new Error(`desktop runtime: dependency tool failed: ${await dependencyResponse.text()}`)
 +    const dependencyResult = await dependencyResponse.json() as { isError?: boolean; content: { type: string; text?: string }[] }
 +    if (dependencyResult.isError) throw new Error(`desktop runtime: dependency discovery failed: ${JSON.stringify(dependencyResult)}`)
 +    if (environment.DSH_DESKTOP_PRIMARY_RUNTIME_IN_PLACE === '1') {
