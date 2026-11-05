@@ -6,7 +6,7 @@ import sys
 import tempfile
 import unittest
 import urllib.error
-from unittest.mock import patch
+from unittest.mock import patch, MagicMock
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
@@ -29,10 +29,27 @@ class FakeClient:
         self.uploaded.pop((item['tag'], item['filename']), None)
 
 
+class OriginProbeTests(unittest.TestCase):
+    def test_only_definitive_removal_freezes_an_origin(self):
+        url = 'https://upstream.example/foo.pkg.tar.zst'
+        for code in [404, 410, 403, 405, 429, 500, 503]:
+            with self.subTest(code=code), patch.object(mirror.urllib.request, 'urlopen',
+                    side_effect=urllib.error.HTTPError(url, code, 'fixture', {}, None)) as probe:
+                self.assertEqual(mirror.origin_missing(url), code in (404, 410))
+                self.assertEqual(probe.call_args.args[0].get_method(), 'HEAD')
+        with patch.object(mirror.urllib.request, 'urlopen', side_effect=urllib.error.URLError('timeout')):
+            self.assertFalse(mirror.origin_missing(url))
+        with patch.object(mirror.urllib.request, 'urlopen', return_value=MagicMock()):
+            self.assertFalse(mirror.origin_missing(url))
+
+
 class MirrorTests(unittest.TestCase):
     def setUp(self):
         self.temporary = tempfile.TemporaryDirectory()
         self.addCleanup(self.temporary.cleanup)
+        probe = patch.object(mirror, 'origin_missing', return_value=False)
+        self.origin_missing = probe.start()
+        self.addCleanup(probe.stop)
         self.site = Path(self.temporary.name)
         self.settings = {'architecture': 'x86_64', 'repository': 'fansionia',
                          'pages_url': 'https://pages.example', 'public_url': 'https://packages.example',
@@ -41,6 +58,94 @@ class MirrorTests(unittest.TestCase):
         (self.site/'keys/fansionia.asc').write_text('public key')
         self.client = FakeClient()
         self.sources = {}
+
+    def upstream_snapshot(self, snapshot):
+        package = self.snapshot(snapshot, '1')[0]
+        package.update(upstream='fixture', repository='upstream/fixture', project='fixture')
+        manifest_path = self.site/'snapshots'/snapshot/'manifest.json'
+        manifest = json.loads(manifest_path.read_text())
+        manifest['packages'] = [package]
+        repository.write_json(manifest_path, manifest)
+        repository.write_json(self.site/'snapshots.json', [snapshot])
+        mirror.stage(self.site, self.settings, '', snapshot)
+        self.sync()
+        self.accept(snapshot)
+        return package
+
+    def test_removed_upstream_repairs_a_pending_active_snapshot_without_resigning(self):
+        a = 'a'*32
+        package = self.upstream_snapshot(a)
+        manifest_path = self.site/'snapshots'/a/'manifest.json'
+        original = manifest_path.read_bytes()
+        urls = mirror.archived_urls(mirror.read_state(self.site, self.settings), self.settings, package)
+        self.sources.pop(package['url'])
+        self.sources.pop(package['signature_url'])
+        self.origin_missing.return_value = True
+        state = mirror.stage(self.site, self.settings, a, a)
+        route = '/x86_64/'+package['filename']
+        self.assertEqual(set(state['pinned']), {route, route+'.sig'})
+        self.sync()
+        self.accept(a)
+        self.assertEqual(manifest_path.read_bytes(), original)
+        output = self.site/'worker.mjs'
+        repository.worker(self.site, self.settings, a, a, 'active', output)
+        config = json.loads(output.with_suffix('.json').read_text())
+        self.assertEqual(config['assets'][route], urls['archive_url'])
+        self.assertEqual(config['assets'][route+'.sig'], urls['signature_archive_url'])
+        # A retry cannot silently move the original bytes back to a mutable URL.
+        self.origin_missing.reset_mock(return_value=True)
+        self.origin_missing.return_value = False
+        mirror.stage(self.site, self.settings, a, a)
+        self.origin_missing.assert_not_called()
+        self.sync()
+        self.accept(a)
+        self.assertEqual(manifest_path.read_bytes(), original)
+
+    def test_removed_upstream_requires_both_verified_receipts_and_exact_ledger(self):
+        a = 'a'*32
+        package = self.upstream_snapshot(a)
+        original = mirror.read_state(self.site, self.settings)
+        for invalid in ['unverified', 'missing-signature', 'wrong-hash']:
+            state = json.loads(json.dumps(original))
+            if invalid == 'unverified':
+                state['snapshots'][a]['verified'] = False
+            else:
+                item = state['snapshots'][a]['routes']['/x86_64/'+package['filename']+'.sig']
+                url = mirror.location(state['repository'], item['tag'], item['filename'])
+                if invalid == 'missing-signature':
+                    del state['objects'][url]
+                else:
+                    state['objects'][url]['sha256'] = '0'*64
+            repository.write_json(self.site/mirror.STATE, state)
+            before = (self.site/mirror.STATE).read_bytes()
+            self.origin_missing.return_value = True
+            with self.subTest(invalid=invalid), self.assertRaisesRegex(ValueError, 'No verified immutable'):
+                mirror.stage(self.site, self.settings, a, a)
+            self.assertEqual((self.site/mirror.STATE).read_bytes(), before)
+
+    def test_recovered_copies_follow_all_retained_primary_database_references(self):
+        a, b, c, d = ('a'*32, 'b'*32, 'c'*32, 'd'*32)
+        package = self.upstream_snapshot(a)
+        url = mirror.archived_urls(mirror.read_state(self.site, self.settings), self.settings, package)['archive_url']
+        self.origin_missing.return_value = True
+        # The new candidate no longer contains this upstream. Freeze the old
+        # verified mirror's copy before its last mirror-database reference ages out.
+        for previous, candidate, version in [(a, b, '2'), (b, c, '3'), (c, d, '4')]:
+            self.snapshot(candidate, version)
+            index = json.loads((self.site/'snapshots.json').read_text())+[candidate]
+            repository.write_json(self.site/'snapshots.json', index)
+            mirror.stage(self.site, self.settings, previous, candidate)
+            self.sync()
+            self.accept(candidate)
+        state = mirror.read_state(self.site, self.settings)
+        self.assertEqual(state['successful'], [c, d])
+        self.assertIn(url, state['objects'])
+        self.assertNotIn('archive_url', json.loads((self.site/'snapshots'/a/'manifest.json').read_text())['packages'][0])
+        repository.write_json(self.site/'snapshots.json', [c, d])
+        mirror.stage(self.site, self.settings, d, d)
+        self.sync()
+        self.accept(d)
+        self.assertNotIn(url, mirror.read_state(self.site, self.settings)['objects'])
 
     def snapshot(self, snapshot, version, shared=False):
         base = self.site/'snapshots'/snapshot

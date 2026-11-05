@@ -45,6 +45,17 @@ existing immutable attachments before trying the original source; only HTTP 404
 from an interrupted first upload permits a source retry, with the original hash
 still enforced. Packages are never repacked, re-signed or silently replaced.
 
+An upstream may also remove an old archive while a publication is pending. Before
+restaging that candidate, HTTP 404/410 on its package or signature URL can pin both
+routes to the original CNB objects. This requires the previously verified snapshot
+receipts and exact package/signature object ledger; missing proof still stops
+publication. The signed database and manifest stay unchanged. Routing pins are
+journaled before external writes, rechecked by the normal anonymous hash and
+pacman installation gates, and protected until the last retained primary database
+reference disappears. Timeouts and other HTTP errors do not permanently pin an
+origin. Once the pending publication finishes, discovery resumes normally and can
+select the newer upstream packages and application releases.
+
 `publish-pacman.yml` checks all sources twice an hour (UTC minutes 9 and 39;
 GitHub schedules may be delayed). Release dispatches still check immediately.
 Unchanged inputs skip package downloads and deployment. Signed database and small

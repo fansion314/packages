@@ -115,14 +115,59 @@ def snapshot_plan(site, settings, snapshot, objects=None):
     return result
 
 
-def pinned_plan(site, settings, objects):
+def origin_missing(url):
+    """Only definitive removal pins an origin; other failures keep normal gates."""
+    request = urllib.request.Request(url, method='HEAD', headers={
+        'User-Agent': 'fansionia-pacman-mirror', 'Cache-Control': 'no-cache'})
+    try:
+        with urllib.request.urlopen(request, timeout=20):
+            return False
+    except urllib.error.HTTPError as error:
+        removed = error.code in (404, 410)
+        error.close()
+        return removed
+    except OSError:
+        return False
+
+
+def recover_missing_upstreams(site, settings, state, candidate):
+    """Journal verified archive routes without changing the signed snapshot."""
+    recovered = set(state.get('pinned', {}))
+    snapshots = {candidate}
+    snapshots.update(name for name, record in state['snapshots'].items() if record['verified'])
+    packages = {}
+    for snapshot in sorted(snapshots):
+        manifest = json.loads((Path(site)/'snapshots'/snapshot/'manifest.json').read_text())
+        for package in manifest['packages']:
+            packages[(package['filename'], package['sha256'], package['signature_sha256'])] = package
+    for package in packages.values():
+        path = '/'+settings['architecture']+'/'+package['filename']
+        if not package.get('upstream') or path in recovered or package.get('archive_url'):
+            continue
+        if not any(origin_missing(package[prefix+'url']) for prefix in ['', 'signature_']):
+            continue
+        # Both bytes and the original signature must have a verified snapshot
+        # receipt and an exact immutable object ledger entry before using them.
+        archived_urls(state, settings, package)
+        recovered.update([path, path+'.sig'])
+        message = ('Routing removed upstream '+package['name']+' '+package['version']+
+                   ' to its verified immutable mirror copy')
+        print('WARNING:', message)
+        if os.environ.get('GITHUB_STEP_SUMMARY'):
+            with open(os.environ['GITHUB_STEP_SUMMARY'], 'a') as summary:
+                summary.write(message+'\n\n')
+    return recovered
+
+
+def pinned_plan(site, settings, objects, recovered=()):
     """Protect frozen upstream bytes for every retained primary database."""
     index = Path(site)/'snapshots.json'
     snapshots = json.loads(index.read_text()) if index.exists() else []
     result = {}
     for snapshot in snapshots:
         manifest = json.loads((Path(site)/'snapshots'/snapshot/'manifest.json').read_text())
-        pinned = [p for p in manifest['packages'] if p.get('upstream') and p.get('archive_url')]
+        pinned = [p for p in manifest['packages'] if p.get('upstream') and
+                  (p.get('archive_url') or '/'+settings['architecture']+'/'+p['filename'] in recovered)]
         if not pinned:
             continue
         plan = snapshot_plan(site, settings, snapshot, objects)
@@ -131,8 +176,11 @@ def pinned_plan(site, settings, objects):
                 path = '/'+settings['architecture']+'/'+package['filename']+suffix
                 item = dict(plan[path])
                 url = location(settings['mirror']['repository'], item['tag'], item['filename'])
-                if url != package[prefix+'archive_url']:
+                if package.get('archive_url') and url != package[prefix+'archive_url']:
                     raise ValueError('Pinned upstream archive location changed')
+                ledger = objects.get(url)
+                if not ledger or any(ledger[k] != item[k] for k in ['tag', 'filename', 'sha256']):
+                    raise ValueError('Pinned upstream has no matching immutable mirror object')
                 item['source'] = url
                 if path in result and result[path] != item:
                     raise ValueError('Conflicting pinned upstream archive')
@@ -162,10 +210,11 @@ def stage(site, settings, active, candidate):
     retained = list(dict.fromkeys([*state['successful'], candidate]))
     if len(state['successful']) > 2 or len(retained) > 3:
         raise ValueError('Mirror snapshot retention exceeded')
+    recovered = recover_missing_upstreams(site, settings, state, candidate)
     state['snapshots'] = {s: {'verified': False, 'routes': snapshot_plan(site, settings, s, state['objects'])}
                           for s in retained}
     state['keys'] = key_plan(site, state['objects'])
-    state['pinned'] = pinned_plan(site, settings, state['objects'])
+    state['pinned'] = pinned_plan(site, settings, state['objects'], recovered)
     write_json(Path(site)/STATE, state)
     return state
 
@@ -285,7 +334,7 @@ def routes(site, settings, selected):
         if item['sha256'] != checksum(Path(site)/path.lstrip('/')):
             raise ValueError('Mirror public key verification receipt changed')
         assets['/mirror'+path] = location(state['repository'], item['tag'], item['filename'])
-    pinned = pinned_plan(site, settings, state['objects'])
+    pinned = pinned_plan(site, settings, state['objects'], state.get('pinned', {}))
     if pinned != state.get('pinned', {}):
         raise ValueError('Pinned upstream mirror references do not match retained databases')
     for path, item in pinned.items():
