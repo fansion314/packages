@@ -79,6 +79,19 @@ def select_release(project, releases):
     return result
 
 
+def require_published_keyring(packages):
+    recipe = (ROOT/'support/fansionia-keyring/PKGBUILD').read_text()
+    version = re.search(r'^pkgver=([0-9]+)$', recipe, re.M)
+    revision = re.search(r'^pkgrel=([0-9]+)$', recipe, re.M)
+    if not version or not revision:
+        raise ValueError('Invalid keyring release version')
+    required = version[1]+'-'+revision[1]
+    selected = next((p for p in packages if p['name'] == 'fansionia-keyring'), None)
+    if selected is None or version_key(selected['version']) < version_key(required):
+        raise ValueError('Publish fansionia-keyring-v'+required+
+                         ' before activating updated upstream signing keys')
+
+
 def discover(settings):
     releases = {}
     packages = []
@@ -88,6 +101,8 @@ def discover(settings):
             releases[repository] = [r for page in github(f'repos/{repository}/releases?per_page=100') for r in page]
         packages.extend(select_release(project, releases[repository]))
     if settings.get('upstreams'):
+        if any(p['id'] == 'fansionia-keyring' for p in settings['projects']):
+            require_published_keyring(packages)
         from upstream import discover as upstream_discover
         packages.extend(upstream_discover(settings, [p['name'] for p in packages]))
     filenames = [p['filename'] for p in packages]

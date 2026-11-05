@@ -21,6 +21,17 @@ class UpstreamTests(unittest.TestCase):
               'key': 'upstream-keys/fixture.asc', 'fingerprint': 'A'*40}
     settings = {'architecture': 'x86_64', 'upstreams': [source]}
 
+    def test_revoked_signer_cannot_pass_with_a_valid_primary_signature_record(self):
+        valid = '[GNUPG:] VALIDSIG '+'B'*40+' 0 0 0 4 0 1 8 00 '+'A'*40+'\n'
+        with patch.object(upstream, 'keyring', return_value=Path('/reviewed.gpg')), \
+                patch.object(upstream.subprocess, 'check_output', return_value=valid):
+            upstream.verify(self.source, Path('/fixture.pkg'))
+        for marker in ['[GNUPG:] REVKEYSIG DEADBEEF fixture\n', '[GNUPG:] KEYREVOKED\n']:
+            with self.subTest(marker=marker), patch.object(upstream, 'keyring', return_value=Path('/reviewed.gpg')), \
+                    patch.object(upstream.subprocess, 'check_output', return_value=marker+valid), \
+                    self.assertRaisesRegex(ValueError, 'revoked'):
+                upstream.verify(self.source, Path('/fixture.pkg'))
+
     def database(self, name='foo', filename='foo-1:2.0-1-x86_64.pkg.tar.zst', **updates):
         fields = {'NAME': name, 'VERSION': '1:2.0-1', 'FILENAME': filename,
                   'ARCH': 'x86_64', 'SHA256SUM': 'a'*64,

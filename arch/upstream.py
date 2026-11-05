@@ -81,6 +81,9 @@ def verify(source, path, signature=None):
         public = keyring(source, temporary)
         status = subprocess.check_output(['gpgv', '--homedir', temporary, '--status-fd', '1',
             '--keyring', str(public), str(signature or str(path)+'.sig'), str(path)], text=True)
+        if any(line.startswith(('[GNUPG:] REVKEYSIG ', '[GNUPG:] KEYREVOKED'))
+               for line in status.splitlines()):
+            raise ValueError('Upstream signature uses a revoked key')
         valid = [line.split() for line in status.splitlines() if line.startswith('[GNUPG:] VALIDSIG ')]
         # VALIDSIG's last field identifies the primary key, including subkey signatures.
         if not any(parts[2] == source['fingerprint'] or parts[-1] == source['fingerprint'] for parts in valid):

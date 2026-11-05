@@ -72,6 +72,15 @@ keyserver. Public-key provenance:
   also in the [official manual](https://manual.denialwm.org/docs/getting-started/).
 - [msime OBS project](https://downloadcontent.opensuse.org/repositories/home:/msime/Arch/x86_64/home_msime_Arch.key).
 
+The [2026-11-04 Warp rotation](https://www.warp.dev/blog/updated-gpg-signing-key-for-warp-linux-releases)
+keeps primary `0913165C78D5B7A41B42AC657FF7AB39D60F803F`, adds signing subkey
+`D272B58E4BF4EA3E7CB958A55AC01A19A09FA9A6`, and revokes signing subkey
+`19A1E427461B1795F73F629631F4254AFE49E02E`. `fansionia-keyring` 20261105-1
+distributes the binding and revocation before new repository inputs are activated.
+Snapshot discovery checks the published keyring version against the maintained
+recipe before reading new upstream inputs, so a scheduled run cannot stage a
+candidate with updated signing keys but an older client keyring package.
+
 Existing clients should bootstrap the keyring separately before upgrading apps
 from the merged repository (also works with the mirror server):
 

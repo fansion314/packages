@@ -14,6 +14,16 @@ spec.loader.exec_module(repository)
 
 
 class RepositoryTests(unittest.TestCase):
+    def test_updated_keys_require_the_keyring_release_before_snapshot_discovery(self):
+        recipe = (ROOT/'support/fansionia-keyring/PKGBUILD').read_text()
+        import re
+        version = re.search(r'^pkgver=([0-9]+)$', recipe, re.M)[1]
+        revision = re.search(r'^pkgrel=([0-9]+)$', recipe, re.M)[1]
+        for packages in [[], [{'name': 'fansionia-keyring', 'version': '20261001-1'}]]:
+            with self.assertRaisesRegex(ValueError, 'Publish fansionia-keyring'):
+                repository.require_published_keyring(packages)
+        repository.require_published_keyring([{'name': 'fansionia-keyring', 'version': version+'-'+revision}])
+
     def release(self, version='1.0.0', signature=True):
         name = f'foo-{version}-1-x86_64.pkg.tar.zst'
         assets = [{'name': name, 'digest': 'sha256:'+'a'*64,
