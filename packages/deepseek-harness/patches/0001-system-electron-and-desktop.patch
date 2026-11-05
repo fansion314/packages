@@ -780,7 +780,7 @@ index 0000000000000000000000000000000000000000..5cfae64fb657495d77f5e6497cce544a
 +  expect(scale.state.factor).toBe(1.5)
 +})
 diff --git a/apps/desktop/tests/main-startup.spec.ts b/apps/desktop/tests/main-startup.spec.ts
-index 3b1e63e00cf22f69e7849430771fc3fc7ddd4945..19758b6dcdb832530e11b30ec48b348416398f3a 100644
+index 3b1e63e00cf22f69e7849430771fc3fc7ddd4945..8e1900b18e68fff778208564e5f97f4a0fa6741b 100644
 --- a/apps/desktop/tests/main-startup.spec.ts
 +++ b/apps/desktop/tests/main-startup.spec.ts
 @@ -87,6 +87,8 @@ const harness = await vi.hoisted(async () => {
@@ -849,7 +849,15 @@ index 3b1e63e00cf22f69e7849430771fc3fc7ddd4945..19758b6dcdb832530e11b30ec48b3484
  vi.mock('../src/paths.ts', () => ({ resolveDesktopPaths: () => ({ profile: 'desktop-test-profile' }) }))
  vi.mock('../src/project-manager.ts', () => ({
    DesktopProjectManager: class {
-@@ -464,6 +478,7 @@ afterEach(async () => {
+@@ -416,6 +430,7 @@ function invoke(channel: string, origin = channel === DESKTOP_IPC.boot ? 'app' :
+ }
+ 
+ function applicationMenuItems(): MenuItemConstructorOptions[] {
++  if (process.platform === 'linux') return harness.menu.mock.lastCall![0]
+   const native = harness.menu.mock.calls[0]?.[0][0]?.submenu
+   if (Array.isArray(native)) return native
+   const sender = harness.windows[0]!.webContents
+@@ -464,6 +479,7 @@ afterEach(async () => {
    await vi.advanceTimersByTimeAsync(0)
    for (const host of harness.hosts) { host.ready.resolve(); host.exited.resolve() }
    await harness.quitCompleted.promise
@@ -857,7 +865,7 @@ index 3b1e63e00cf22f69e7849430771fc3fc7ddd4945..19758b6dcdb832530e11b30ec48b3484
    vi.restoreAllMocks()
    vi.clearAllTimers()
    vi.useRealTimers()
-@@ -472,6 +487,17 @@ afterEach(async () => {
+@@ -472,6 +488,17 @@ afterEach(async () => {
  })
  
  describe('desktop main startup', () => {
@@ -875,7 +883,47 @@ index 3b1e63e00cf22f69e7849430771fc3fc7ddd4945..19758b6dcdb832530e11b30ec48b3484
    it.each([true, false])('selects the package manager before Host startup (packaged=%s)', async (packaged) => {
      harness.app.isPackaged = packaged
      await readyForUpdate()
-@@ -1099,6 +1125,12 @@ describe('desktop main startup', () => {
+@@ -563,12 +590,13 @@ describe('desktop main startup', () => {
+     const menu = applicationMenuItems()
+     const visible = menu.filter(item => item.visible !== false)
+     expect(visible.map(item => item.role === 'quit' ? 'quit' : item.label ?? item.type)).toEqual([
++      ...platform === 'linux' ? [messages.openApplication, 'separator'] : [],
+       messages.aboutMenu, 'separator', messages.checkUpdatesMenu,
+       ...platform === 'linux' ? [] : [messages.cliCommandMenu],
+       'separator', ...packaged ? [] : [messages.reloadPageMenu, messages.restartAppHostMenu],
+       messages.toggleDevToolsMenu, 'separator',
+       ...platform === 'darwin' ? [messages.hideApplication, messages.hideOtherApplications, messages.showAllApplications, 'separator'] : [],
+-      'quit',
++      platform === 'linux' ? messages.quitApplication : 'quit',
+     ])
+     expect(visible.filter(item => item.role === 'toggleDevTools')).toEqual([
+       { role: 'toggleDevTools', label: messages.toggleDevToolsMenu },
+@@ -579,17 +607,22 @@ describe('desktop main startup', () => {
+         { role: 'toggleDevTools', visible: false, accelerator: 'F12' },
+       ])
+       expect(menu.every(item => item.visible !== false)).toBe(true)
+-    } else {
++    } else if (platform === 'darwin') {
+       expect(menu.filter(item => item.visible === false)).toEqual([
+         { role: 'toggleDevTools', visible: false, accelerator: 'F12' },
+       ])
++    } else {
++      expect(harness.menu.setApplicationMenu).toHaveBeenLastCalledWith(null)
++      expect(harness.trays).toHaveLength(1)
++      expect(harness.trays[0]!.setContextMenu).toHaveBeenCalled()
++      expect(menu.filter(item => item.visible === false)).toEqual([])
+     }
+     const sender = harness.windows[0]!.webContents
+     const nextLocale = locale === 'en' ? 'zh' : 'en'
+     harness.ipcOn.mock.calls.find(([channel]) => channel === DESKTOP_IPC.localeChanged)![1](
+       { sender, senderFrame: sender.mainFrame }, nextLocale,
+     )
+-    const refreshed = platform === 'win32' ? applicationMenuItems()
++    const refreshed = platform !== 'darwin' ? applicationMenuItems()
+       : harness.menu.mock.lastCall![0][0]!.submenu as MenuItemConstructorOptions[]
+     expect(refreshed.filter(item => item.role === 'toggleDevTools' && item.visible !== false)).toEqual([
+       { role: 'toggleDevTools', label: nextLocale === 'en' ? en.toggleDevToolsMenu : zh.toggleDevToolsMenu },
+@@ -1099,6 +1132,12 @@ describe('desktop main startup', () => {
      const template = harness.menu.buildFromTemplate.mock.calls
        .map(call => call[0])
        .find(items => items.some(item => item.role === 'editMenu'))
@@ -888,7 +936,7 @@ index 3b1e63e00cf22f69e7849430771fc3fc7ddd4945..19758b6dcdb832530e11b30ec48b3484
      if (template === undefined) throw new Error('application menu missing')
      expect(template.map(describeItem)).toEqual(platform === 'darwin'
        ? ['Desktop test', en.fileMenu, 'editMenu', 'windowMenu']
-@@ -1393,6 +1425,38 @@ describe('desktop main startup', () => {
+@@ -1393,6 +1432,38 @@ describe('desktop main startup', () => {
      expect(window.show).toHaveBeenCalled()
    })
  
