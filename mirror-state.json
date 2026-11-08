@@ -1,5 +1,5 @@
 {
-  "cleanup_pending": true,
+  "cleanup_pending": false,
   "keys": {
     "/keys/fansionia.asc": {
       "filename": "fansionia.asc",
@@ -242,60 +242,6 @@
       "sha256": "b7a6a20b6b40292e88a79038bdcba811fd6b65e0a5cf2437ae0d484f47904f5f",
       "size": 119,
       "tag": "python-pptx-v1.0.2-8"
-    },
-    "https://cnb.cool/fansionia/packages/-/releases/download/snapshot-c121e025acb217c4b92398ed2710435b/fansionia.db": {
-      "filename": "fansionia.db",
-      "sha256": "ed7e0c58c905b72c38109658411c571c8282b0ab4fd9fddbaa1a73dddc8d5f3b",
-      "size": 10014,
-      "tag": "snapshot-c121e025acb217c4b92398ed2710435b"
-    },
-    "https://cnb.cool/fansionia/packages/-/releases/download/snapshot-c121e025acb217c4b92398ed2710435b/fansionia.db.sig": {
-      "filename": "fansionia.db.sig",
-      "sha256": "b565ae7030a41dda0b2127cc785d63c3655f5da4eb8eb61743b2243dad64b668",
-      "size": 119,
-      "tag": "snapshot-c121e025acb217c4b92398ed2710435b"
-    },
-    "https://cnb.cool/fansionia/packages/-/releases/download/snapshot-c121e025acb217c4b92398ed2710435b/fansionia.db.tar.gz": {
-      "filename": "fansionia.db.tar.gz",
-      "sha256": "ed7e0c58c905b72c38109658411c571c8282b0ab4fd9fddbaa1a73dddc8d5f3b",
-      "size": 10014,
-      "tag": "snapshot-c121e025acb217c4b92398ed2710435b"
-    },
-    "https://cnb.cool/fansionia/packages/-/releases/download/snapshot-c121e025acb217c4b92398ed2710435b/fansionia.db.tar.gz.sig": {
-      "filename": "fansionia.db.tar.gz.sig",
-      "sha256": "b565ae7030a41dda0b2127cc785d63c3655f5da4eb8eb61743b2243dad64b668",
-      "size": 119,
-      "tag": "snapshot-c121e025acb217c4b92398ed2710435b"
-    },
-    "https://cnb.cool/fansionia/packages/-/releases/download/snapshot-c121e025acb217c4b92398ed2710435b/fansionia.files": {
-      "filename": "fansionia.files",
-      "sha256": "0c915ecdc589d1aad7b3ad81c0f9545b4ee0a3845dd20737a8e0d5560cb49534",
-      "size": 146381,
-      "tag": "snapshot-c121e025acb217c4b92398ed2710435b"
-    },
-    "https://cnb.cool/fansionia/packages/-/releases/download/snapshot-c121e025acb217c4b92398ed2710435b/fansionia.files.sig": {
-      "filename": "fansionia.files.sig",
-      "sha256": "7e8218be0d98c7dffce93f800fa9d85cc1a44a57666b0b59e9722f4065126c0a",
-      "size": 119,
-      "tag": "snapshot-c121e025acb217c4b92398ed2710435b"
-    },
-    "https://cnb.cool/fansionia/packages/-/releases/download/snapshot-c121e025acb217c4b92398ed2710435b/fansionia.files.tar.gz": {
-      "filename": "fansionia.files.tar.gz",
-      "sha256": "0c915ecdc589d1aad7b3ad81c0f9545b4ee0a3845dd20737a8e0d5560cb49534",
-      "size": 146381,
-      "tag": "snapshot-c121e025acb217c4b92398ed2710435b"
-    },
-    "https://cnb.cool/fansionia/packages/-/releases/download/snapshot-c121e025acb217c4b92398ed2710435b/fansionia.files.tar.gz.sig": {
-      "filename": "fansionia.files.tar.gz.sig",
-      "sha256": "7e8218be0d98c7dffce93f800fa9d85cc1a44a57666b0b59e9722f4065126c0a",
-      "size": 119,
-      "tag": "snapshot-c121e025acb217c4b92398ed2710435b"
-    },
-    "https://cnb.cool/fansionia/packages/-/releases/download/snapshot-c121e025acb217c4b92398ed2710435b/manifest.json": {
-      "filename": "manifest.json",
-      "sha256": "92771f444f275ff82be1015185e570df276fee9e15b153eb1c1931a90ffb5887",
-      "size": 16767,
-      "tag": "snapshot-c121e025acb217c4b92398ed2710435b"
     },
     "https://cnb.cool/fansionia/packages/-/releases/download/snapshot-e987d3cba190b557ef67422d61324302/fansionia.db": {
       "filename": "fansionia.db",
