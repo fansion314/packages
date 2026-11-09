@@ -15,6 +15,7 @@ GitHub 源码与发布地址：**https://github.com/fansion314/packages**。
 | Bitwarden | `bitwarden-electron` | `bitwarden-electron-bin` | — |
 | MyGo Music | `mygo-music` | `mygo-music-bin` | — |
 | HGhub | `hghub` | `hghub-bin` | — |
+| Longbridge | `longbridge` | `longbridge-bin` | — |
 | Obsidian | `obsidian-electron` | `obsidian-electron-bin` | — |
 | Clash Momo | `clash-momo` | `clash-momo-bin` | cask `clash-momo` |
 | Mihomomo | `mihomomo` | `mihomomo-bin` | `mihomomo` |
@@ -32,6 +33,12 @@ HGhub 是基于上游固定版本源码构建的社区 Linux 版本，使用系�
 版本更新通过 pacman/paru 完成。遵循上游 PolyForm Noncommercial 1.0.0
 许可证，包内保留完整许可证与 Required Notice；这是包含 Linux 适配和缩放补丁的
 社区构建，非上游官方 Linux 安装包。
+
+Longbridge 重打包官方 stable Linux x86_64 成品，保留原始可执行文件、
+`com.longbridge.app.desktop` 身份及配置目录；使用系统 GTK3/WebKitGTK 4.1。
+启动命令为 `longbridge-desktop`。通过 pacman/paru 更新；请在
+Settings → General → Software Update 关闭应用自动更新。
+配方 `longbridge` 从官方 tarball 重打包，`longbridge-bin` 使用本仓库预构建包。
 
 ## Windows：Clash Momo 更新镜像
 
@@ -97,6 +104,7 @@ sudo pacman -S dnr dnc pi-dnr etcher-dnr
 sudo pacman -S motrix-electron dsh-electron bitwarden-electron obsidian-electron
 sudo pacman -S mygo-music
 sudo pacman -S hghub
+sudo pacman -S longbridge
 sudo pacman -S clash-momo  # 自动安装 mihomomo 和系统 Electron
 ```
 
@@ -137,6 +145,7 @@ paru -S motrix-electron-bin dsh-electron-bin
 paru -S bitwarden-electron-bin obsidian-electron-bin
 paru -S mygo-music-bin  # 源码构建可选 mygo-music
 paru -S hghub-bin       # 源码构建可选 hghub
+paru -S longbridge-bin  # 官方 tarball 重打包可选 longbridge
 paru -S clash-momo mihomomo
 ```
 

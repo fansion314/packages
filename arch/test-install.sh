@@ -37,13 +37,20 @@ if external:
         subprocess.run(['pacman', '-Qk', package], check=True)
         subprocess.run(['pacman', '-Rns', '--noconfirm', package], check=True)
 PY
-pacman -Si dnr dnr-cef dnr-webview dnc pi-dnr etcher-dnr motrix-electron dsh-electron bitwarden-electron obsidian-electron mygo-music hghub clash-momo mihomomo python-pptx
+pacman -Si dnr dnr-cef dnr-webview dnc pi-dnr etcher-dnr motrix-electron dsh-electron bitwarden-electron obsidian-electron mygo-music hghub longbridge clash-momo mihomomo python-pptx
 # Download and verify every variant. Mutually conflicting runtime alternatives
 # cannot be installed together, but each must be a valid signed archive.
-pacman -Sw --noconfirm dnr dnc pi-dnr etcher-dnr motrix-electron dsh-electron bitwarden-electron obsidian-electron mygo-music hghub clash-momo mihomomo python-pptx
+pacman -Sw --noconfirm dnr dnc pi-dnr etcher-dnr motrix-electron dsh-electron bitwarden-electron obsidian-electron mygo-music hghub longbridge clash-momo mihomomo python-pptx
 pacman -Sw --noconfirm dnr-cef
 pacman -Sw --noconfirm dnr-webview
-pacman -S --noconfirm dnr dnc pi-dnr etcher-dnr motrix-electron dsh-electron bitwarden-electron obsidian-electron mygo-music hghub clash-momo mihomomo python-pptx
+pacman -S --noconfirm dnr dnc pi-dnr etcher-dnr motrix-electron dsh-electron bitwarden-electron obsidian-electron mygo-music hghub longbridge clash-momo mihomomo python-pptx
+test -x /usr/bin/longbridge-desktop
+test -r /usr/share/applications/longbridge-desktop.desktop
+grep -Fx 'Exec=longbridge-desktop' /usr/share/applications/longbridge-desktop.desktop
+grep -Fx 'StartupWMClass=com.longbridge.app.desktop' /usr/share/applications/longbridge-desktop.desktop
+test -s /usr/share/icons/hicolor/512x512/apps/longbridge.png
+ldd /usr/lib/longbridge/longbridge.app/bin/longbridge > /tmp/longbridge-ldd.txt
+! grep -F 'not found' /tmp/longbridge-ldd.txt
 test -x /usr/bin/hghub
 test -r /usr/share/applications/com.hghub.huangguo.desktop
 grep -F 'Exec=hghub' /usr/share/applications/com.hghub.huangguo.desktop
@@ -69,7 +76,7 @@ presentation.save(stream)
 stream.seek(0)
 assert len(Presentation(stream).slides) == 1
 PY
-for package in dnr dnc pi-dnr etcher-dnr motrix-electron dsh-electron bitwarden-electron obsidian-electron mygo-music hghub clash-momo mihomomo python-pptx fansionia-keyring; do
+for package in dnr dnc pi-dnr etcher-dnr motrix-electron dsh-electron bitwarden-electron obsidian-electron mygo-music hghub longbridge clash-momo mihomomo python-pptx fansionia-keyring; do
   pacman -Q "$package"
   pacman -Qk "$package"
 done

@@ -26,6 +26,7 @@
 | DeepSeek Harness / DSH | `packages/deepseek-harness/` | `deepseek-harness-v<V>-<R>`；`release.yml` | paru + pacman |
 | Bitwarden | `packages/bitwarden/` | `bitwarden-v<V>-<R>`；`release.yml` | paru + pacman |
 | Obsidian | `packages/obsidian/` | `obsidian-v<V>-<R>`；`release.yml` | paru + pacman |
+| Longbridge | `packages/longbridge/` | `longbridge-v<V>-<R>`；`release.yml` | paru + pacman |
 | python-pptx、fansionia-keyring | `arch/support/<id>/PKGBUILD` | `<id>-v<V>-<R>`；`release-support.yml` | pacman |
 | Clash Momo | `../clash/clash-momo`，`fansion314/momo` 的 `clash-momo` 分支 | `clash-momo-v<V>-<R>`；`release-arch.yml` | paru + pacman |
 | Mihomomo | `../clash/mihomomo`，`fansion314/momo` 的 `mihomomo` 分支 | `mihomomo-v<V>-<R>`；`release-arch.yml` | paru + pacman |
@@ -33,6 +34,7 @@
 - Clash Momo 与 Mihomomo 共用仓库，按各自标签族选择版本；先发布内核，再发布依赖该签名内核的客户端。上游来源记录在各分支 `UPSTREAM.json`，后续以补丁同步并追加提交。
 - 版本、打包号和准确上游提交以 `packages/<id>/manifest.json`、支持包 PKGBUILD 或外部源码仓库为准，不能依赖本文件中的历史版本。
 - 内部项目的源码与 bin 配方共用一个 Release。Bitwarden/Obsidian 使用官方 Linux 成品和系统 Electron，不合并官方源码、不重复携带 Electron；必须验证原生模块、bootstrap、应用布局及 ABI。
+- Longbridge 只重打包官方 stable Linux x86_64 tarball，manifest 固定版本化 URL 和官方 SHA-256；保留可执行文件字节、`.app` 布局与 `com.longbridge.app.desktop` 身份。pacman 包名 `longbridge`，paru 提供 `longbridge` / `longbridge-bin`，命令 `longbridge-desktop` 不占用独立 CLI 的 `longbridge`。使用系统 GTK3/WebKitGTK 4.1，更新交 pacman/paru；CI 检查动态库、原始字节和隔离配置下的真实窗口。
 - Motrix/DSH/MyGo Music/HGhub 从 manifest 固定的准确上游提交构建。fork 修改存为有序 `patches/series`；`overlay/` 仅放新增文件，不能覆盖现有上游文件。补丁冲突必须审阅并修复，禁止失败后静默跳过。
 - HGhub 的 pacman/源码包名为 `hghub`，bin 配方为 `hghub-bin`；沿用上游 `com.hghub.huangguo` 身份和配置目录。使用系统 WebKitGTK 4.1/GStreamer，不携带 Electron。保留上游许可证全文及 Required Notice，Release 标明包含 Linux 适配和持久化界面缩放的社区构建；更新使用 pacman/paru。
 - MyGo Music 沿用上游 `dev.egoist.music` 身份；不附带 Provider 或插件。旧 MyGo CloudMusic 退出当前维护和分发清单，用户手动安装新包；两者允许并存，数据独立，不迁移旧账号、歌单、缓存或设置。保留旧 Release、标签和已安装用户数据。
@@ -73,7 +75,7 @@
 
 ## pacman、签名和 Cloudflare
 
-- 公共入口 `https://packages.fansionia.world`；仓库名 `fansionia`，x86_64（同时接收 any）。16 个包由 `arch/sources.json` 显式列出；直接索引准确 GitHub Release `.pkg.tar.zst`，不重新打包、不复制应用到 Pages。
+- 公共入口 `https://packages.fansionia.world`；仓库名 `fansionia`，x86_64（同时接收 any）。17 个包由 `arch/sources.json` 显式列出；直接索引准确 GitHub Release `.pkg.tar.zst`，不重新打包、不复制应用到 Pages。
 - 主公钥指纹 `338AEAB64ECF2EF69AAF3EEFDF31748072E5B972`，`arch/keys/` 仅公开材料。每个发布仓库各有签名子密钥；校验实际 `.PKGINFO`、摘要、签名和预期来源子密钥，不得只检查文件存在。
 - Actions secrets：`ARCH_SIGNING_PRIVATE_KEY`、`ARCH_SIGNING_PASSPHRASE`、`ARCH_SIGNING_KEY_ID`；只上传所属签名子密钥，主认证私钥绝不上传。`backfill-signatures.yml` 只为验证过的旧公开原字节补 `.sig`，不改包。
 - 离线恢复资料在维护机 `~/.local/share/fansionia-packages/signing/`，恢复密码位于登录 Keychain 的 service `world.fansionia.packages.signing` / account `primary-key-recovery`。不读出到日志，不在清理时删除。子密钥到期前 45 天拒绝发布；续期/吊销/轮换按 `arch/README.md`。
