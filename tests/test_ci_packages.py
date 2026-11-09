@@ -12,6 +12,9 @@ spec.loader.exec_module(ci)
 
 
 class BuildScopeTests(unittest.TestCase):
+    def test_hghub_patch_selects_its_build(self):
+        self.assertEqual(ci.affected(['packages/hghub/patches/linux.patch']), ['hghub'])
+
     def test_application_patch_does_not_rebuild_unrelated_apps(self):
         self.assertEqual(ci.affected([
             'packages/mygo-music/patches/0001.patch', 'README.md',

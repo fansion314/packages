@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=HGhub
+Comment=HGhub community Linux client
+Exec=hghub %U
+Icon=hghub
+Terminal=false
+Categories=AudioVideo;Video;Player;
+StartupWMClass=HGhub
+StartupNotify=true

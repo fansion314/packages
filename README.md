@@ -14,6 +14,7 @@ GitHub 源码与发布地址：**https://github.com/fansion314/packages**。
 | DeepSeek Harness | `dsh-electron` | `dsh-electron-bin` | — |
 | Bitwarden | `bitwarden-electron` | `bitwarden-electron-bin` | — |
 | MyGo Music | `mygo-music` | `mygo-music-bin` | — |
+| HGhub | `hghub` | `hghub-bin` | — |
 | Obsidian | `obsidian-electron` | `obsidian-electron-bin` | — |
 | Clash Momo | `clash-momo` | `clash-momo-bin` | cask `clash-momo` |
 | Mihomomo | `mihomomo` | `mihomomo-bin` | `mihomomo` |
@@ -23,6 +24,14 @@ GitHub 源码与发布地址：**https://github.com/fansion314/packages**。
 系统 Electron，包内不重复附带 Electron。MyGo Music 使用 Go 原生界面，
 支持本地音乐和用户自行安装的插件；包内不附带 Provider 或插件。通过可重放
 补丁增加设置中的界面缩放（75%–200%，立即生效并保存）。
+
+HGhub 是基于上游固定版本源码构建的社区 Linux 版本，使用系统 WebKitGTK 4.1
+和 GStreamer 播放组件，沿用 `com.hghub.huangguo` 应用身份与配置目录。
+“设置 → 外观 → 界面缩放”支持 75%–200%，立即生效并记忆；窗口内可用
+`Ctrl++` / `Ctrl+=`、`Ctrl+-` 和 `Ctrl+0` 放大、缩小或恢复 100%。
+版本更新通过 pacman/paru 完成。遵循上游 PolyForm Noncommercial 1.0.0
+许可证，包内保留完整许可证与 Required Notice；这是包含 Linux 适配和缩放补丁的
+社区构建，非上游官方 Linux 安装包。
 
 ## Windows：Clash Momo 更新镜像
 
@@ -87,6 +96,7 @@ sudo pacman -Syu fansionia-keyring
 sudo pacman -S dnr dnc pi-dnr etcher-dnr
 sudo pacman -S motrix-electron dsh-electron bitwarden-electron obsidian-electron
 sudo pacman -S mygo-music
+sudo pacman -S hghub
 sudo pacman -S clash-momo  # 自动安装 mihomomo 和系统 Electron
 ```
 
@@ -126,11 +136,12 @@ paru -S dnr-bin pi-dnr-bin etcher-dnr-bin
 paru -S motrix-electron-bin dsh-electron-bin
 paru -S bitwarden-electron-bin obsidian-electron-bin
 paru -S mygo-music-bin  # 源码构建可选 mygo-music
+paru -S hghub-bin       # 源码构建可选 hghub
 paru -S clash-momo mihomomo
 ```
 
 可用 `paru -S fansionia/dnr-bin` 明确选择本配方仓库。保留 paru 的正常配方审阅。
-应用配方还提供去掉 `-bin` 的变体：Motrix/DSH/MyGo Music 从源码构建，
+应用配方还提供去掉 `-bin` 的变体：Motrix/DSH/MyGo Music/HGhub 从源码构建，
 Bitwarden/Obsidian 的配方重打包官方成品。源码与 bin 变体是替代关系。
 
 ## macOS：用 Homebrew

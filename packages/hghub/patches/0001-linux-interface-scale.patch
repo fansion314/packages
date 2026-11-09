@@ -1,0 +1,232 @@
+diff --git a/src-tauri/capabilities/default.json b/src-tauri/capabilities/default.json
+index add1ba9..5bcd51e 100644
+--- a/src-tauri/capabilities/default.json
++++ b/src-tauri/capabilities/default.json
+@@ -5,6 +5,7 @@
+   "windows": ["main"],
+   "permissions": [
+     "core:default",
++    "core:webview:allow-set-webview-zoom",
+     "core:app:allow-exit",
+     "core:window:allow-start-dragging",
+     "core:window:allow-start-resize-dragging",
+diff --git a/src-tauri/tauri.conf.json b/src-tauri/tauri.conf.json
+index 90e62ad..2b3a3d7 100644
+--- a/src-tauri/tauri.conf.json
++++ b/src-tauri/tauri.conf.json
+@@ -21,6 +21,7 @@
+         "decorations": false,
+         "transparent": false,
+         "resizable": true,
++        "zoomHotkeysEnabled": false,
+         "center": true
+       }
+     ],
+diff --git a/src/App.tsx b/src/App.tsx
+index 933989c..a4d4c82 100644
+--- a/src/App.tsx
++++ b/src/App.tsx
+@@ -155,7 +155,7 @@ function DesktopShell() {
+         <ShellInner collapsed={collapsed || theater} theater={theater} />
+       </div>
+       {/* 边缘缩放热区只对无边框窗口（Windows）有效，macOS 走原生窗口边框 */}
+-      {platform === "windows" && <ResizeHandles />}
++      {(platform === "windows" || platform === "linux") && <ResizeHandles />}
+     </div>
+   );
+ }
+diff --git a/src/api.ts b/src/api.ts
+index 35e5278..63c3009 100644
+--- a/src/api.ts
++++ b/src/api.ts
+@@ -8,21 +8,15 @@ import type {
+ /** 应用版本（构建时由 vite.config.ts 从 package.json 注入） */
+ export const APP_VERSION = __APP_VERSION__;
+ 
+-const ua = navigator.userAgent;
+-export const isAndroid = /Android/i.test(ua);
+-/** iPhone 的 UA 也带「like Mac OS X」，必须先于 macOS 判断；iPadOS 默认伪装成 Mac，用触点数区分。 */
+-export const isIos = /iPhone|iPad|iPod/i.test(ua) || (/Macintosh/i.test(ua) && navigator.maxTouchPoints > 1);
+-export const isMacos = !isIos && /Macintosh|Mac OS X/i.test(ua);
+-export const platform: "android" | "ios" | "windows" | "macos" =
+-  isAndroid ? "android" : isIos ? "ios" : isMacos ? "macos" : "windows";
+-/** 移动端（安卓 / iOS）共用触屏界面 */
+-export const isMobile = isAndroid || isIos;
++import { detectPlatform, mediaOrigin } from "./platform";
+ 
+-/** 自定义协议地址随平台不同（见 tauri `register_asynchronous_uri_scheme_protocol` 文档）：
+- *  Windows / Android → `http://<scheme>.localhost`
+- *  macOS / iOS / Linux → `<scheme>://localhost`
+- *  Rust 侧 `src-tauri/src/lib.rs` 里改写 m3u8 用的 scheme 必须与此一致。 */
+-export const LOCAL = isMacos || isIos ? "hg://localhost" : "http://hg.localhost";
++export const platform = detectPlatform(navigator.userAgent, navigator.maxTouchPoints);
++export const isAndroid = platform === "android";
++export const isIos = platform === "ios";
++export const isMacos = platform === "macos";
++export const isMobile = isAndroid || isIos;
++/** Keep this address aligned with Rust media::LOCAL_ORIGIN. */
++export const LOCAL = mediaOrigin(platform);
+ 
+ /** src 是否已是本地协议地址（避免在详情页把代理地址再包一层） */
+ export const isLocalMedia = (src: string) => src.startsWith(`${LOCAL}/`);
+diff --git a/src/components/DesktopChrome.tsx b/src/components/DesktopChrome.tsx
+index 867beee..119efe1 100644
+--- a/src/components/DesktopChrome.tsx
++++ b/src/components/DesktopChrome.tsx
+@@ -110,7 +110,7 @@ export function DesktopRail({ collapsed }: { collapsed: boolean }) {
+               <small>{user ? "你的精彩，都在这里" : "留住每一次心动"}</small>
+             </span>
+           </button>
+-          <span className="win-sidebar-version">HGhub for {platform === "macos" ? "macOS" : "Windows"} {APP_VERSION}</span>
++          <span className="win-sidebar-version">HGhub for {platform === "macos" ? "macOS" : platform === "linux" ? "Linux" : "Windows"} {APP_VERSION}</span>
+         </div>
+       </div>
+     </nav>
+diff --git a/src/index.css b/src/index.css
+index fbc63bc..def6500 100644
+--- a/src/index.css
++++ b/src/index.css
+@@ -238,6 +238,7 @@ input[type="range"].hg-range::-webkit-slider-thumb { -webkit-appearance: none; w
+ 
+ /* 仅桌面窗口（Windows 无边框 / macOS Overlay）：右侧/底部留 12px 呼吸位 + 圆角。
+    安卓必须不加，否则内容比屏幕小一圈（右侧、底部各 12px 露 canvas 底）。 */
++.plat-linux .win-main,
+ .plat-windows .win-main,
+ .plat-macos .win-main {
+   margin: 0 12px 12px 0;
+diff --git a/src/main.tsx b/src/main.tsx
+index 2e34a14..f9364f8 100644
+--- a/src/main.tsx
++++ b/src/main.tsx
+@@ -4,6 +4,7 @@ import App from "./App";
+ import { AppProvider } from "./store";
+ import { invoke } from "@tauri-apps/api/core";
+ import "./index.css";
++import { initializeInterfaceScale } from "./interfaceScaleRuntime";
+ import { initPlaybackLog, installPlaybackPageEvents } from "./playbackDiagnostics";
+ 
+ installPlaybackPageEvents();
+@@ -20,6 +21,7 @@ window.addEventListener("unhandledrejection", (e) => {
+   report("reject", String((e.reason && (e.reason.stack || e.reason.message)) || e.reason));
+ });
+ 
++void initializeInterfaceScale().then(() => {
+ ReactDOM.createRoot(document.getElementById("root")!).render(
+   <React.StrictMode>
+     <AppProvider>
+@@ -27,3 +29,4 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
+     </AppProvider>
+   </React.StrictMode>,
+ );
++});
+diff --git a/src/pages/Settings.tsx b/src/pages/Settings.tsx
+index e584d83..38a6a7c 100644
+--- a/src/pages/Settings.tsx
++++ b/src/pages/Settings.tsx
+@@ -4,12 +4,15 @@ import { useStore } from "../store";
+ import { Modal, Toggle } from "../components/ui";
+ import LinePicker from "../components/LinePicker";
+ import { copyPlaybackLog, initPlaybackLog, setPlaybackLog, usePlaybackLog } from "../playbackDiagnostics";
++import { INTERFACE_SCALES } from "../interfaceScale";
++import { interfaceScale, useInterfaceScale } from "../interfaceScaleRuntime";
+ import { IBack, IBoltF, IBroom, IChevR, IHeart, IInfo, ILink, ILockF, IMoon, IRefresh, ISettings, ISun, IVolMute } from "../icons";
+ 
+ /* 独立设置页：线路 / 外观 / 播放 / 本地数据 / 清理缓存 / 网络诊断 / 关于
+    入口：Windows 侧栏「设置」、Android「我的」右上角齿轮 */
+ export default function Settings({ onBack, wide }: { onBack: () => void; wide: boolean }) {
+   const { theme, setTheme, favs, history, muteOnStartup, setMuteOnStartup, strictSecurity, strictSecurityReady, securityPending, cliRelaxed, setStrictSecurity, toast } = useStore();
++  const scale = useInterfaceScale();
+   const [about, setAbout] = useState(false);
+   const [clearOpen, setClearOpen] = useState(false);
+   const [clearing, setClearing] = useState(false);
+@@ -27,6 +30,10 @@ export default function Settings({ onBack, wide }: { onBack: () => void; wide: b
+   useEffect(() => { void initPlaybackLog(); }, []);
+ 
+   const checkUpdate = async () => {
++    if (platform === "linux") {
++      toast("请使用 pacman 或 paru 更新 hghub", "info");
++      return;
++    }
+     setChecking(true);
+     try {
+       const info = await api.checkUpdate();
+@@ -75,6 +82,22 @@ export default function Settings({ onBack, wide }: { onBack: () => void; wide: b
+               </div>
+               <Toggle on={theme === "dark"} onChange={(on) => setTheme(on ? "dark" : "light")} label="深色外观" />
+             </div>
++            {platform === "linux" && (
++              <div className="flex flex-wrap items-center gap-3 px-3.5 py-3">
++                <div className="flex-1 min-w-[120px]">
++                  <label htmlFor="interface-scale" className="text-[12.5px] text-on">界面缩放</label>
++                  <div className="text-[10.5px] text-mut">Ctrl + / − 调整 · Ctrl 0 恢复默认</div>
++                </div>
++                <select id="interface-scale" aria-label="界面缩放" value={scale.value} disabled={scale.pending}
++                  className="rounded-(--r-ctl) bg-s3 text-on px-2 py-1.5 text-[12.5px]"
++                  onChange={(event) => { void interfaceScale.set(Number(event.currentTarget.value)); }}>
++                  {INTERFACE_SCALES.map((value) => <option key={value} value={value}>{value}%</option>)}
++                </select>
++                <button disabled={scale.pending} onClick={() => { void interfaceScale.set(100); }}
++                  className="rounded-(--r-ctl) bg-s3 text-on px-2 py-1.5 text-[12px] pressable">恢复默认</button>
++                {scale.error && <div role="alert" className="w-full text-[11px] text-danger">{scale.error}</div>}
++              </div>
++            )}
+           </Section>
+ 
+           <Section title="播放">
+@@ -186,8 +209,8 @@ export default function Settings({ onBack, wide }: { onBack: () => void; wide: b
+             <button onClick={checkUpdate} disabled={checking} className="w-full flex items-center gap-3 px-3.5 py-3 text-left pressable disabled:opacity-60">
+               <span className="w-8 h-8 rounded-full bg-s3 flex items-center justify-center text-primary"><IRefresh size={16} /></span>
+               <div className="flex-1">
+-                <div className="text-[12.5px] text-on">检查更新</div>
+-                <div className="text-[10.5px] text-mut">{checking ? "检查中…" : `当前 v${APP_VERSION} · 对比 GitHub Release`}</div>
++                <div className="text-[12.5px] text-on">{platform === "linux" ? "软件包更新" : "检查更新"}</div>
++                <div className="text-[10.5px] text-mut">{platform === "linux" ? `当前 v${APP_VERSION} · 使用 pacman / paru 更新` : checking ? "检查中…" : `当前 v${APP_VERSION} · 对比 GitHub Release`}</div>
+               </div>
+               <IChevR size={15} className="text-mut" />
+             </button>
+@@ -201,7 +224,7 @@ export default function Settings({ onBack, wide }: { onBack: () => void; wide: b
+             </button>
+           </Section>
+ 
+-          <div className="text-center text-[10px] text-dim mt-5">HGhub {APP_VERSION} · {platform === "android" ? "Android" : platform === "ios" ? "iOS" : platform === "macos" ? "macOS" : "Windows"} 客户端</div>
++          <div className="text-center text-[10px] text-dim mt-5">HGhub {APP_VERSION} · {platform === "android" ? "Android" : platform === "ios" ? "iOS" : platform === "macos" ? "macOS" : platform === "linux" ? "Linux" : "Windows"} 客户端</div>
+         </div>
+       </div>
+ 
+@@ -218,7 +241,7 @@ export default function Settings({ onBack, wide }: { onBack: () => void; wide: b
+           </div>
+ 
+           <p className="text-[12px] text-on/70 leading-relaxed mt-4">
+-            基于 Rust + Tauri 2 构建的跨平台客户端，支持 Windows、macOS 与 Android。
++            基于 Rust + Tauri 2 构建的跨平台客户端，支持 Windows、macOS、Linux 与 Android。
+             界面遵循 Fluent 设计语言，播放器采用沉浸式竖屏信息流。
+           </p>
+ 
+diff --git a/src/store.tsx b/src/store.tsx
+index 2ad3f1a..3344e50 100644
+--- a/src/store.tsx
++++ b/src/store.tsx
+@@ -1,9 +1,10 @@
+ import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
+ import { api, platform as envPlatform } from "./api";
+ import { isStrictSecurity, setStrictSecurity as setHtmlStrictSecurity } from "./html";
++import { useInterfaceScale } from "./interfaceScaleRuntime";
+ import type { User } from "./types";
+ 
+-export type Platform = "android" | "ios" | "windows" | "macos";
++export type Platform = "android" | "ios" | "windows" | "macos" | "linux";
+ export type Theme = "dark" | "light";
+ export type Tab = "home" | "search" | "category" | "profile";
+ 
+@@ -189,6 +190,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
+     window.setTimeout(() => setToasts((t) => t.filter((x) => x.id !== id)), 2200);
+   }, []);
+ 
++  const scale = useInterfaceScale();
++  useEffect(() => {
++    if (scale.error) toast(scale.error, "info");
++  }, [scale.error, toast]);
++
+   const setTab = useCallback((t: Tab) => { setTabRaw(t); setStack([]); }, []);
+   const push = useCallback((pg: PageInput) => {
+     setStack((s) => [...s, { ...pg, key: `p${++seq}` } as Page]);

@@ -48,6 +48,14 @@ case "$project" in
     cd "$root"
     archive=$(find "$work/recipes/$name" -maxdepth 1 -name '*.pkg.tar.zst' -print -quit)
     ;;
+  hghub)
+    (cd "$work/recipes/$name" && makepkg --noconfirm --nodeps)
+    source_dir="$work/recipes/$name/src/hghub"
+    archive=$(find "$work/recipes/$name" -maxdepth 1 -name '*.pkg.tar.zst' -print -quit)
+    cargo install tauri-driver --version 2.1.0 --locked
+    export PATH="$HOME/.cargo/bin:$PATH"
+    bash packages/hghub/smoke.sh "$archive" "$source_dir"
+    ;;
   mygo-music)
     (cd "$work/recipes/$name" && makepkg --noconfirm --nodeps)
     source_dir="$work/recipes/$name/src/mygo-music"

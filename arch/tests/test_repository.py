@@ -35,6 +35,24 @@ class RepositoryTests(unittest.TestCase):
 
     project = {'id': 'foo', 'repository': 'test/foo', 'tag_pattern': r'^v\d+\.\d+\.\d+$', 'packages': ['foo']}
 
+    def test_hghub_selects_only_its_signed_pacman_asset(self):
+        settings = json.loads((ROOT/'sources.json').read_text())
+        project = next(p for p in settings['projects'] if p['id'] == 'hghub')
+        self.assertEqual(project['packages'], ['hghub'])
+        tag = 'hghub-v1.2.0-1'
+        filename = 'hghub-1.2.0-1-x86_64.pkg.tar.zst'
+        url = f'https://github.com/fansion314/packages/releases/download/{tag}/{filename}'
+        assets = [{'name': filename, 'digest': 'sha256:'+'a'*64, 'browser_download_url': url},
+                  {'name': filename+'.sig', 'digest': 'sha256:'+'b'*64, 'browser_download_url': url+'.sig'}]
+        releases = [{'tag_name': 'obsidian-v99.0.0-1', 'draft': False, 'assets': []},
+                    {'tag_name': tag, 'draft': False, 'assets': assets}]
+        selected = repository.select_release(project, releases)
+        self.assertEqual([(p['name'], p['tag']) for p in selected], [('hghub', tag)])
+        self.assertEqual(selected[0]['filename'], filename)
+        self.assertEqual(selected[0]['signature_url'], url+'.sig')
+        with self.assertRaisesRegex(ValueError, 'completely signed'):
+            repository.select_release(project, [dict(releases[1], assets=assets[:1])])
+
     def test_shared_momo_repository_selects_each_tag_family(self):
         settings = json.loads((ROOT/'sources.json').read_text())
         projects = [p for p in settings['projects'] if p['id'] in ('clash-momo', 'mihomomo')]

@@ -8,9 +8,10 @@ import re
 import shutil
 import subprocess
 import tarfile
+import tomllib
 
 ROOT = Path(__file__).resolve().parents[1]
-IDS = ('bitwarden', 'obsidian', 'motrix', 'deepseek-harness', 'mygo-music')
+IDS = ('bitwarden', 'obsidian', 'motrix', 'deepseek-harness', 'mygo-music', 'hghub')
 REPOSITORY = 'fansion314/packages'
 
 
@@ -94,6 +95,11 @@ def application_version(source, info):
         version = json.loads(path.read_text()).get('version')
     if not isinstance(version, str):
         raise ValueError('Invalid upstream application version')
+    if info.get('runtime') == 'tauri-webkitgtk':
+        tauri = json.loads((Path(source)/'src-tauri/tauri.conf.json').read_text())
+        cargo = tomllib.loads((Path(source)/'src-tauri/Cargo.toml').read_text())
+        if tauri.get('version') != version or cargo.get('package', {}).get('version') != version:
+            raise ValueError('Tauri and Cargo application versions must match package.json')
     return version
 
 
@@ -150,6 +156,36 @@ def prepare(project, destination):
             shutil.copytree(package/'ci', destination/'ci')
 
 
+def runtime_metadata(info):
+    runtime = info.get('runtime', 'system-electron')
+    metadata = {'system_electron': None, 'native_go': None}
+    if runtime == 'native-go':
+        metadata['native_go'] = run('go', 'version')
+    elif runtime == 'tauri-webkitgtk':
+        metadata['webkitgtk'] = run('pkg-config', '--modversion', 'webkit2gtk-4.1')
+        metadata['rust'] = run('rustc', '--version')
+        metadata['cargo'] = run('cargo', '--version')
+    elif runtime == 'system-electron':
+        metadata['system_electron'] = run('pacman', '-Q', 'electron')
+    else:
+        raise ValueError('Unknown application runtime: '+runtime)
+    return metadata
+
+
+def runtime_note(info):
+    runtime = info.get('runtime', 'system-electron')
+    if runtime == 'native-go':
+        return ('Native Go/GTK application; no Electron or WebView runtime. '
+                'Includes the persistent interface scale setting. Updates use pacman/paru. ')
+    if runtime == 'tauri-webkitgtk':
+        return ('Community Linux build with Linux compatibility fixes and persistent interface scale controls. '
+                'Uses Tauri 2 and system WebKitGTK 4.1; no Electron runtime. '
+                'Preserves the upstream com.hghub.huangguo application identity. Updates use pacman/paru. '
+                'Distributed under PolyForm Noncommercial 1.0.0; the full license and Required Notice '
+                'are installed under /usr/share/licenses/hghub/LICENSE. ')
+    return 'Uses system Electron; the Electron runtime is not bundled. '
+
+
 def finalize(project, archive, destination):
     info = manifest(project)
     archive = Path(archive).resolve()
@@ -166,15 +202,13 @@ def finalize(project, archive, destination):
     tracked = run('git', 'ls-files', 'packages/'+project, 'scripts/package.py', cwd=ROOT).splitlines()
     build = {'package': info, 'packaging_commit': run('git', 'rev-parse', 'HEAD', cwd=ROOT),
              'inputs': {name: digest(ROOT/name) for name in tracked},
-             'system_electron': None if info.get('runtime') == 'native-go' else run('pacman', '-Q', 'electron'),
-             'native_go': run('go', 'version') if info.get('runtime') == 'native-go' else None,
+             **runtime_metadata(info),
              'toolchain': {name: run(*cmd) for name, cmd in {
                  'node': ['node', '--version'], 'pnpm': ['pnpm', '--version'],
                  'python': ['python', '--version'], 'makepkg': ['makepkg', '--version']}.items()}}
     (destination/'build-info.json').write_text(json.dumps(build, indent=2)+'\n')
     assets = [destination/archive.name, bundle, destination/'build-info.json']
     (destination/'SHA256SUMS').write_text(''.join(f'{digest(p)}  {p.name}\n' for p in assets))
-    runtime_note = ('Native Go/GTK application; no Electron or WebView runtime. Includes the persistent interface scale setting. Updates use pacman/paru. ' if info.get('runtime') == 'native-go' else 'Uses system Electron; the Electron runtime is not bundled. ')
     migration_note = (
         '\nMyGo Music includes no provider plugins. Install mygo-music manually; '
         'it does not replace MyGo CloudMusic or migrate its accounts, library, '
@@ -183,7 +217,7 @@ def finalize(project, archive, destination):
         if project == 'mygo-music' else '')
     (destination/'notes.md').write_text(
         f"{project} {info['version']} packaging revision {info['pkgrel']} for Arch Linux x86_64.\n\n"
-        + runtime_note + 'Install the pacman package directly, '
+        + runtime_note(info) + 'Install the pacman package directly, '
         'or use the source / -bin recipes from the fansionia PKGBUILD repository.\n\n'
         'Build inputs and toolchain versions are recorded in build-info.json. '
         'Published checks include metadata, binary repackaging and the package-specific smoke tests.\n'

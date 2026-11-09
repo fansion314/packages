@@ -22,7 +22,7 @@ class PackageTests(unittest.TestCase):
 
     def test_source_recipes_pin_upstream_and_packaging_inputs(self):
         with tempfile.TemporaryDirectory() as directory:
-            for name in ['motrix', 'deepseek-harness', 'mygo-music']:
+            for name in ['motrix', 'deepseek-harness', 'mygo-music', 'hghub']:
                 package.recipes(name, directory, 'a'*64)
                 info = package.manifest(name)
                 recipe = (Path(directory)/info['package']/'PKGBUILD').read_text()
@@ -34,6 +34,37 @@ class PackageTests(unittest.TestCase):
                 self.assertIn('/packages/releases/download/'+package.tag(info), sources)
                 self.assertIn("sha256sums=('"+'a'*64+"')", binary)
                 subprocess.run(['bash', '-n'], input=recipe, text=True, check=True)
+
+    def test_tauri_runtime_records_actual_native_toolchain_without_electron(self):
+        versions = {
+            ('pkg-config', '--modversion', 'webkit2gtk-4.1'): '2.54.1',
+            ('rustc', '--version'): 'rustc fixture',
+            ('cargo', '--version'): 'cargo fixture',
+        }
+        with patch.object(package, 'run', side_effect=lambda *args: versions[args]) as run:
+            metadata = package.runtime_metadata({'runtime': 'tauri-webkitgtk'})
+        self.assertIsNone(metadata['system_electron'])
+        self.assertIsNone(metadata['native_go'])
+        self.assertEqual(metadata['webkitgtk'], '2.54.1')
+        self.assertEqual(metadata['rust'], 'rustc fixture')
+        self.assertEqual(metadata['cargo'], 'cargo fixture')
+        self.assertEqual(run.call_count, 3)
+        note = package.runtime_note({'runtime': 'tauri-webkitgtk'})
+        self.assertIn('Community Linux build', note)
+        self.assertIn('WebKitGTK 4.1', note)
+        self.assertIn('PolyForm Noncommercial', note)
+
+    def test_existing_runtime_metadata_remains_compatible(self):
+        with patch.object(package, 'run', return_value='electron fixture') as run:
+            self.assertEqual(package.runtime_metadata({}), {
+                'system_electron': 'electron fixture', 'native_go': None})
+            run.assert_called_once_with('pacman', '-Q', 'electron')
+        with patch.object(package, 'run', return_value='go fixture') as run:
+            self.assertEqual(package.runtime_metadata({'runtime': 'native-go'}), {
+                'system_electron': None, 'native_go': 'go fixture'})
+            run.assert_called_once_with('go', 'version')
+        with self.assertRaisesRegex(ValueError, 'Unknown application runtime'):
+            package.runtime_metadata({'runtime': 'invalid'})
 
     def test_desktop_workspace_lookup_has_its_runtime_dependency(self):
         with tempfile.TemporaryDirectory() as directory:
@@ -80,6 +111,21 @@ class PackageTests(unittest.TestCase):
                 with self.subTest(filename=filename):
                     (source/filename).write_text('{"version":"1.2.3"}')
                     self.assertEqual(package.application_version(source, info), '1.2.3')
+
+    def test_tauri_and_rust_versions_must_match_frontend(self):
+        with tempfile.TemporaryDirectory() as directory:
+            source = Path(directory)
+            (source/'src-tauri').mkdir()
+            (source/'package.json').write_text('{"version":"1.2.0"}')
+            for tauri, cargo in [('1.2.0', '1.2.0'), ('1.1.0', '1.2.0'), ('1.2.0', '1.1.0')]:
+                with self.subTest(tauri=tauri, cargo=cargo):
+                    (source/'src-tauri/tauri.conf.json').write_text('{"version":"'+tauri+'"}')
+                    (source/'src-tauri/Cargo.toml').write_text('[package]\nversion = "'+cargo+'"\n')
+                    if tauri == cargo == '1.2.0':
+                        self.assertEqual(package.application_version(source, {'runtime': 'tauri-webkitgtk'}), '1.2.0')
+                    else:
+                        with self.assertRaisesRegex(ValueError, 'application versions'):
+                            package.application_version(source, {'runtime': 'tauri-webkitgtk'})
 
     def test_typescript_config_can_export_an_object(self):
         with tempfile.TemporaryDirectory() as directory:

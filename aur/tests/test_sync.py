@@ -71,6 +71,43 @@ class MultiPackageReleaseTests(unittest.TestCase):
         self.assertEqual(sync.release_key(project['release_bundle'], 'mygo-music-v0.1.20-1'),
                          (0, 1, 20, 3, 0, 1))
 
+    def test_hghub_selects_its_release_bundle_in_the_shared_repository(self):
+        sources = json.loads((Path(__file__).parents[1]/'sources.json').read_text())
+        project = next(p for p in sources['projects'] if p['id'] == 'hghub')
+        self.assertEqual(project['packages'], {'hghub': 'aur/hghub', 'hghub-bin': 'aur/hghub-bin'})
+        self.assertEqual(sync.release_key(project['release_bundle'], 'hghub-v1.2.0-1'),
+                         (1, 2, 0, 3, 0, 1))
+        with tempfile.TemporaryDirectory() as temporary:
+            archive = Path(temporary)/'hghub-1.2.0-1-aur.tar.gz'
+            with tarfile.open(archive, 'w:gz') as bundle:
+                for name in project['packages']:
+                    content = f'pkgname={name}\npkgver=1.2.0\npkgrel=1\n'.encode()
+                    info = tarfile.TarInfo(f'aur/{name}/PKGBUILD')
+                    info.size = len(content)
+                    bundle.addfile(info, io.BytesIO(content))
+            tag = 'hghub-v1.2.0-1'
+            url = f'https://github.com/fansion314/packages/releases/download/{tag}/{archive.name}'
+            digest = hashlib.sha256(archive.read_bytes()).hexdigest()
+
+            class FakeGitHub:
+                def releases(self, repository):
+                    assert repository == 'fansion314/packages'
+                    return [
+                        {'tag_name': 'mygo-music-v9.0.0-1', 'draft': False, 'assets': []},
+                        {'tag_name': 'hghub-v2.0.0-1', 'draft': True, 'assets': []},
+                        {'tag_name': tag, 'draft': False, 'assets': [{
+                            'name': archive.name, 'browser_download_url': url,
+                            'digest': 'sha256:'+digest}]},
+                    ]
+
+                def download(self, requested_url, requested_digest):
+                    assert requested_url == url and requested_digest == digest
+                    return archive
+
+            selected, files = sync.recipe_files(project, FakeGitHub())
+            self.assertEqual(selected, tag)
+            self.assertEqual(set(files), {'aur/hghub/PKGBUILD', 'aur/hghub-bin/PKGBUILD'})
+
     def test_other_packages_are_not_candidates(self):
         with self.assertRaises(ValueError):
             sync.release_key(self.settings, 'obsidian-v2.0.0-1')

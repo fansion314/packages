@@ -1,0 +1,12 @@
+{
+  "id": "hghub",
+  "version": "1.2.0",
+  "pkgrel": 1,
+  "package": "hghub",
+  "runtime": "tauri-webkitgtk",
+  "upstream": {
+    "repository": "Minireel/HGhub",
+    "tag": "v1.2.0",
+    "commit": "79827baa7542fead68919e7b45f5bfde86b18ee7"
+  }
+}

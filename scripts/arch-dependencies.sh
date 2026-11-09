@@ -6,6 +6,9 @@ pacman -Syu --noconfirm --needed base-devel git python nodejs npm pnpm electron 
 if [[ $project == mygo-music ]]; then
   pacman -S --noconfirm --needed xdotool
 fi
+if [[ $project == hghub ]]; then
+  pacman -S --noconfirm --needed ffmpeg openbox xdotool ttf-dejavu mesa mesa
+fi
 # Source templates contain fixed metadata only; evaluated on the isolated Arch runner.
 recipe=$(find "packages/$project/recipes" -mindepth 2 -maxdepth 2 -name PKGBUILD ! -path '*-bin/*' -print -quit)
 source "$recipe"
