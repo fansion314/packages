@@ -1,0 +1,47 @@
+# Maintainer: fansion314 <https://github.com/fansion314>
+pkgname=hghub
+pkgver=1.2.0
+pkgrel=1
+_tag=hghub-v1.2.0-1
+pkgdesc='HGhub community Linux client with persistent interface scaling'
+arch=('x86_64')
+url='https://github.com/fansion314/packages'
+license=('PolyForm-Noncommercial-1.0.0')
+depends=('gcc-libs' 'glibc' 'gtk3' 'webkit2gtk-4.1' 'libsoup3' 'openssl' 'gst-plugins-base' 'gst-plugins-good' 'gst-libav' 'hicolor-icon-theme' 'xdg-utils' 'noto-fonts-cjk')
+makedepends=('git' 'python' 'nodejs>=24' 'pnpm' 'rust>=1.90' 'cargo' 'pkgconf' 'desktop-file-utils')
+conflicts=('hghub-bin' 'hghub-git')
+options=('!lto' '!debug' '!strip')
+_packaging_ref='tag=hghub-v1.2.0-1'
+source=("hghub::git+https://github.com/Minireel/HGhub.git#commit=79827baa7542fead68919e7b45f5bfde86b18ee7"
+        "packaging::git+https://github.com/fansion314/packages.git#${_packaging_ref}")
+sha256sums=('SKIP' 'SKIP')
+
+prepare() {
+  python "$srcdir/packaging/scripts/package.py" apply hghub "$srcdir/hghub"
+  cd hghub
+  pnpm install --frozen-lockfile --ignore-scripts
+  pnpm rebuild esbuild
+}
+
+build() {
+  cd hghub
+  pnpm exec tauri build --no-bundle --ci -- --locked
+}
+
+check() {
+  cd hghub
+  cargo test --manifest-path src-tauri/Cargo.toml --locked --release --lib
+  node --test scripts/test-interface-scale.mjs
+  desktop-file-validate "$srcdir/packaging/packages/hghub/hghub.desktop"
+}
+
+package() {
+  install -Dm755 hghub/src-tauri/target/release/huangguo-client "$pkgdir/usr/bin/hghub"
+  install -Dm644 "$srcdir/packaging/packages/hghub/hghub.desktop" "$pkgdir/usr/share/applications/com.hghub.huangguo.desktop"
+  for size in 32 64 128; do
+    install -Dm644 "hghub/src-tauri/icons/${size}x${size}.png" "$pkgdir/usr/share/icons/hicolor/${size}x${size}/apps/hghub.png"
+  done
+  install -Dm644 hghub/src-tauri/icons/128x128@2x.png "$pkgdir/usr/share/icons/hicolor/256x256/apps/hghub.png"
+  install -Dm644 hghub/app-icon.svg "$pkgdir/usr/share/icons/hicolor/scalable/apps/hghub.svg"
+  install -Dm644 hghub/LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
+}

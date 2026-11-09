@@ -1,0 +1,28 @@
+{
+  "repository": "fansion314/packages",
+  "reference": "hghub-v1.2.0-1",
+  "packages": {
+    "hghub": {
+      "version": "0:1.2.0-1",
+      "files": {
+        ".SRCINFO": "32fddfc5156bbdc771dc5ec5b6b3ee6c91bc896b3d5a93b2b30d1fc9d4bf3393",
+        "PKGBUILD": "2d4ae5341c37c8a9aea1564ee47215ece1f20d52b3abef52ca6295294164091e"
+      },
+      "assets": []
+    },
+    "hghub-bin": {
+      "version": "0:1.2.0-1",
+      "files": {
+        ".SRCINFO": "62c744c9049ce942ea1ff424744eb53ecb212603612d621a2e9b59875ba1b3f4",
+        "PKGBUILD": "47dfadd80b0f4a08be01891cb50c23eb43bf99740a69459ca1ee6edd36851ee1"
+      },
+      "assets": [
+        {
+          "url": "https://github.com/fansion314/packages/releases/download/hghub-v1.2.0-1/hghub-1.2.0-1-x86_64.pkg.tar.zst",
+          "sha256": "a780345f44ab2b222f85bcc53703b6b538fb2f19daf640a705a2a74df73d09c5",
+          "size": 3157655
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,22 @@
+# Maintainer: fansion314 <https://github.com/fansion314>
+pkgname=hghub-bin
+pkgver=1.2.0
+pkgrel=1
+_tag=hghub-v1.2.0-1
+pkgdesc='HGhub community Linux client with persistent interface scaling (prebuilt Arch package)'
+arch=('x86_64')
+url='https://github.com/fansion314/packages'
+license=('PolyForm-Noncommercial-1.0.0')
+depends=('gcc-libs' 'glibc' 'gtk3' 'webkit2gtk-4.1' 'libsoup3' 'openssl' 'gst-plugins-base' 'gst-plugins-good' 'gst-libav' 'hicolor-icon-theme' 'xdg-utils' 'noto-fonts-cjk')
+provides=("hghub=${pkgver}")
+conflicts=('hghub' 'hghub-git')
+options=('!strip')
+_package="hghub-${pkgver}-${pkgrel}-x86_64.pkg.tar.zst"
+source=("${url}/releases/download/${_tag}/${_package}")
+noextract=("${_package}")
+sha256sums=('a780345f44ab2b222f85bcc53703b6b538fb2f19daf640a705a2a74df73d09c5')
+
+package() {
+  bsdtar -xf "$srcdir/$_package" -C "$pkgdir" usr
+  mv "$pkgdir/usr/share/licenses/hghub" "$pkgdir/usr/share/licenses/$pkgname"
+}
