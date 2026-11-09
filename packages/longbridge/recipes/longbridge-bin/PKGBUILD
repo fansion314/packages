@@ -1,0 +1,22 @@
+# Maintainer: fansion314 <https://github.com/fansion314>
+pkgname=longbridge-bin
+pkgver=@PKGVER@
+pkgrel=@PKGREL@
+_tag=@TAG@
+pkgdesc='Longbridge trading platform desktop application (prebuilt Arch package)'
+arch=('x86_64')
+url='https://github.com/@REPOSITORY@'
+license=('LicenseRef-proprietary')
+depends=('glibc>=2.39' 'gcc-libs' 'gtk3' 'webkit2gtk-4.1' 'libsoup3' 'glib2' 'libxcb' 'alsa-lib' 'libxkbcommon' 'libxkbcommon-x11' 'openssl' 'sqlite' 'xz' 'vulkan-icd-loader' 'libglvnd' 'hicolor-icon-theme' 'xdg-utils')
+optdepends=('vulkan-driver: GPU rendering' 'noto-fonts-cjk: Chinese text rendering' 'org.freedesktop.secrets: secure credential storage')
+provides=("longbridge=${pkgver}")
+conflicts=('longbridge' 'longbridge-desktop')
+options=('!strip' '!debug')
+_package="longbridge-${pkgver}-${pkgrel}-x86_64.pkg.tar.zst"
+source=("${url}/releases/download/${_tag}/${_package}")
+noextract=("${_package}")
+sha256sums=('@SHA256@')
+
+package() {
+  bsdtar -xf "$srcdir/$_package" -C "$pkgdir" usr
+}

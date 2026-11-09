@@ -1,6 +1,14 @@
 #!/usr/bin/env bash
 set -euo pipefail
 project=${1:?package id required}
+if [[ $project == longbridge ]]; then
+  pacman -Syu --noconfirm --needed base-devel git python nodejs pnpm \
+    desktop-file-utils xorg-server-xvfb xorg-xauth dbus xdg-utils xdotool \
+    openbox mesa vulkan-swrast ttf-dejavu
+  source packages/longbridge/recipes/longbridge/PKGBUILD
+  pacman -S --noconfirm --needed "${depends[@]}"
+  exit 0
+fi
 pacman -Syu --noconfirm --needed base-devel git python nodejs npm pnpm electron asar rust sccache \
   gnome-keyring desktop-file-utils xorg-server-xvfb xorg-xauth dbus xdg-utils
 if [[ $project == mygo-music ]]; then

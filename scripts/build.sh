@@ -21,6 +21,11 @@ mkdir -p "$work"
 python scripts/package.py recipes "$project" "$work/recipes" --packaging-ref "$packaging_ref" --metadata
 name=$(python -c 'import sys; sys.path.insert(0,"scripts"); import package; print(package.manifest(sys.argv[1])["package"])' "$project")
 case "$project" in
+  longbridge)
+    (cd "$work/recipes/$name" && makepkg --noconfirm --nodeps)
+    archive=$(find "$work/recipes/$name" -maxdepth 1 -name '*.pkg.tar.zst' -print -quit)
+    bash packages/longbridge/smoke.sh "$archive"
+    ;;
   motrix|deepseek-harness)
     (cd "$work/recipes/$name" && makepkg --noconfirm --nodeps)
     source_dir="$work/recipes/$name/src/$([[ $project == motrix ]] && echo Motrix || echo deepseek-harness)"

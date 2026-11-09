@@ -12,6 +12,41 @@ spec.loader.exec_module(package)
 
 
 class PackageTests(unittest.TestCase):
+    def test_official_binary_recipes_pin_vendor_input_and_keep_runtime_dependencies(self):
+        info = package.manifest('longbridge')
+        with tempfile.TemporaryDirectory() as directory:
+            package.recipes('longbridge', directory, 'a'*64)
+            direct = Path(directory)/'longbridge/PKGBUILD'
+            binary = Path(directory)/'longbridge-bin/PKGBUILD'
+            self.assertIn(info['source']['url'], direct.read_text())
+            self.assertIn(info['source']['sha256'], direct.read_text())
+            self.assertIn('sha256sums=(\''+'a'*64+'\')', binary.read_text())
+            metadata = []
+            for recipe in [direct, binary]:
+                subprocess.run(['bash', '-n', str(recipe)], check=True)
+                metadata.append(subprocess.check_output([
+                    'bash', '-c', recipe.read_text() +
+                    '\nprintf "%s\\n" "${depends[@]}" -- "${optdepends[@]}" -- "${license[@]}"'
+                ], text=True))
+            self.assertEqual(*metadata)
+            self.assertIn('glibc>=2.39', metadata[0])
+            self.assertIn('webkit2gtk-4.1', metadata[0])
+            self.assertNotIn('electron', metadata[0])
+        with patch.object(package, 'run') as run:
+            result = package.runtime_metadata(info)
+            run.assert_not_called()
+        self.assertEqual(result['official_binary'], info['source'])
+        self.assertIsNone(result['system_electron'])
+
+    def test_official_binary_requires_pinned_https_input(self):
+        info = package.manifest('longbridge')
+        for source in [dict(info['source'], sha256='SKIP'),
+                       dict(info['source'], url='http://example.com/app.tar.gz')]:
+            with self.subTest(source=source), \
+                 patch.object(package.json, 'loads', return_value=dict(info, source=source)):
+                with self.assertRaises(ValueError):
+                    package.manifest('longbridge')
+
     def test_tags_resolve_only_the_matching_manifest(self):
         for name in package.IDS:
             value = package.tag(package.manifest(name))

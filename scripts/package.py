@@ -11,7 +11,7 @@ import tarfile
 import tomllib
 
 ROOT = Path(__file__).resolve().parents[1]
-IDS = ('bitwarden', 'obsidian', 'motrix', 'deepseek-harness', 'mygo-music', 'hghub')
+IDS = ('bitwarden', 'obsidian', 'motrix', 'deepseek-harness', 'mygo-music', 'hghub', 'longbridge')
 REPOSITORY = 'fansion314/packages'
 
 
@@ -29,6 +29,11 @@ def manifest(project):
         raise ValueError('Invalid pkgrel')
     if 'upstream' in info and not re.fullmatch('[a-f0-9]{40}', info['upstream']['commit']):
         raise ValueError('Upstream must be pinned to a full commit')
+    if info.get('runtime') == 'official-binary':
+        if not re.fullmatch('[a-f0-9]{64}', info['source']['sha256']):
+            raise ValueError('Official binary must have a pinned SHA-256')
+        if not info['source']['url'].startswith('https://'):
+            raise ValueError('Official binary source requires HTTPS')
     return info
 
 
@@ -58,6 +63,8 @@ def recipes(project, destination, checksum=None, packaging_ref=None, metadata=Fa
               'PKGREL': str(info['pkgrel']), 'TAG': tag(info), 'REPOSITORY': REPOSITORY,
               'PACKAGING_REF': packaging_ref or 'tag='+tag(info),
               'UPSTREAM_COMMIT': info.get('upstream', {}).get('commit', ''),
+              'SOURCE_URL': info.get('source', {}).get('url', ''),
+              'SOURCE_SHA256': info.get('source', {}).get('sha256', ''),
               'SHA256': checksum or 'SKIP'}
     for source in (ROOT/'packages'/project/'recipes').iterdir():
         target = destination/source.name
@@ -152,14 +159,16 @@ def prepare(project, destination):
             shutil.copytree(package/'.github', destination/'.github')
             for name in ['PKGBUILD']:
                 shutil.copy2(destination/'bitwarden-electron-bin'/name, destination/name)
-        else:
+        elif (package/'ci').is_dir():
             shutil.copytree(package/'ci', destination/'ci')
 
 
 def runtime_metadata(info):
     runtime = info.get('runtime', 'system-electron')
     metadata = {'system_electron': None, 'native_go': None}
-    if runtime == 'native-go':
+    if runtime == 'official-binary':
+        metadata['official_binary'] = info['source']
+    elif runtime == 'native-go':
         metadata['native_go'] = run('go', 'version')
     elif runtime == 'tauri-webkitgtk':
         metadata['webkitgtk'] = run('pkg-config', '--modversion', 'webkit2gtk-4.1')
@@ -174,6 +183,12 @@ def runtime_metadata(info):
 
 def runtime_note(info):
     runtime = info.get('runtime', 'system-electron')
+    if runtime == 'official-binary':
+        return ('Repackages the official stable Linux x86_64 binary without rebuilding or modifying it. '
+                'Uses system GTK3 and WebKitGTK 4.1; no Electron runtime. '
+                'Preserves the upstream com.longbridge.app.desktop application identity. '
+                'Launch with longbridge-desktop. Updates use pacman/paru; '
+                'disable automatic updates in Settings > General > Software Update. ')
     if runtime == 'native-go':
         return ('Native Go/GTK application; no Electron or WebView runtime. '
                 'Includes the persistent interface scale setting. Updates use pacman/paru. ')

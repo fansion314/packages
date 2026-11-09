@@ -53,7 +53,7 @@ jobs:
           include-hidden-files: true
           retention-days: 14
       - name: Retain desktop smoke evidence
-        if: always() && (inputs.package == 'deepseek-harness' || inputs.package == 'hghub')
+        if: always() && (inputs.package == 'deepseek-harness' || inputs.package == 'hghub' || inputs.package == 'longbridge')
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: desktop-smoke-${{ inputs.package }}
