@@ -51,7 +51,10 @@ def publish(project, commit):
     release = find_release()
     if release is None:
         flags = ['--prerelease'] if '-' in info['version'] else []
-        gh('release', 'create', release_tag, '--verify-tag', '--draft', '--latest=false', '--target', commit,
+        # The existing tag was verified against the exact build commit above.
+        # A branch target avoids requiring workflows:write when automated syncs
+        # advance main while the application is building.
+        gh('release', 'create', release_tag, '--verify-tag', '--draft', '--latest=false', '--target', 'main',
            '--title', f"{project} {info['version']}-{info['pkgrel']}", '--notes-file', str(directory/'notes.md'), *flags)
         for attempt in range(30):
             release = find_release()

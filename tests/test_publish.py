@@ -16,7 +16,7 @@ spec.loader.exec_module(publish)
 
 
 class PublicationTests(unittest.TestCase):
-    def scenario(self, draft, mismatch=False, newly_created=False):
+    def scenario(self, draft, mismatch=False, newly_created=False, wrong_tag=False):
         with tempfile.TemporaryDirectory() as directory:
             before = Path.cwd()
             os.chdir(directory)
@@ -51,9 +51,11 @@ class PublicationTests(unittest.TestCase):
                     if args[0] == 'api' and args[-1].endswith('/releases/123'):
                         return json.dumps(release)
                     if args[:2] == ('release', 'create'):
+                        self.assertEqual(args[args.index('--target')+1], 'main')
+                        self.assertIn('--verify-tag', args)
                         return ''
                     if args[0] == 'api':
-                        return json.dumps({'sha': commit})
+                        return json.dumps({'sha': 'b'*40 if wrong_tag else commit})
                     if args[:2] == ('release', 'upload'):
                         self.assertTrue(release['draft'])
                         return ''
@@ -64,13 +66,16 @@ class PublicationTests(unittest.TestCase):
                         return 'https://example.invalid/release'
                     self.fail(args)
                 with patch.dict(os.environ, {'GITHUB_REF_NAME': 'main', 'RELEASE_TAG': release['tag_name'], 'GITHUB_REPOSITORY': 'fansion314/packages'}), patch.object(publish, 'gh', side_effect=fake_gh), patch.object(publish.time, 'sleep'):
-                    if mismatch:
+                    if wrong_tag:
+                        with self.assertRaisesRegex(ValueError, 'Tag moved'):
+                            publish.publish('bitwarden', commit)
+                    elif mismatch:
                         with self.assertRaisesRegex(ValueError, 'bytes differ'):
                             publish.publish('bitwarden', commit)
                     else:
                         publish.publish('bitwarden', commit)
                 writes = [call for call in calls if call[:2] in [('release', 'upload'), ('release', 'edit')]]
-                self.assertEqual(len(writes), 1 if draft else 0)
+                self.assertEqual(len(writes), 1 if draft and not wrong_tag else 0)
                 self.assertEqual(sum(call[:2] == ('release', 'create') for call in calls), 1 if newly_created else 0)
             finally:
                 os.chdir(before)
@@ -86,3 +91,6 @@ class PublicationTests(unittest.TestCase):
 
     def test_public_assets_are_never_replaced(self):
         self.scenario(False, True)
+
+    def test_wrong_tag_commit_is_rejected_before_release_creation(self):
+        self.scenario(True, wrong_tag=True)
