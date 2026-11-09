@@ -15,7 +15,6 @@ export XDG_CONFIG_HOME="$stage/config" XDG_CACHE_HOME="$stage/cache" XDG_DATA_HO
 # Xvfb has no hardware display; keep rendering overrides confined to CI smoke.
 export LIBGL_ALWAYS_SOFTWARE=1 GALLIUM_DRIVER=llvmpipe WEBKIT_DISABLE_DMABUF_RENDERER=1
 export LANG=C.UTF-8 LC_ALL=C.UTF-8
-export LIBGL_ALWAYS_SOFTWARE=1
 mkdir -p "$HGHUB_SMOKE_EVIDENCE" "$stage/media"
 # Generated color bars and a sine wave contain no upstream content.
 ffmpeg -hide_banner -loglevel error -f lavfi -i testsrc2=size=320x240:rate=15 \
