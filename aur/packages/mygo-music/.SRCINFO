@@ -1,6 +1,6 @@
-pkgbase = mygo-cloudmusic
-	pkgdesc = MyGo CloudMusic native NetEase Music client with adjustable interface scale
-	pkgver = 0.1.24
+pkgbase = mygo-music
+	pkgdesc = MyGo Music native music player with adjustable interface scale
+	pkgver = 0.1.22
 	pkgrel = 1
 	url = https://github.com/fansion314/packages
 	arch = x86_64
@@ -8,6 +8,7 @@ pkgbase = mygo-cloudmusic
 	makedepends = git
 	makedepends = go>=1.27.3
 	makedepends = python
+	makedepends = nodejs>=24
 	makedepends = desktop-file-utils
 	makedepends = imagemagick
 	makedepends = kiconthemes
@@ -21,14 +22,14 @@ pkgbase = mygo-cloudmusic
 	depends = hicolor-icon-theme
 	optdepends = gnome-keyring: store login credentials
 	optdepends = libayatana-appindicator: system tray integration
-	conflicts = mygo-cloudmusic-bin
-	conflicts = mygo-cloudmusic-git
+	conflicts = mygo-music-bin
+	conflicts = mygo-music-git
 	options = !lto
 	options = !debug
 	options = !strip
-	source = mygo-cloudmusic::git+https://github.com/egoist/mygo-cloudmusic.git#commit=fe3bfd97a4ad71c1a93bc92f53c9b1e90f18ab09
-	source = packaging::git+https://github.com/fansion314/packages.git#tag=mygo-cloudmusic-v0.1.24-1
+	source = mygo-music::git+https://github.com/egoist/mygo-music.git#commit=1af0d8efd77fdf630c27cfc635f12e9cb089ce10
+	source = packaging::git+https://github.com/fansion314/packages.git#tag=mygo-music-v0.1.22-1
 	sha256sums = SKIP
 	sha256sums = SKIP
 
-pkgname = mygo-cloudmusic
+pkgname = mygo-music

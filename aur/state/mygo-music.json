@@ -1,0 +1,28 @@
+{
+  "repository": "fansion314/packages",
+  "reference": "mygo-music-v0.1.22-1",
+  "packages": {
+    "mygo-music": {
+      "version": "0:0.1.22-1",
+      "files": {
+        ".SRCINFO": "4511683f5f5f71ad3a2747af55a667a18206e2e2de99d8af334e375c156d6f75",
+        "PKGBUILD": "2095df082cba3a5bb6cd9005539de6a74350d357d97ec72ee036f19700296764"
+      },
+      "assets": []
+    },
+    "mygo-music-bin": {
+      "version": "0:0.1.22-1",
+      "files": {
+        ".SRCINFO": "589be005ca430b5efa2dce8679afb8bb4fb8c807b7c322b2e77218972ad71c86",
+        "PKGBUILD": "0a56b206e79e2f51d4916db40f7758391ec48833cc530a8d3d6f307e33054335"
+      },
+      "assets": [
+        {
+          "url": "https://github.com/fansion314/packages/releases/download/mygo-music-v0.1.22-1/mygo-music-0.1.22-1-x86_64.pkg.tar.zst",
+          "sha256": "65e3985a3041199acd2fbf86454a560336421eaee8f9bbdd273af1823f9a8fc9",
+          "size": 10261691
+        }
+      ]
+    }
+  }
+}

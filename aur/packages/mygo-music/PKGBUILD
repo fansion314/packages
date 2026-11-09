@@ -1,0 +1,51 @@
+# Maintainer: fansion314 <https://github.com/fansion314>
+pkgname=mygo-music
+pkgver=0.1.22
+pkgrel=1
+_tag=mygo-music-v0.1.22-1
+pkgdesc='MyGo Music native music player with adjustable interface scale'
+arch=('x86_64')
+url='https://github.com/fansion314/packages'
+license=('AGPL-3.0-only')
+depends=('glibc' 'gtk3' 'libsecret' 'libpulse' 'alsa-lib' 'hicolor-icon-theme')
+optdepends=('gnome-keyring: store login credentials' 'libayatana-appindicator: system tray integration')
+makedepends=('git' 'go>=1.27.3' 'python' 'nodejs>=24' 'desktop-file-utils' 'imagemagick' 'kiconthemes' 'xorg-xprop' 'xdotool')
+conflicts=('mygo-music-bin' 'mygo-music-git')
+options=('!lto' '!debug' '!strip')
+_packaging_ref='tag=mygo-music-v0.1.22-1'
+source=("mygo-music::git+https://github.com/egoist/mygo-music.git#commit=1af0d8efd77fdf630c27cfc635f12e9cb089ce10"
+        "packaging::git+https://github.com/fansion314/packages.git#${_packaging_ref}")
+sha256sums=('SKIP' 'SKIP')
+
+prepare() {
+  python "$srcdir/packaging/scripts/package.py" apply mygo-music "$srcdir/mygo-music"
+}
+
+build() {
+  cd mygo-music
+  # Same identity and production UI as upstream; no upstream self-update feed.
+  CGO_ENABLED=0 go build -mod=readonly -trimpath -tags mygo_noinspector \
+    -ldflags "-s -w -X 'github.com/egoist/mygo.packageName=MyGo Music' -X github.com/egoist/mygo.packageVersion=$pkgver -X github.com/egoist/mygo.packageIdentifier=dev.egoist.music -X github.com/egoist/mygo.packageURLSchemes=mygo-music -X github.com/egoist/mygo.production=1" \
+    -o mygo-music .
+  mkdir -p build/arch-icons
+  for size in 16 22 24 32 48 64 128 256 512; do
+    magick resources/icon.png -resize "${size}x${size}" "build/arch-icons/${size}.png"
+  done
+}
+
+check() {
+  cd mygo-music
+  go test -v -mod=readonly -timeout=10m ./internal/...
+  go test -mod=readonly -timeout=2m ./internal/app -run '^TestInterfaceScale' -count=5
+  desktop-file-validate "$srcdir/packaging/packages/mygo-music/mygo-music.desktop"
+}
+
+package() {
+  install -Dm755 mygo-music/mygo-music "$pkgdir/usr/bin/mygo-music"
+  install -Dm644 "$srcdir/packaging/packages/mygo-music/mygo-music.desktop" "$pkgdir/usr/share/applications/dev.egoist.music.desktop"
+  for size in 16 22 24 32 48 64 128 256 512; do
+    install -Dm644 "mygo-music/build/arch-icons/${size}.png" "$pkgdir/usr/share/icons/hicolor/${size}x${size}/apps/mygo-music.png"
+  done
+  install -Dm644 mygo-music/build/arch-icons/512.png "$pkgdir/usr/share/pixmaps/mygo-music.png"
+  install -Dm644 mygo-music/LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
+}

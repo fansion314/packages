@@ -1,0 +1,23 @@
+# Maintainer: fansion314 <https://github.com/fansion314>
+pkgname=mygo-music-bin
+pkgver=0.1.22
+pkgrel=1
+_tag=mygo-music-v0.1.22-1
+pkgdesc='MyGo Music native music player with adjustable interface scale (prebuilt Arch package)'
+arch=('x86_64')
+url='https://github.com/fansion314/packages'
+license=('AGPL-3.0-only')
+depends=('glibc' 'gtk3' 'libsecret' 'libpulse' 'alsa-lib' 'hicolor-icon-theme')
+optdepends=('gnome-keyring: store login credentials' 'libayatana-appindicator: system tray integration')
+provides=("mygo-music=${pkgver}")
+conflicts=('mygo-music' 'mygo-music-git')
+options=('!strip')
+_package="mygo-music-${pkgver}-${pkgrel}-x86_64.pkg.tar.zst"
+source=("${url}/releases/download/${_tag}/${_package}")
+noextract=("${_package}")
+sha256sums=('65e3985a3041199acd2fbf86454a560336421eaee8f9bbdd273af1823f9a8fc9')
+
+package() {
+  bsdtar -xf "$srcdir/$_package" -C "$pkgdir" usr
+  mv "$pkgdir/usr/share/licenses/mygo-music" "$pkgdir/usr/share/licenses/$pkgname"
+}
