@@ -22,7 +22,7 @@ class PackageTests(unittest.TestCase):
 
     def test_source_recipes_pin_upstream_and_packaging_inputs(self):
         with tempfile.TemporaryDirectory() as directory:
-            for name in ['motrix', 'deepseek-harness', 'mygo-cloudmusic']:
+            for name in ['motrix', 'deepseek-harness', 'mygo-music']:
                 package.recipes(name, directory, 'a'*64)
                 info = package.manifest(name)
                 recipe = (Path(directory)/info['package']/'PKGBUILD').read_text()
@@ -48,22 +48,61 @@ class PackageTests(unittest.TestCase):
                 with self.assertRaises(ValueError):
                     package.recipes(name, directory, 'SKIP')
 
-    def test_native_app_version_comes_from_mygo_config_not_website(self):
-        import json
-        current = package.manifest('mygo-cloudmusic')['version']
-        for version in [current, '0.0.0']:
+    def test_native_app_version_comes_from_evaluated_build_config_not_website(self):
+        info = package.manifest('mygo-music')
+        real_run = subprocess.run
+
+        def skip_patch_commands(args, **kwargs):
+            if args[:2] == ['git', 'apply']:
+                return subprocess.CompletedProcess(args, 0)
+            return real_run(args, **kwargs)
+
+        for version in [info['version'], '0.0.0']:
             with self.subTest(version=version), tempfile.TemporaryDirectory() as directory:
                 source = Path(directory)
-                (source/'package.json').write_text('{"private":true}')
-                (source/'mygo.json').write_text(json.dumps({'version': version}))
-                with patch.object(package, 'run', side_effect=[package.manifest('mygo-cloudmusic')['upstream']['commit'], '']), \
-                     patch.object(package.subprocess, 'run'):
-                    if version == current:
-                        package.apply('mygo-cloudmusic', source)
-                        self.assertTrue((source/'aur/mygo-cloudmusic/PKGBUILD').is_file())
+                (source/'package.json').write_text('{"private":true,"version":"99.0.0"}')
+                (source/'mygo.config.ts').write_text(
+                    'export default ({ command }: { command: string }) => ({' +
+                    f'version: command === "build" ? "{version}" : "0.0.1"' + '});\n')
+                with patch.object(package, 'run', side_effect=[info['upstream']['commit'], '']), \
+                     patch.object(package.subprocess, 'run', side_effect=skip_patch_commands):
+                    if version == info['version']:
+                        package.apply('mygo-music', source)
+                        self.assertTrue((source/'aur/mygo-music/PKGBUILD').is_file())
                     else:
                         with self.assertRaisesRegex(ValueError, 'application version'):
-                            package.apply('mygo-cloudmusic', source)
+                            package.apply('mygo-music', source)
+
+    def test_application_version_preserves_json_configuration(self):
+        with tempfile.TemporaryDirectory() as directory:
+            source = Path(directory)
+            for filename, info in [('package.json', {}), ('mygo.json', {'version_file': 'mygo.json'})]:
+                with self.subTest(filename=filename):
+                    (source/filename).write_text('{"version":"1.2.3"}')
+                    self.assertEqual(package.application_version(source, info), '1.2.3')
+
+    def test_typescript_config_can_export_an_object(self):
+        with tempfile.TemporaryDirectory() as directory:
+            source = Path(directory)
+            (source/'mygo.config.ts').write_text(
+                'const version: string = "1.2.3"; export default { version };\n')
+            self.assertEqual(package.application_version(source, {'version_file': 'mygo.config.ts'}), '1.2.3')
+
+    def test_typescript_config_requires_a_string_version(self):
+        for value in ['{}', '{ version: 123 }', '{ version: null }']:
+            with self.subTest(value=value), tempfile.TemporaryDirectory() as directory:
+                source = Path(directory)
+                (source/'mygo.config.ts').write_text('export default ' + value + ';\n')
+                with self.assertRaisesRegex(ValueError, 'application version'):
+                    package.application_version(source, {'version_file': 'mygo.config.ts'})
+
+    def test_typescript_evaluation_failure_cannot_pass_version_validation(self):
+        with tempfile.TemporaryDirectory() as directory:
+            source = Path(directory)
+            (source/'mygo.config.ts').write_text(
+                'export default () => { throw new Error("invalid build configuration"); };\n')
+            with self.assertRaises(subprocess.CalledProcessError):
+                package.application_version(source, {'version_file': 'mygo.config.ts'})
 
     def test_wrong_upstream_and_dirty_checkout_fail_before_patching(self):
         for results in [['bad'], [package.manifest('motrix')['upstream']['commit'], ' M file']]:

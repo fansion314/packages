@@ -1,0 +1,15 @@
+diff --git a/internal/app/app.go b/internal/app/app.go
+index 5477c23..c0ba30c 100644
+--- a/internal/app/app.go
++++ b/internal/app/app.go
+@@ -332,8 +332,9 @@ func Run() error {
+ 		queueAt:     -1,
+ 		cacheUsed:   -1,
+ 	}
+-	a.useUpdater(i18n.Resolve(loadSettings().Language, systemLanguages()))
++	// Distribution packages are updated by pacman/paru, never the upstream updater.
+ 	mygo.App.WhenReady(func() {
++		configureDesktopIcon()
+ 		a.settings = loadSettings()
+ 		a.settings.applyAppearance()
+ 		i18n.SetLanguage(i18n.Resolve(a.settings.Language, systemLanguages()))

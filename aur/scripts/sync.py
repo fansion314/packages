@@ -123,7 +123,7 @@ def recipe_files(project, github):
         for release in sorted(releases, key=lambda r: release_key(settings, r['tag_name']), reverse=True):
             assets = [a for a in release['assets'] if a['name'].endswith(settings['asset_suffix'])]
             if not assets:
-                continue
+                raise ValueError(f'Latest matching release has no recipe bundle: {release["tag_name"]}')
             if len(assets) != 1:
                 raise ValueError('Ambiguous recipe bundle')
             asset = assets[0]
@@ -278,6 +278,56 @@ def sync(project, github):
     return changed
 
 
+def retire_projects(project, projects):
+    """Remove only recorded generated outputs explicitly retired by a successor.
+
+    The caller runs this after every selected successor has synchronized. The
+    disposable CI checkout is still validated before any generated commit.
+    """
+    active_ids = {item['id'] for item in projects}
+    active_packages = {name for item in projects for name in item['packages']}
+    removals = []
+    for retired in project.get('retires', []):
+        identifier = retired['id']
+        names = retired['packages']
+        for name in [identifier, *names]:
+            if str(safe_path(name)) != name or len(PurePosixPath(name).parts) != 1:
+                raise ValueError(f'Unsafe retired project/package name: {name}')
+        if identifier in active_ids or set(names) & active_packages:
+            raise ValueError('Cannot retire an active project or package')
+        if not names or len(names) != len(set(names)):
+            raise ValueError('Retirement requires a nonempty unique package list')
+        state_path = ROOT/'state'/f'{identifier}.json'
+        targets = [ROOT/'packages'/name for name in names]
+        if not state_path.exists() and not state_path.is_symlink():
+            if any(target.exists() or target.is_symlink() for target in targets):
+                raise ValueError(f'Missing ownership state for retired project: {identifier}')
+            continue  # Already retired, including on later targeted syncs.
+        if state_path.is_symlink():
+            raise ValueError(f'Unsafe retired project state: {identifier}')
+        state = json.loads(state_path.read_text())
+        if state.get('repository') != project['repository'] or set(state.get('packages', {})) != set(names):
+            raise ValueError(f'Retired project ownership differs from declaration: {identifier}')
+        for name, target in zip(names, targets):
+            if target.is_symlink() or not target.is_dir():
+                raise ValueError(f'Unsafe or missing retired package directory: {name}')
+            files = {}
+            for path in target.rglob('*'):
+                if path.is_symlink():
+                    raise ValueError(f'Unsafe retired package entry: {path}')
+                if path.is_file():
+                    files[str(path.relative_to(target))] = hashlib.sha256(path.read_bytes()).hexdigest()
+            if files != state['packages'][name].get('files'):
+                raise ValueError(f'Retired package differs from recorded generated files: {name}')
+        removals.append((identifier, state_path, targets))
+    # Validate all declarations before deleting any of their paths.
+    for identifier, state_path, targets in removals:
+        for target in targets:
+            shutil.rmtree(target)
+        state_path.unlink()
+        print(project['id'] + ': retired ' + identifier)
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('projects', nargs='*')
@@ -288,9 +338,13 @@ def main():
         parser.error('Unknown project')
     github = GitHub()
     changed = []
+    selected = []
     for project in projects:
         if not args.projects or project['id'] in args.projects:
             changed.extend(sync(project, github))
+            selected.append(project)
+    for project in selected:
+        retire_projects(project, projects)
     cache = ROOT/'.cache'
     cache.mkdir(exist_ok=True)
     (cache/'changed.json').write_text(json.dumps(changed) + '\n')

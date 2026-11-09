@@ -13,15 +13,16 @@ GitHub 源码与发布地址：**https://github.com/fansion314/packages**。
 | Motrix | `motrix-electron` | `motrix-electron-bin` | — |
 | DeepSeek Harness | `dsh-electron` | `dsh-electron-bin` | — |
 | Bitwarden | `bitwarden-electron` | `bitwarden-electron-bin` | — |
-| MyGo 云音乐 | `mygo-cloudmusic` | `mygo-cloudmusic-bin` | — |
+| MyGo Music | `mygo-music` | `mygo-music-bin` | — |
 | Obsidian | `obsidian-electron` | `obsidian-electron-bin` | — |
 | Clash Momo | `clash-momo` | `clash-momo-bin` | cask `clash-momo` |
 | Mihomomo | `mihomomo` | `mihomomo-bin` | `mihomomo` |
 
 所有 DNR 后端包是互斥替代品。Arch 仓库还提供 DSH 需要的 `python-pptx`
 和签名公钥维护包 `fansionia-keyring`。Bitwarden/Obsidian 使用官方成品应用和
-系统 Electron，包内不重复附带 Electron。MyGo 云音乐使用 Go 原生界面，
-仅通过可重放补丁增加设置中的界面缩放（75%–200%，立即生效并保存）。
+系统 Electron，包内不重复附带 Electron。MyGo Music 使用 Go 原生界面，
+支持本地音乐和用户自行安装的插件；包内不附带 Provider 或插件。通过可重放
+补丁增加设置中的界面缩放（75%–200%，立即生效并保存）。
 
 ## Windows：Clash Momo 更新镜像
 
@@ -85,7 +86,7 @@ Server = https://packages.fansionia.world/mirror/$arch
 sudo pacman -Syu fansionia-keyring
 sudo pacman -S dnr dnc pi-dnr etcher-dnr
 sudo pacman -S motrix-electron dsh-electron bitwarden-electron obsidian-electron
-sudo pacman -S mygo-cloudmusic
+sudo pacman -S mygo-music
 sudo pacman -S clash-momo  # 自动安装 mihomomo 和系统 Electron
 ```
 
@@ -95,6 +96,11 @@ sudo pacman -S clash-momo  # 自动安装 mihomomo 和系统 Electron
 
 此前安装了对应 `-bin` 包时，显式安装上表的 pacman 包名，并检查冲突替换提示。
 `dnr`、`dnr-cef`、`dnr-webview` 不能同时安装，请按需要选择一个后端。
+
+MyGo Music 是独立的新客户端。旧 `mygo-cloudmusic` 用户需主动安装
+`mygo-music`，不会在系统升级时自动替换旧包。新应用沿用上游
+`dev.egoist.music` 身份，数据目录独立，不导入旧账号、歌单、缓存或设置；
+两者可并存。旧包退出当前配方和二进制仓库，历史 Release、已有安装和用户数据保留。
 
 ## Arch Linux / CachyOS：用 paru 配方
 
@@ -119,12 +125,12 @@ paru -Syu
 paru -S dnr-bin pi-dnr-bin etcher-dnr-bin
 paru -S motrix-electron-bin dsh-electron-bin
 paru -S bitwarden-electron-bin obsidian-electron-bin
-paru -S mygo-cloudmusic-bin  # 源码构建可选 mygo-cloudmusic
+paru -S mygo-music-bin  # 源码构建可选 mygo-music
 paru -S clash-momo mihomomo
 ```
 
 可用 `paru -S fansionia/dnr-bin` 明确选择本配方仓库。保留 paru 的正常配方审阅。
-应用配方还提供去掉 `-bin` 的变体：Motrix/DSH/MyGo 云音乐从源码构建，
+应用配方还提供去掉 `-bin` 的变体：Motrix/DSH/MyGo Music 从源码构建，
 Bitwarden/Obsidian 的配方重打包官方成品。源码与 bin 变体是替代关系。
 
 ## macOS：用 Homebrew

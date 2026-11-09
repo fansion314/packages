@@ -19,7 +19,7 @@ expected = {}
 for size in [16, 22, 24, 32, 48, 64, 128, 256, 512]:
     directory = f'{size}x{size}/apps'
     assert directory in theme, f'Icon directory is not declared by hicolor: {directory}'
-    path = root/'usr/share/icons/hicolor'/directory/'mygo-cloudmusic.png'
+    path = root/'usr/share/icons/hicolor'/directory/'mygo-music.png'
     dimensions = output('magick', 'identify', '-format', '%w %h', str(path)).decode()
     assert dimensions == f'{size} {size}', (path, dimensions)
     rgba = output('magick', str(path), '-depth', '8', 'rgba:-')
@@ -27,13 +27,13 @@ for size in [16, 22, 24, 32, 48, 64, 128, 256, 512]:
                       for r, g, b, a in zip(rgba[0::4], rgba[1::4], rgba[2::4], rgba[3::4])]
 
 # This uses KDE's KIconLoader, as Plasma does, rather than checking files alone.
-resolved = Path(output('kiconfinder6', 'mygo-cloudmusic').decode().strip())
+resolved = Path(output('kiconfinder6', 'mygo-music').decode().strip())
 assert resolved.is_file() and resolved.is_relative_to(root/'usr/share/icons/hicolor'), resolved
 print(f'KDE icon lookup: {resolved.relative_to(root)}')
 
 for window in sys.argv[1:]:
     wm_class = output('xprop', '-id', window, 'WM_CLASS').decode()
-    assert '"dev.egoist.cloudmusic", "dev.egoist.cloudmusic"' in wm_class, wm_class
+    assert '"dev.egoist.music", "dev.egoist.music"' in wm_class, wm_class
     icon = output('xprop', '-id', window, '-notype', '-f', '_NET_WM_ICON', '32c', '_NET_WM_ICON').decode()
     assert '=' in icon, f'Window {window} has no _NET_WM_ICON'
     values = [int(value) for value in re.findall(r'\d+', icon.split('=', 1)[1])]

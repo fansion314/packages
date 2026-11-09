@@ -48,11 +48,11 @@ case "$project" in
     cd "$root"
     archive=$(find "$work/recipes/$name" -maxdepth 1 -name '*.pkg.tar.zst' -print -quit)
     ;;
-  mygo-cloudmusic)
+  mygo-music)
     (cd "$work/recipes/$name" && makepkg --noconfirm --nodeps)
-    source_dir="$work/recipes/$name/src/mygo-cloudmusic"
+    source_dir="$work/recipes/$name/src/mygo-music"
     archive=$(find "$work/recipes/$name" -maxdepth 1 -name '*.pkg.tar.zst' -print -quit)
-    bash packages/mygo-cloudmusic/smoke.sh "$archive"
+    bash packages/mygo-music/smoke.sh "$archive"
     ;;
   bitwarden|obsidian)
     python scripts/package.py prepare "$project" "$work/app"

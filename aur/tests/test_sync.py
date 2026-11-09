@@ -6,6 +6,7 @@ import tarfile
 from pathlib import Path
 import tempfile
 import unittest
+from unittest.mock import patch
 
 spec = importlib.util.spec_from_file_location('sync', Path(__file__).parents[1]/'scripts/sync.py')
 sync = importlib.util.module_from_spec(spec)
@@ -66,8 +67,8 @@ class MultiPackageReleaseTests(unittest.TestCase):
 
     def test_mygo_release_pattern_matches_the_sort_key_contract(self):
         sources = json.loads((Path(__file__).parents[1]/'sources.json').read_text())
-        project = next(p for p in sources['projects'] if p['id'] == 'mygo-cloudmusic')
-        self.assertEqual(sync.release_key(project['release_bundle'], 'mygo-cloudmusic-v0.1.20-1'),
+        project = next(p for p in sources['projects'] if p['id'] == 'mygo-music')
+        self.assertEqual(sync.release_key(project['release_bundle'], 'mygo-music-v0.1.20-1'),
                          (0, 1, 20, 3, 0, 1))
 
     def test_other_packages_are_not_candidates(self):
@@ -114,3 +115,121 @@ class SharedMomoReleaseTests(unittest.TestCase):
             for project in projects:
                 self.assertEqual(set(selected[project['id']][1]),
                                  {f'aur/{project["id"]}/PKGBUILD'})
+
+
+class RetiredProjectTests(unittest.TestCase):
+    def setUp(self):
+        self.temporary = tempfile.TemporaryDirectory()
+        self.addCleanup(self.temporary.cleanup)
+        self.root = Path(self.temporary.name)
+        self.patcher = patch.object(sync, 'ROOT', self.root)
+        self.patcher.start()
+        self.addCleanup(self.patcher.stop)
+        self.project = {'id': 'mygo-music', 'repository': 'fansion314/packages',
+                        'packages': {'mygo-music': 'aur/mygo-music'},
+                        'retires': [{'id': 'mygo-cloudmusic',
+                                     'packages': ['mygo-cloudmusic', 'mygo-cloudmusic-bin']}]}
+        (self.root/'state').mkdir()
+        records = {}
+        for name in self.project['retires'][0]['packages']:
+            directory = self.root/'packages'/name
+            directory.mkdir(parents=True)
+            content = ('pkgname='+name+'\n').encode()
+            (directory/'PKGBUILD').write_bytes(content)
+            records[name] = {'files': {'PKGBUILD': hashlib.sha256(content).hexdigest()}}
+        self.state = self.root/'state/mygo-cloudmusic.json'
+        self.state.write_text(json.dumps({'repository': 'fansion314/packages', 'packages': records}))
+
+    def assert_old_exists(self):
+        self.assertTrue(self.state.is_file())
+        for name in self.project['retires'][0]['packages']:
+            self.assertTrue((self.root/'packages'/name/'PKGBUILD').is_file())
+
+    def test_explicit_retirement_removes_only_owned_outputs_and_is_idempotent(self):
+        unrelated = self.root/'packages/unrelated'
+        unrelated.mkdir()
+        (unrelated/'PKGBUILD').write_text('keep me')
+        sync.retire_projects(self.project, [self.project])
+        self.assertFalse(self.state.exists())
+        for name in self.project['retires'][0]['packages']:
+            self.assertFalse((self.root/'packages'/name).exists())
+        self.assertEqual((unrelated/'PKGBUILD').read_text(), 'keep me')
+        sync.retire_projects(self.project, [self.project])
+
+    def test_active_ownership_cannot_be_retired(self):
+        for active in [{'id': 'mygo-cloudmusic', 'packages': {}},
+                       {'id': 'unrelated', 'packages': {'mygo-cloudmusic-bin': ''}}]:
+            with self.subTest(active=active), self.assertRaisesRegex(ValueError, 'active'):
+                sync.retire_projects(self.project, [self.project, active])
+            self.assert_old_exists()
+
+    def test_unrecorded_or_modified_files_prevent_all_cleanup(self):
+        directory = self.root/'packages/mygo-cloudmusic-bin'
+        for file, content in [('notes.txt', 'handwritten'), ('PKGBUILD', 'modified')]:
+            with self.subTest(file=file):
+                target = directory/file
+                old = target.read_bytes() if target.exists() else None
+                target.write_text(content)
+                with self.assertRaisesRegex(ValueError, 'differs from recorded'):
+                    sync.retire_projects(self.project, [self.project])
+                self.assert_old_exists()
+                if old is None:
+                    target.unlink()
+                else:
+                    target.write_bytes(old)
+
+    def test_missing_or_different_state_is_not_ownership(self):
+        original = self.state.read_bytes()
+        self.state.unlink()
+        with self.assertRaisesRegex(ValueError, 'Missing ownership'):
+            sync.retire_projects(self.project, [self.project])
+        self.state.write_text(json.dumps({'repository': 'someone/else', 'packages': {}}))
+        with self.assertRaisesRegex(ValueError, 'ownership differs'):
+            sync.retire_projects(self.project, [self.project])
+        self.state.write_bytes(original)
+        self.assert_old_exists()
+
+    def test_unsafe_names_and_symlinks_do_not_delete_outputs(self):
+        for name in ['../mygo-cloudmusic', 'nested/name', '/mygo-cloudmusic']:
+            with self.subTest(name=name), self.assertRaisesRegex(ValueError, 'Unsafe'):
+                sync.retire_projects({**self.project, 'retires': [{'id': name, 'packages': ['old']}]}, [self.project])
+        directory = self.root/'packages/mygo-cloudmusic-bin'
+        (directory/'external').symlink_to(self.root/'state')
+        with self.assertRaisesRegex(ValueError, 'Unsafe retired package entry'):
+            sync.retire_projects(self.project, [self.project])
+        self.assert_old_exists()
+
+    def run_main(self, arguments, result=None, error=None):
+        (self.root/'sources.json').write_text(json.dumps({'projects': [self.project]}))
+        with patch('sys.argv', ['sync.py', *arguments]), \
+             patch.object(sync, 'sync', return_value=result or [], side_effect=error) as synchronize:
+            sync.main()
+        return synchronize
+
+    def test_targeted_and_full_sync_retire_after_success_even_when_unchanged(self):
+        self.run_main(['mygo-music'])
+        self.assertFalse(self.state.exists())
+        # A later full sync sees the declaration and safely does nothing.
+        self.run_main([])
+        self.assertEqual(json.loads((self.root/'.cache/changed.json').read_text()), [])
+
+    def test_failed_successor_sync_keeps_old_recipes_and_state(self):
+        for error in [ValueError('no published bundle'), ValueError('checksum mismatch')]:
+            with self.subTest(error=str(error)), self.assertRaises(ValueError):
+                self.run_main(['mygo-music'], error=error)
+            self.assert_old_exists()
+            self.assertFalse((self.root/'.cache/changed.json').exists())
+
+
+class IncompleteReleaseTests(unittest.TestCase):
+    # The latest release must finish publishing before recipes can move forward.
+    def test_missing_latest_bundle_cannot_fall_back_to_an_older_release(self):
+        class FakeGitHub:
+            def releases(self, repository):
+                return [{'tag_name': 'mygo-music-v0.1.22-1', 'draft': False, 'assets': []},
+                        {'tag_name': 'mygo-music-v0.1.21-1', 'draft': False, 'assets': [
+                            {'name': 'old-aur.tar.gz'}]}]
+        sources = json.loads((Path(__file__).parents[1]/'sources.json').read_text())
+        project = next(p for p in sources['projects'] if p['id'] == 'mygo-music')
+        with self.assertRaisesRegex(ValueError, 'Latest matching release has no recipe bundle'):
+            sync.recipe_files(project, FakeGitHub())

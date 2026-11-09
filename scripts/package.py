@@ -10,7 +10,7 @@ import subprocess
 import tarfile
 
 ROOT = Path(__file__).resolve().parents[1]
-IDS = ('bitwarden', 'obsidian', 'motrix', 'deepseek-harness', 'mygo-cloudmusic')
+IDS = ('bitwarden', 'obsidian', 'motrix', 'deepseek-harness', 'mygo-music')
 REPOSITORY = 'fansion314/packages'
 
 
@@ -74,6 +74,29 @@ def recipes(project, destination, checksum=None, packaging_ref=None, metadata=Fa
     return destination
 
 
+def application_version(source, info):
+    path = Path(source)/info.get('version_file', 'package.json')
+    if path.suffix == '.ts':
+        # Node 24+ strips the configuration's TypeScript annotations. Evaluate
+        # the build configuration just as upstream does, rather than extracting
+        # a version-like string from executable source or the website manifest.
+        output = subprocess.check_output([
+            'node', '--input-type=module', '--eval',
+            "import {pathToFileURL} from 'node:url'; "
+            "const {default: exported} = await import(pathToFileURL(process.argv[1]).href); "
+            "const config = await (typeof exported === 'function' "
+            "? exported({command: 'build'}) : exported); "
+            "process.stdout.write(JSON.stringify(config?.version ?? null));",
+            str(path.resolve()),
+        ], text=True)
+        version = json.loads(output)
+    else:
+        version = json.loads(path.read_text()).get('version')
+    if not isinstance(version, str):
+        raise ValueError('Invalid upstream application version')
+    return version
+
+
 def apply(project, source):
     info = manifest(project)
     source = Path(source).resolve()
@@ -99,7 +122,7 @@ def apply(project, source):
         target.parent.mkdir(parents=True, exist_ok=True)
         shutil.copy2(item, target)
     recipes(project, source/'aur')
-    if json.loads((source/info.get('version_file', 'package.json')).read_text())['version'] != info['version']:
+    if application_version(source, info) != info['version']:
         raise ValueError('Unexpected upstream application version')
 
 
@@ -152,12 +175,19 @@ def finalize(project, archive, destination):
     assets = [destination/archive.name, bundle, destination/'build-info.json']
     (destination/'SHA256SUMS').write_text(''.join(f'{digest(p)}  {p.name}\n' for p in assets))
     runtime_note = ('Native Go/GTK application; no Electron or WebView runtime. Includes the persistent interface scale setting. Updates use pacman/paru. ' if info.get('runtime') == 'native-go' else 'Uses system Electron; the Electron runtime is not bundled. ')
+    migration_note = (
+        '\nMyGo Music includes no provider plugins. Install mygo-music manually; '
+        'it does not replace MyGo CloudMusic or migrate its accounts, library, '
+        'cache or settings. The upstream dev.egoist.music identity uses a separate '
+        'data directory, and the old application data remains untouched.\n'
+        if project == 'mygo-music' else '')
     (destination/'notes.md').write_text(
         f"{project} {info['version']} packaging revision {info['pkgrel']} for Arch Linux x86_64.\n\n"
         + runtime_note + 'Install the pacman package directly, '
         'or use the source / -bin recipes from the fansionia PKGBUILD repository.\n\n'
         'Build inputs and toolchain versions are recorded in build-info.json. '
-        'Published checks include metadata, binary repackaging and the package-specific smoke tests.\n')
+        'Published checks include metadata, binary repackaging and the package-specific smoke tests.\n'
+        + migration_note)
 
 
 def main():

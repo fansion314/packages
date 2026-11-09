@@ -25,14 +25,14 @@ jobs:
         env:
           BASE_SHA: ${{ github.event.before || github.event.pull_request.base.sha }}
         run: python3 scripts/ci-packages.py "$BASE_SHA" "$GITHUB_SHA" >> "$GITHUB_OUTPUT"
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1
+        with:
+          node-version: '24'
       - run: python3 -m unittest discover -s tests -v
       - run: python3 -m unittest discover -s homebrew/scripts -p 'test_*.py' -v
       - run: python3 -m unittest discover -s aur/tests -v
       - run: python3 -m unittest discover -s arch/tests -v
       - run: python3 arch/upstream.py keyring --check
-      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1
-        with:
-          node-version: '24'
       - run: node --test arch/tests/*.test.mjs
       - run: python3 -m unittest discover -s windows -p 'test_*.py' -v
       - name: Check shell syntax

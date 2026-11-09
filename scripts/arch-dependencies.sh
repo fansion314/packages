@@ -3,7 +3,7 @@ set -euo pipefail
 project=${1:?package id required}
 pacman -Syu --noconfirm --needed base-devel git python nodejs npm pnpm electron asar rust sccache \
   gnome-keyring desktop-file-utils xorg-server-xvfb xorg-xauth dbus xdg-utils
-if [[ $project == mygo-cloudmusic ]]; then
+if [[ $project == mygo-music ]]; then
   pacman -S --noconfirm --needed xdotool
 fi
 # Source templates contain fixed metadata only; evaluated on the isolated Arch runner.

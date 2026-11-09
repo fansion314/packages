@@ -1,0 +1,13 @@
+{
+  "id": "mygo-music",
+  "version": "0.1.22",
+  "pkgrel": 1,
+  "package": "mygo-music",
+  "runtime": "native-go",
+  "version_file": "mygo.config.ts",
+  "upstream": {
+    "repository": "egoist/mygo-music",
+    "tag": "v0.1.22",
+    "commit": "1af0d8efd77fdf630c27cfc635f12e9cb089ce10"
+  }
+}

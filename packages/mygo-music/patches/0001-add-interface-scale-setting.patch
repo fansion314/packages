@@ -1,0 +1,215 @@
+diff --git a/internal/app/interface_scale_test.go b/internal/app/interface_scale_test.go
+new file mode 100644
+index 0000000..fc1723c
+--- /dev/null
++++ b/internal/app/interface_scale_test.go
+@@ -0,0 +1,87 @@
++package app
++
++import (
++	"math"
++	"os"
++	"path/filepath"
++	"testing"
++
++	"github.com/egoist/mygo"
++	"github.com/egoist/mygo/ui"
++
++	"mygo-music/internal/i18n"
++)
++
++// Selecting a scale in either language zooms both views and survives a restart.
++func TestInterfaceScaleSelection(t *testing.T) {
++	language := i18n.Language()
++	defer i18n.SetLanguage(language)
++	original, err := mygo.App.Path(mygo.PathUserData)
++	if err != nil {
++		t.Fatal(err)
++	}
++	defer mygo.App.SetPath(mygo.PathUserData, original)
++	for _, language := range []string{i18n.English, i18n.Chinese} {
++		t.Run(language, func(t *testing.T) {
++			i18n.SetLanguage(language)
++			mygo.App.SetPath(mygo.PathUserData, t.TempDir())
++			a := newTestApp()
++			a.settings = loadSettings()
++			var settingsZoom float32
++			tt := ui.NewTester(func(c *ui.Context) {
++				a.settingsView(c)
++				settingsZoom = c.Zoom()
++			}, 1600, 1600)
++			tt.Frame()
++			if err := tt.Click(T("Scale")); err != nil {
++				t.Fatal(err)
++			}
++			tt.Key(0, ui.KeyEnd)
++			tt.Key(0, ui.KeyEnter)
++			tt.Frame()
++			if a.settings.InterfaceScale != 2 || settingsZoom != 2 {
++				t.Fatalf("selection %v, settings zoom %v", a.settings.InterfaceScale, settingsZoom)
++			}
++			restored := newTestApp()
++			restored.settings = loadSettings()
++			var mainZoom float32
++			main := ui.NewTester(func(c *ui.Context) {
++				restored.view(c)
++				mainZoom = c.Zoom()
++			}, 1600, 1600)
++			main.Frame()
++			if mainZoom != 2 {
++				t.Fatalf("restored main zoom %v", mainZoom)
++			}
++		})
++	}
++}
++
++// Missing and invalid saved scales keep the interface accessible when loaded.
++func TestInterfaceScaleValidation(t *testing.T) {
++	original, err := mygo.App.Path(mygo.PathUserData)
++	if err != nil {
++		t.Fatal(err)
++	}
++	defer mygo.App.SetPath(mygo.PathUserData, original)
++	dir := t.TempDir()
++	mygo.App.SetPath(mygo.PathUserData, dir)
++	for _, text := range []string{"{}", `{"interfaceScale":0}`, `{"interfaceScale":-1}`, `{"interfaceScale":0.5}`, `{"interfaceScale":3}`} {
++		if err := os.WriteFile(filepath.Join(dir, "settings.json"), []byte(text), 0o600); err != nil {
++			t.Fatal(err)
++		}
++		if got := loadSettings().InterfaceScale; got != 1 {
++			t.Errorf("%s loaded as %v", text, got)
++		}
++	}
++	for _, scale := range []float32{float32(math.NaN()), float32(math.Inf(1))} {
++		if got := validInterfaceScale(scale); got != 1 {
++			t.Errorf("invalid %v became %v", scale, got)
++		}
++	}
++	for _, scale := range interfaceScales {
++		if got := validInterfaceScale(scale.value); got != scale.value {
++			t.Errorf("valid %v became %v", scale.value, got)
++		}
++	}
++}
+diff --git a/internal/app/settings.go b/internal/app/settings.go
+index 0cff3e1..d9f90ce 100644
+--- a/internal/app/settings.go
++++ b/internal/app/settings.go
+@@ -2,6 +2,7 @@ package app
+ 
+ import (
+ 	"encoding/json"
++	"math"
+ 	"os"
+ 	"path/filepath"
+ 	"time"
+@@ -46,6 +47,8 @@ type settings struct {
+ 	Quality string `json:"quality"`
+ 	// Appearance is light, dark, or system to follow the system.
+ 	Appearance string `json:"appearance"`
++	// InterfaceScale zooms the content independently of the display DPI.
++	InterfaceScale float32 `json:"interfaceScale"`
+ 	// GrowFromCover opens Now Playing out of the player bar's cover, and
+ 	// closes it back into it: an experiment the listener turns on. Off, it
+ 	// slides up from the bottom of the window.
+@@ -88,7 +91,7 @@ type settings struct {
+ }
+ 
+ func defaultSettings() settings {
+-	return settings{Language: i18n.System, NotchActivity: true, Quality: "high", Appearance: "system", Volume: 0.8, Normalize: true, AppIcon: "dock-and-menubar", CacheMB: 2048}
++	return settings{Language: i18n.System, NotchActivity: true, Quality: "high", Appearance: "system", InterfaceScale: 1, Volume: 0.8, Normalize: true, AppIcon: "dock-and-menubar", CacheMB: 2048}
+ }
+ 
+ func settingsPath() (string, error) {
+@@ -108,6 +111,7 @@ func loadSettings() settings {
+ 		}
+ 		s.path = path
+ 	}
++	s.InterfaceScale = validInterfaceScale(s.InterfaceScale)
+ 	return s
+ }
+ 
+@@ -162,3 +166,19 @@ var cacheLimits = []struct {
+ 	{5120, N("5 GB")},
+ 	{10240, N("10 GB")},
+ }
++
++// validInterfaceScale keeps old settings and invalid values usable.
++func validInterfaceScale(scale float32) float32 {
++	if math.IsNaN(float64(scale)) || math.IsInf(float64(scale), 0) || scale < 0.75 || scale > 2 {
++		return 1
++	}
++	return scale
++}
++
++var interfaceScales = []struct {
++	value float32
++	label string
++}{
++	{0.75, "75%"}, {0.9, "90%"}, {1, "100%"}, {1.1, "110%"},
++	{1.25, "125%"}, {1.5, "150%"}, {1.75, "175%"}, {2, "200%"},
++}
+diff --git a/internal/app/ui_main.go b/internal/app/ui_main.go
+index 33aea70..7d3f0c8 100644
+--- a/internal/app/ui_main.go
++++ b/internal/app/ui_main.go
+@@ -13,6 +13,7 @@ import (
+ const sidebarWidth = 232
+ 
+ func (a *app) view(c *ui.Context) {
++	c.SetZoom(validInterfaceScale(a.settings.InterfaceScale))
+ 	t := *c.Theme()
+ 	a.pal = paletteFor(&t)
+ 	p := a.pal
+diff --git a/internal/app/ui_settings.go b/internal/app/ui_settings.go
+index 13a1068..68c37e8 100644
+--- a/internal/app/ui_settings.go
++++ b/internal/app/ui_settings.go
+@@ -145,6 +145,7 @@ func settingsMatch(query string, texts ...string) bool {
+ }
+ 
+ func (a *app) settingsView(c *ui.Context) {
++	c.SetZoom(validInterfaceScale(a.settings.InterfaceScale))
+ 	t := *c.Theme()
+ 	p := paletteFor(&t)
+ 	useAccent(&t, p)
+@@ -341,6 +342,25 @@ func (a *app) settingsSections(c *ui.Context, p palette) []settingsSection {
+ 				a.setLanguage(code)
+ 			}
+ 		})
++		row(T("Interface Scale"), T("Changes text and controls immediately; follows the system display scale at 100%"), func() {
++			labels := make([]string, len(interfaceScales))
++			chosen := "100%"
++			for i, scale := range interfaceScales {
++				labels[i] = scale.label
++				if scale.value == validInterfaceScale(s.InterfaceScale) {
++					chosen = scale.label
++				}
++			}
++			if ui.Select(c.Key("interface-scale"), &chosen, labels).Label(T("Scale")).Width(170).Changed() {
++				for _, scale := range interfaceScales {
++					if scale.label == chosen {
++						s.InterfaceScale = scale.value
++					}
++				}
++				s.save()
++				a.redraw()
++			}
++		})
+ 		row(T("Appearance"), "", func() {
+ 			modes := []string{"system", "light", "dark"}
+ 			i := 0
+diff --git a/internal/i18n/zh_cn.go b/internal/i18n/zh_cn.go
+index 95cf5b9..73ca94b 100644
+--- a/internal/i18n/zh_cn.go
++++ b/internal/i18n/zh_cn.go
+@@ -2,6 +2,9 @@ package i18n
+ 
+ // zhCN is the app's text in Simplified Chinese, by its English.
+ var zhCN = map[string]string{
++	"Interface Scale": "界面缩放",
++	"Changes text and controls immediately; follows the system display scale at 100%": "调整文字和控件的大小，立即生效；跟随系统显示比例时为 100%",
++	"Scale":                        "缩放比例",
+ 	"%.1f GB used":                 "已用 %.1f GB",
+ 	"%d MB used":                   "已用 %d MB",
+ 	"%d albums":                    "%d 张专辑",

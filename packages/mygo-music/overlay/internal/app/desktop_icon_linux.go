@@ -15,9 +15,9 @@ func configureDesktopIcon() {
 	for _, api := range []struct {
 		library, symbol, value string
 	}{
-		{"libglib-2.0.so.0", "g_set_prgname", "dev.egoist.cloudmusic"},
-		{"libgdk-3.so.0", "gdk_set_program_class", "dev.egoist.cloudmusic"},
-		{"libgtk-3.so.0", "gtk_window_set_default_icon_name", "mygo-cloudmusic"},
+		{"libglib-2.0.so.0", "g_set_prgname", "dev.egoist.music"},
+		{"libgdk-3.so.0", "gdk_set_program_class", "dev.egoist.music"},
+		{"libgtk-3.so.0", "gtk_window_set_default_icon_name", "mygo-music"},
 	} {
 		lib, err := purego.Dlopen(api.library, purego.RTLD_NOW|purego.RTLD_GLOBAL)
 		if err != nil {

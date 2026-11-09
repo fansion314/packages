@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Name=MyGo Music
+Comment=A native music player for local files and plugins
+Comment[zh_CN]=支持本地文件与插件的原生音乐播放器
+Exec=mygo-music %U
+Icon=mygo-music
+Categories=AudioVideo;Audio;Player;
+MimeType=x-scheme-handler/mygo-music;
+Terminal=false
+StartupWMClass=dev.egoist.music
