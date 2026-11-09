@@ -134,6 +134,7 @@ export async function verifyArchPackage(archive, { smoke = false } = {}) {
           version: 8,
           onboarding: { disclaimerAccepted: true },
           app: {
+            language: 'en-US',
             uiScale: 125,
             trayIconTheme: 'light',
             browserBridgeEnabled: false,
@@ -197,6 +198,60 @@ export async function verifyArchPackage(archive, { smoke = false } = {}) {
           await realpath(`/proc/${owner.pid}/exe`),
           await realpath(ariaBinary)
         )
+        // Exercise 2.4's new renderer, IPC and local-file export on the actual
+        // system Electron, using only files in this isolated smoke fixture.
+        const source = path.join(temporary, 'payload.bin')
+        const output = path.join(temporary, 'export.torrent')
+        const payload = Buffer.from('Motrix Arch torrent export smoke test')
+        await writeFile(source, payload)
+        const nextWindow = application.waitForEvent('window', {
+          predicate: async (page) => {
+            await page.waitForLoadState('domcontentloaded')
+            return page.url().includes('w=create-torrent')
+          },
+        })
+        await application.evaluate(
+          ({ Menu, BrowserWindow, dialog }, { source, output }) => {
+            dialog.showOpenDialog = async () => ({
+              canceled: false,
+              filePaths: [source],
+            })
+            dialog.showSaveDialog = async () => ({
+              canceled: false,
+              filePath: output,
+            })
+            const main = BrowserWindow.getAllWindows().find((win) =>
+              win.webContents.getURL().includes('w=main')
+            )
+            const item = Menu.getApplicationMenu()?.getMenuItemById(
+              'menubar.file.createTorrent'
+            )
+            if (!main || !item?.enabled)
+              throw new Error('Create Torrent menu is unavailable')
+            item.click({}, main, main.webContents)
+          },
+          { source, output }
+        )
+        const creator = await nextWindow
+        await creator
+          .getByRole('button', { name: 'Select file', exact: true })
+          .click()
+        await creator
+          .getByRole('button', { name: 'Create', exact: true })
+          .click()
+        await creator.getByRole('button', { name: 'Save .torrent' }).click()
+        await creator.getByRole('status').waitFor()
+        const { parseTorrent } = await import('@motrix/torrent')
+        const torrent = parseTorrent(new Uint8Array(await readFile(output)))
+        assert.equal(torrent.name, 'payload.bin')
+        assert.equal(torrent.v1?.length, BigInt(payload.length))
+        assert.equal(torrent.v1?.pieces.length, 1)
+        assert.equal(
+          torrent.v1.pieces.hex(0),
+          createHash('sha1').update(payload).digest('hex')
+        )
+        assert.deepEqual(await readFile(source), payload)
+        console.log('Verified packaged Create Torrent export and piece hash')
       } catch (error) {
         console.error(
           await readFile(path.join(userData, 'logs/motrix.log'), 'utf8').catch(
