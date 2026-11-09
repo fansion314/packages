@@ -123,10 +123,10 @@ def fixture_playback(session, percent):
           const data=isManifest?manifest:bytes(context.url.split('/').pop()).buffer;
           this.stats.loaded=this.stats.total=isManifest?data.length:data.byteLength;
           this.stats.loading.first=performance.now();this.stats.loading.end=performance.now();
-          this.timer=setTimeout(()=>callbacks.onSuccess({url:context.url,data},this.stats,context,null),20);
+          this.timer=setTimeout(()=>{this.complete=true;callbacks.onSuccess({url:context.url,data},this.stats,context,null)},20);
         }
         abort(){clearTimeout(this.timer);this.stats.aborted=true}
-        destroy(){this.abort()}
+        destroy(){clearTimeout(this.timer);if(!this.complete)this.stats.aborted=true}
         getCacheAge(){return null}
       }
       const video=document.createElement('video');video.id='smoke-video';video.muted=true;video.controls=true;
