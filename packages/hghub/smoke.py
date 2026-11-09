@@ -132,24 +132,81 @@ def fixture_playback(session, percent):
       const video=document.createElement('video');video.id='smoke-video';video.muted=true;video.controls=true;
       Object.assign(video.style,{position:'fixed',inset:'80px',width:'min(640px,80vw)',height:'min(480px,70vh)',zIndex:99999,background:'black'});
       document.body.append(video);window.__smokeVideo=video;window.__smokeMediaErrors=[];
+      const ranges=value=>Array.from({length:value.length},(_,i)=>[value.start(i),value.end(i)]);
+      const state=()=>({time:video.currentTime,duration:Number.isFinite(video.duration)?video.duration:null,
+        paused:video.paused,seeking:video.seeking,ended:video.ended,ready:video.readyState,network:video.networkState,
+        buffered:ranges(video.buffered),seekable:ranges(video.seekable),visibility:document.visibilityState,
+        error:video.error?{code:video.error.code,message:video.error.message}:null,
+        quality:video.getVideoPlaybackQuality?video.getVideoPlaybackQuality():null});
+      const events=[];window.__smokeMediaTrace={scale:arguments[1],events,state};
+      const record=(event,data={})=>{events.push({at:performance.now(),event,data,state:state()});if(events.length>500)events.shift()};
+      for(const name of ['loadstart','loadedmetadata','loadeddata','canplay','canplaythrough','play','playing',
+        'pause','seeking','seeked','waiting','stalled','suspend','progress','timeupdate','ended','error','emptied']){
+        video.addEventListener(name,()=>record('media.'+name));
+      }
+      const play=video.play.bind(video),pause=video.pause.bind(video);
+      video.play=()=>{record('play.request');return play().then(value=>{record('play.resolved');return value},error=>{
+        record('play.rejected',{name:error.name,message:error.message});throw error})};
+      video.pause=()=>{record('pause.request');return pause()};
+      record('fixture.created');
       const Hls=window.__smokeHlsClass;if(!Hls.isSupported())throw Error('WebKit MediaSource HLS unsupported');
       const hls=new Hls({loader:FixtureLoader,enableWorker:false});window.__smokeHls=hls;
-      hls.on(Hls.Events.ERROR,(_event,data)=>{if(data.fatal)window.__smokeMediaErrors.push(data.details)});
+      hls.on(Hls.Events.ERROR,(_event,data)=>{
+        record('hls.error',{type:data.type,details:data.details,fatal:data.fatal,reason:data.reason,
+          responseCode:data.response?.code,error:data.error?.message});
+        if(data.fatal)window.__smokeMediaErrors.push(data.details);
+      });
+      for(const name of ['MANIFEST_PARSED','FRAG_LOADING','FRAG_LOADED','FRAG_BUFFERED','BUFFER_APPENDED']){
+        hls.on(Hls.Events[name],(_event,data)=>record('hls.'+name,{fragment:data.frag?.sn,
+          start:data.frag?.start,duration:data.frag?.duration}));
+      }
       hls.attachMedia(video);hls.loadSource('hg://localhost/fixture/list.m3u8');
       video.addEventListener('canplay',()=>video.play().catch(e=>window.__smokeMediaErrors.push(String(e))),{once:true});
-    ''', files)
-    wait(lambda: session.js('return window.__smokeVideo.currentTime>1'), 'native HLS playback advances', 30)
-    assert session.js('return window.__smokeMediaErrors') == []
-    before = session.js('window.__smokeVideo.pause();return window.__smokeVideo.currentTime')
-    time.sleep(.5)
-    assert abs(session.js('return window.__smokeVideo.currentTime') - before) < .15
-    session.js('window.__smokeVideo.currentTime=7')
-    wait(lambda: session.js('return Math.abs(window.__smokeVideo.currentTime-7)<.5'), 'paused seeking')
-    session.async_js('const done=arguments[arguments.length-1];window.__smokeVideo.play().then(()=>done(true)).catch(e=>done({error:String(e)}))')
-    wait(lambda: session.js('return window.__smokeVideo.currentTime>7.5'), 'playback resumes after seek')
-    session.screenshot('native-hls-playing-' + str(percent))
-    assert session.js('return window.__smokeMediaErrors') == []
-    session.js('window.__smokeHls.destroy();window.__smokeVideo.remove()')
+    ''', files, percent)
+    succeeded = False
+    try:
+        wait(lambda: session.js('return !window.__smokeVideo.paused&&window.__smokeVideo.currentTime>1'),
+             'native HLS playback advances', 30)
+        assert session.js('return window.__smokeMediaErrors') == []
+        # Buffer the destination before seeking so this check isolates native seek
+        # completion from in-flight fixture fragment loads/transmuxing.
+        wait(lambda: session.js('''const v=window.__smokeVideo;
+          return [...Array(v.buffered.length).keys()].some(i=>v.buffered.start(i)<=7&&v.buffered.end(i)>7.5);'''),
+             'seek destination buffered')
+        before = session.js('window.__smokeVideo.pause();return window.__smokeVideo.currentTime')
+        wait(lambda: session.js('return window.__smokeVideo.paused'), 'native video pauses')
+        time.sleep(.5)
+        assert abs(session.js('return window.__smokeVideo.currentTime') - before) < .15
+        # currentTime changes synchronously, while WebKit completes seeking later.
+        # Install the listener before assigning and await the actual seeked event.
+        session.async_js('''const done=arguments[arguments.length-1],v=window.__smokeVideo;
+          const timer=setTimeout(()=>{v.removeEventListener('seeked',onSeeked);
+            done({error:'Native seeked event did not arrive'})},20000);
+          function onSeeked(){clearTimeout(timer);done({event:'seeked',time:v.currentTime,seeking:v.seeking})}
+          v.addEventListener('seeked',onSeeked,{once:true});v.currentTime=7;''')
+        wait(lambda: session.js('''const v=window.__smokeVideo;
+          return !v.seeking&&v.readyState>=3&&Math.abs(v.currentTime-7)<.5&&
+            [...Array(v.buffered.length).keys()].some(i=>v.buffered.start(i)<=v.currentTime&&v.buffered.end(i)>7.5);'''),
+             'paused native seek completes with future data')
+        assert session.js('return window.__smokeVideo.paused'), 'Seeking unexpectedly resumed a paused video'
+        session.async_js('''const done=arguments[arguments.length-1];
+          window.__smokeVideo.play().then(()=>done(true)).catch(e=>done({error:String(e)}))''')
+        wait(lambda: session.js('return !window.__smokeVideo.paused&&!window.__smokeVideo.seeking&&window.__smokeVideo.currentTime>7.5'),
+             'playback resumes after completed seek')
+        session.screenshot('native-hls-playing-' + str(percent))
+        assert session.js('return window.__smokeMediaErrors') == []
+        succeeded = True
+    finally:
+        try:
+            trace = session.js('''const t=window.__smokeMediaTrace;return {scale:t.scale,state:t.state(),
+              events:t.events,fatalErrors:window.__smokeMediaErrors,pageErrors:window.__smokeErrors};''')
+        except Exception as error:
+            trace = {'scale': percent, 'collection_error': str(error)}
+        trace['passed'] = succeeded
+        (EVIDENCE / f'media-{percent}.json').write_text(json.dumps(trace, indent=2) + '\n')
+        if succeeded:
+            session.js('window.__smokeHls.destroy();window.__smokeVideo.remove()')
+
 
 
 def main():
