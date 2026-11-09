@@ -1,0 +1,37 @@
+pkgbase = longbridge-bin
+	pkgdesc = Longbridge trading platform desktop application (prebuilt Arch package)
+	pkgver = 1.1.0
+	pkgrel = 1
+	url = https://github.com/fansion314/packages
+	arch = x86_64
+	license = LicenseRef-proprietary
+	depends = glibc>=2.39
+	depends = gcc-libs
+	depends = gtk3
+	depends = webkit2gtk-4.1
+	depends = libsoup3
+	depends = glib2
+	depends = libxcb
+	depends = alsa-lib
+	depends = libxkbcommon
+	depends = libxkbcommon-x11
+	depends = openssl
+	depends = sqlite
+	depends = xz
+	depends = vulkan-icd-loader
+	depends = libglvnd
+	depends = hicolor-icon-theme
+	depends = xdg-utils
+	optdepends = vulkan-driver: GPU rendering
+	optdepends = noto-fonts-cjk: Chinese text rendering
+	optdepends = org.freedesktop.secrets: secure credential storage
+	provides = longbridge=1.1.0
+	conflicts = longbridge
+	conflicts = longbridge-desktop
+	noextract = longbridge-1.1.0-1-x86_64.pkg.tar.zst
+	options = !strip
+	options = !debug
+	source = https://github.com/fansion314/packages/releases/download/longbridge-v1.1.0-1/longbridge-1.1.0-1-x86_64.pkg.tar.zst
+	sha256sums = eeb57d05978cd0a9b673e72f50dae4d2402e7aa7315c29ae1a79d7c915ba086c
+
+pkgname = longbridge-bin

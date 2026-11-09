@@ -1,0 +1,28 @@
+{
+  "repository": "fansion314/packages",
+  "reference": "longbridge-v1.1.0-1",
+  "packages": {
+    "longbridge": {
+      "version": "0:1.1.0-1",
+      "files": {
+        ".SRCINFO": "1032b415b12ba91f655ef7908e6001b5a72b30a9d8e5bf288a2c5182461280e4",
+        "PKGBUILD": "256f0623ed9d9a4661029701dc0ae8c2492b9590453c7798460b075ec3abe61d"
+      },
+      "assets": []
+    },
+    "longbridge-bin": {
+      "version": "0:1.1.0-1",
+      "files": {
+        ".SRCINFO": "ff0187baaaa23818f946ae922abb88546e578e54b0d0db61a2111895327f2950",
+        "PKGBUILD": "7c50573ac311e6517165f0e7d87f90e808ead99a56eab34b30592a0f279d463f"
+      },
+      "assets": [
+        {
+          "url": "https://github.com/fansion314/packages/releases/download/longbridge-v1.1.0-1/longbridge-1.1.0-1-x86_64.pkg.tar.zst",
+          "sha256": "eeb57d05978cd0a9b673e72f50dae4d2402e7aa7315c29ae1a79d7c915ba086c",
+          "size": 92802343
+        }
+      ]
+    }
+  }
+}

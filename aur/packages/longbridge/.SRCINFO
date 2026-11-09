@@ -1,0 +1,35 @@
+pkgbase = longbridge
+	pkgdesc = Longbridge trading platform desktop application (official Linux binary)
+	pkgver = 1.1.0
+	pkgrel = 1
+	url = https://longbridge.com/desktop
+	arch = x86_64
+	license = LicenseRef-proprietary
+	depends = glibc>=2.39
+	depends = gcc-libs
+	depends = gtk3
+	depends = webkit2gtk-4.1
+	depends = libsoup3
+	depends = glib2
+	depends = libxcb
+	depends = alsa-lib
+	depends = libxkbcommon
+	depends = libxkbcommon-x11
+	depends = openssl
+	depends = sqlite
+	depends = xz
+	depends = vulkan-icd-loader
+	depends = libglvnd
+	depends = hicolor-icon-theme
+	depends = xdg-utils
+	optdepends = vulkan-driver: GPU rendering
+	optdepends = noto-fonts-cjk: Chinese text rendering
+	optdepends = org.freedesktop.secrets: secure credential storage
+	conflicts = longbridge-bin
+	conflicts = longbridge-desktop
+	options = !strip
+	options = !debug
+	source = longbridge-1.1.0-linux-x86_64.tar.gz::https://assets.lbkrs.com/github/release/longbridge-desktop/stable/longbridge-v1.1.0-linux-x86_64.tar.gz
+	sha256sums = 2ac881df53f47080a0315f4a0f4db794529e36c005ccd51c6903388b4e31a238
+
+pkgname = longbridge

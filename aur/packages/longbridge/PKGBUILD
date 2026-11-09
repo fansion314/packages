@@ -1,0 +1,25 @@
+# Maintainer: fansion314 <https://github.com/fansion314>
+pkgname=longbridge
+pkgver=1.1.0
+pkgrel=1
+pkgdesc='Longbridge trading platform desktop application (official Linux binary)'
+arch=('x86_64')
+url='https://longbridge.com/desktop'
+license=('LicenseRef-proprietary')
+depends=('glibc>=2.39' 'gcc-libs' 'gtk3' 'webkit2gtk-4.1' 'libsoup3' 'glib2' 'libxcb' 'alsa-lib' 'libxkbcommon' 'libxkbcommon-x11' 'openssl' 'sqlite' 'xz' 'vulkan-icd-loader' 'libglvnd' 'hicolor-icon-theme' 'xdg-utils')
+optdepends=('vulkan-driver: GPU rendering' 'noto-fonts-cjk: Chinese text rendering' 'org.freedesktop.secrets: secure credential storage')
+conflicts=('longbridge-bin' 'longbridge-desktop')
+options=('!strip' '!debug')
+source=("longbridge-${pkgver}-linux-x86_64.tar.gz::https://assets.lbkrs.com/github/release/longbridge-desktop/stable/longbridge-v1.1.0-linux-x86_64.tar.gz")
+sha256sums=('2ac881df53f47080a0315f4a0f4db794529e36c005ccd51c6903388b4e31a238')
+
+package() {
+  # Keep the official .app layout, executable bytes and upstream application ID.
+  install -d "$pkgdir/usr/lib/longbridge" "$pkgdir/usr/bin" "$pkgdir/usr/share"
+  cp -a longbridge.app "$pkgdir/usr/lib/longbridge/"
+  ln -s /usr/lib/longbridge/longbridge.app/bin/longbridge "$pkgdir/usr/bin/longbridge-desktop"
+  cp -a longbridge.app/share/applications longbridge.app/share/icons "$pkgdir/usr/share/"
+  sed -i -e 's/^Exec=longbridge$/Exec=longbridge-desktop/' \
+         -e 's/^TryExec=longbridge$/TryExec=longbridge-desktop/' \
+    "$pkgdir/usr/share/applications/longbridge-desktop.desktop"
+}
