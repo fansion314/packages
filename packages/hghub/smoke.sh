@@ -22,4 +22,6 @@ ffmpeg -hide_banner -loglevel error -f lavfi -i testsrc2=size=320x240:rate=15 \
   -pix_fmt yuv420p -g 30 -c:a aac -f hls -hls_time 2 -hls_playlist_type vod \
   -hls_segment_filename "$stage/media/segment%02d.ts" "$stage/media/list.m3u8"
 export HGHUB_SMOKE_MEDIA="$stage/media"
+export HGHUB_NATIVE_DRIVER="$root/.work/tools/hghub/WebKitWebDriver"
+python "$root/packages/hghub/prepare-webdriver.py" "$HGHUB_NATIVE_DRIVER" "$HGHUB_SMOKE_EVIDENCE"
 dbus-run-session -- xvfb-run -a -s '-screen 0 1920x1080x24' python "$root/packages/hghub/smoke.py"

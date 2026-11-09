@@ -157,7 +157,7 @@ def main():
     EVIDENCE.mkdir(parents=True, exist_ok=True)
     logs = (EVIDENCE / 'webdriver.log').open('w')
     wm = subprocess.Popen(['openbox'], stdout=logs, stderr=logs)
-    driver = subprocess.Popen(['tauri-driver', '--native-driver', '/usr/bin/WebKitWebDriver'],
+    driver = subprocess.Popen(['tauri-driver', '--native-driver', os.environ['HGHUB_NATIVE_DRIVER']],
                               stdout=logs, stderr=logs, start_new_session=True)
     session = None
     report = {'transport': 'Rust offline AES/HLS tests and real production hg:// rejection checks',
