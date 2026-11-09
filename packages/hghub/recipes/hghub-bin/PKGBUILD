@@ -7,7 +7,7 @@ pkgdesc='HGhub community Linux client with persistent interface scaling (prebuil
 arch=('x86_64')
 url='https://github.com/@REPOSITORY@'
 license=('PolyForm-Noncommercial-1.0.0')
-depends=('gcc-libs' 'glibc' 'gtk3' 'webkit2gtk-4.1' 'libsoup3' 'openssl' 'gst-plugins-base' 'gst-plugins-good' 'gst-libav' 'hicolor-icon-theme' 'xdg-utils')
+depends=('gcc-libs' 'glibc' 'gtk3' 'webkit2gtk-4.1' 'libsoup3' 'openssl' 'gst-plugins-base' 'gst-plugins-good' 'gst-libav' 'hicolor-icon-theme' 'xdg-utils' 'noto-fonts-cjk')
 provides=("hghub=${pkgver}")
 conflicts=('hghub' 'hghub-git')
 options=('!strip')
