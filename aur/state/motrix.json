@@ -1,26 +1,26 @@
 {
   "repository": "fansion314/packages",
-  "reference": "motrix-v2.4.0-1",
+  "reference": "motrix-v2.4.1-1",
   "packages": {
     "motrix-electron": {
-      "version": "0:2.4.0-1",
+      "version": "0:2.4.1-1",
       "files": {
-        ".SRCINFO": "3827a82a6d73564d75d95af858f0bdadb7b3e4797009e9bd90dcaa601a938779",
-        "PKGBUILD": "666789fb61063d94a843fa5bb944e5c1a32a821b290fc2bd8f2a6161242ce44a"
+        ".SRCINFO": "3b67c52e44804944ec4416f8c0c7c088b460bfe26b21da51060b9b05231b8155",
+        "PKGBUILD": "09c03088d39b9f12b63aaa686cafb428ac3f856ebc69bba61becc22d80df39cb"
       },
       "assets": []
     },
     "motrix-electron-bin": {
-      "version": "0:2.4.0-1",
+      "version": "0:2.4.1-1",
       "files": {
-        ".SRCINFO": "9480826709c80e4d36cbb83800fa78f001a28470090bd89a16b5bbf5cc5c42b8",
-        "PKGBUILD": "0dd9952127f8c7083077008c5650d1c2300e179fbab3451f02fb8a7df456a67d"
+        ".SRCINFO": "f9d26fcce19f7b06267fd6273e1cb9a55a5e1b8e5c9b290169157fd9286f3e14",
+        "PKGBUILD": "e4f5736eac5f51646a5c67d44fd6a351c914d4d22eed390b602453aa842820aa"
       },
       "assets": [
         {
-          "url": "https://github.com/fansion314/packages/releases/download/motrix-v2.4.0-1/motrix-electron-2.4.0-1-x86_64.pkg.tar.zst",
-          "sha256": "bd084922473f45bd4229ab321aa769bc4fa30b429f564026a6e81c98fe05499e",
-          "size": 19689360
+          "url": "https://github.com/fansion314/packages/releases/download/motrix-v2.4.1-1/motrix-electron-2.4.1-1-x86_64.pkg.tar.zst",
+          "sha256": "2f84b1231bb09e8211cf4c21010228f0bcf4749c87eb86f75d8bbf7b35c95084",
+          "size": 19691425
         }
       ]
     }
