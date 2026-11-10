@@ -1,6 +1,6 @@
 # Maintainer: Peilin Fan <peilin.fan@foxmail.com>
 pkgname=pi-dnr
-pkgver=1.5.0
+pkgver=1.5.1
 pkgrel=1
 pkgdesc='Pi coding agent packaged as a single application for the shared dnr runtime'
 arch=('x86_64')

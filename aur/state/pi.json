@@ -1,35 +1,35 @@
 {
   "repository": "fansion314/pi",
-  "reference": "40f9c574ff43b6cfc4ae33bb8e0d1e024f228aab",
+  "reference": "812f3e4d969cc1c1b2ad1a0f770bc0c34c4ebc78",
   "packages": {
     "pi-dnr": {
-      "version": "0:1.5.0-1",
+      "version": "0:1.5.1-1",
       "files": {
-        ".SRCINFO": "8c98d2d665433131d209ada0d9ef920dbe942b011bb4ac10c6dd8ce655594ad8",
+        ".SRCINFO": "ff60268d8bfc4fbc40840f6f4512f3b00b81fa669025d94b4e6a62a8a996f37b",
         ".gitignore": "bac4d7d6a614b4202ab387e7607036337ee12e20a94a47112e579bdfc7dffd83",
-        "PKGBUILD": "ec47c40d3a63c912c46a49011ab132a08fa3a5e35a2f0c9ab96976eb7f598219",
+        "PKGBUILD": "159a63caf78352f7d4c4475fb52aef77e114cc5b67d74e2443ec6010f8e2b224",
         "README.md": "a275e468178b0fc75bb292057548e44ee03da521e1361e9508a71d412fdafa0f",
-        "release-notes.md": "48fb4fcd21bcc426c8bfcd329026cdd0fc0a3ef71e4824e7741ae63f99f719f2"
+        "release-notes.md": "aa23dd0c3bc122e0a4e0653d515a9c9d3b2488ced10b7ac1a42497fc45115e82"
       },
       "assets": []
     },
     "pi-dnr-bin": {
-      "version": "0:1.5.0-1",
+      "version": "0:1.5.1-1",
       "files": {
-        ".SRCINFO": "214eda4905e084e7ca1eda87c600d4638bf4d86148398b17e7db56bae8748188",
+        ".SRCINFO": "046e087f420cd61dac5543fd630df2b079ce94f5f2b570cdc2d3dce1aa796ebc",
         ".gitignore": "bac4d7d6a614b4202ab387e7607036337ee12e20a94a47112e579bdfc7dffd83",
-        "PKGBUILD": "a413a632a30fa726da04c0a9693e6cd10cd82d1c22f4bfbdf27578e8cfd7fc9b",
+        "PKGBUILD": "ece6079bce90cee375d8b97ef1223f8f29c65c8932045a16ce51e30441cb1956",
         "README.md": "01d6ad6f29278d6526b2017c51b1257ba13c77be88632226b98bc267e7b87f4c"
       },
       "assets": [
         {
-          "url": "https://github.com/fansion314/pi/releases/download/pi-dnr-v1.5.0-1/pi-dnr-1.5.0-1-x86_64.pkg.tar.zst",
-          "sha256": "c35958fa21f15d7a37faaab3dcb07cf12bef000ea76dd4d88630bd7a41233802",
-          "size": 7213342
+          "url": "https://github.com/fansion314/pi/releases/download/pi-dnr-v1.5.1-1/pi-dnr-1.5.1-1-x86_64.pkg.tar.zst",
+          "sha256": "0ce45033c498a86b0a27982dbf7ef7e6f8f1b51fb87cb5b416b843e50ec54af2",
+          "size": 7281884
         },
         {
-          "url": "https://github.com/fansion314/pi/releases/download/pi-dnr-v1.5.0-1/pi-dnr-1.5.0-1-x86_64.pkg.tar.zst.sha256",
-          "sha256": "fcf44dc9f875ae58329e6a9b9dcd07df6c08e34a8d79ad7b66bdb06920853ecc",
+          "url": "https://github.com/fansion314/pi/releases/download/pi-dnr-v1.5.1-1/pi-dnr-1.5.1-1-x86_64.pkg.tar.zst.sha256",
+          "sha256": "cac88eb10c68cce714dba5491ef52571f31a4e58fc72c4d41ab7d08dfcfd7687",
           "size": 100
         }
       ]
