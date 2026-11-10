@@ -1,8 +1,8 @@
 # Maintainer: fansion314 <https://github.com/fansion314>
 pkgname=hghub
 pkgver=1.2.0
-pkgrel=1
-_tag=hghub-v1.2.0-1
+pkgrel=2
+_tag=hghub-v1.2.0-2
 pkgdesc='HGhub community Linux client with persistent interface scaling'
 arch=('x86_64')
 url='https://github.com/fansion314/packages'
@@ -11,7 +11,7 @@ depends=('gcc-libs' 'glibc' 'gtk3' 'webkit2gtk-4.1' 'libsoup3' 'openssl' 'gst-pl
 makedepends=('git' 'python' 'nodejs>=24' 'pnpm' 'rust>=1.90' 'cargo' 'pkgconf' 'desktop-file-utils')
 conflicts=('hghub-bin' 'hghub-git')
 options=('!lto' '!debug' '!strip')
-_packaging_ref='tag=hghub-v1.2.0-1'
+_packaging_ref='tag=hghub-v1.2.0-2'
 source=("hghub::git+https://github.com/Minireel/HGhub.git#commit=79827baa7542fead68919e7b45f5bfde86b18ee7"
         "packaging::git+https://github.com/fansion314/packages.git#${_packaging_ref}")
 sha256sums=('SKIP' 'SKIP')
@@ -31,7 +31,7 @@ build() {
 check() {
   cd hghub
   cargo test --manifest-path src-tauri/Cargo.toml --locked --release --lib
-  node --test scripts/test-interface-scale.mjs
+  node --test scripts/test-interface-scale.mjs scripts/test-playback-source.mjs
   desktop-file-validate "$srcdir/packaging/packages/hghub/hghub.desktop"
 }
 

@@ -1,8 +1,8 @@
 # Maintainer: fansion314 <https://github.com/fansion314>
 pkgname=hghub-bin
 pkgver=1.2.0
-pkgrel=1
-_tag=hghub-v1.2.0-1
+pkgrel=2
+_tag=hghub-v1.2.0-2
 pkgdesc='HGhub community Linux client with persistent interface scaling (prebuilt Arch package)'
 arch=('x86_64')
 url='https://github.com/fansion314/packages'
@@ -14,7 +14,7 @@ options=('!strip')
 _package="hghub-${pkgver}-${pkgrel}-x86_64.pkg.tar.zst"
 source=("${url}/releases/download/${_tag}/${_package}")
 noextract=("${_package}")
-sha256sums=('a780345f44ab2b222f85bcc53703b6b538fb2f19daf640a705a2a74df73d09c5')
+sha256sums=('153c47d63b83a69fc6925f5ff9abcc7ac0d3b6baba1de490160fd1775dacfead')
 
 package() {
   bsdtar -xf "$srcdir/$_package" -C "$pkgdir" usr
