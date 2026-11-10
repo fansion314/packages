@@ -1,7 +1,7 @@
 {
   "id": "hghub",
   "version": "1.2.0",
-  "pkgrel": 1,
+  "pkgrel": 2,
   "package": "hghub",
   "runtime": "tauri-webkitgtk",
   "upstream": {

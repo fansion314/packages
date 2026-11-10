@@ -1,0 +1,140 @@
+# Adapted from zxsos/HGhub cfcde4a6e2123c0d6054151ad946c018961cff26.
+# Keep the official v1.2.0 baseline and the existing Linux transport.
+diff --git a/src-tauri/src/api.rs b/src-tauri/src/api.rs
+--- a/src-tauri/src/api.rs
++++ b/src-tauri/src/api.rs
+@@ -357,9 +357,19 @@
+ 
+ #[tauri::command]
+ pub async fn api_play(state: State<'_, Api>, id: i64, ep: u32) -> Result<Value, String> {
+-    state
+-        .get(&format!("/api/videos/{id}/play?ep={ep}&page_texts=0"))
+-        .await
++    let (method, path, body) = playback_request(id, ep);
++    let origin = base();
++    let token = state.session.token(&origin);
++    edge(&origin, method, &path, Some(body), token.as_deref()).await
++}
++
++// The playback endpoint uses a logical POST inside the existing edge envelope.
++fn playback_request(id: i64, ep: u32) -> (&'static str, String, Value) {
++    (
++        "POST",
++        format!("/api/videos/{id}/episodes/{ep}/playback"),
++        json!({}),
++    )
+ }
+ 
+ /* ───────────────────────── 评论 / 互动 ───────────────────────── */
+@@ -461,8 +471,19 @@
+ }
+ #[cfg(test)]
+ mod tests {
+-    use super::is_newer;
++    use super::{is_newer, playback_request};
+     use serde_json::Value;
++
++    #[test]
++    fn playback_uses_new_episode_post_contract() {
++        // Minireel/HGhub#31: the old GET succeeds with empty video_url fields.
++        for (id, ep) in [(42, 1), (91, 3)] {
++            let (method, path, body) = playback_request(id, ep);
++            assert_eq!(method, "POST");
++            assert_eq!(path, format!("/api/videos/{id}/episodes/{ep}/playback"));
++            assert_eq!(body, serde_json::json!({}));
++        }
++    }
+ 
+     #[test]
+     fn frontend_cannot_bypass_url_policy_with_opener_commands() {
+diff --git a/src-tauri/src/net.rs b/src-tauri/src/net.rs
+--- a/src-tauri/src/net.rs
++++ b/src-tauri/src/net.rs
+@@ -430,7 +430,9 @@
+     let path = path.split('?').next().unwrap_or("");
+     if path.starts_with("/api/videos/category/") {
+         "category"
+-    } else if path.starts_with("/api/videos/") && path.ends_with("/play") {
++    } else if path.starts_with("/api/videos/")
++        && (path.ends_with("/play") || path.ends_with("/playback"))
++    {
+         "play"
+     } else if path == "/api/videos" {
+         "feed"
+@@ -700,6 +702,7 @@
+             ("/api/videos?page=1&size=10", "feed"),
+             ("/api/videos/category/private?x=secret", "category"),
+             ("/api/videos/42/play?ep=1", "play"),
++            ("/api/videos/42/episodes/1/playback", "play"),
+             ("/api/search?q=private-search", "search"),
+             ("/api/account/loginByPassword", "account"),
+             ("/unknown/private", "other"),
+diff --git a/src/types.ts b/src/types.ts
+--- a/src/types.ts
++++ b/src/types.ts
+@@ -55,8 +55,9 @@
+   ep_num: number;
+   duration: number;
+   title: string;
+-  video_url: string;
++  video_url?: string;
+   video_url_hevc?: string;
++  streams?: { main?: string; hevc?: string; preview?: string };
+ };
+ 
+ export type RankItem = {
+diff --git a/src/api.ts b/src/api.ts
+--- a/src/api.ts
++++ b/src/api.ts
+@@ -1,4 +1,5 @@
+ import { invoke } from "@tauri-apps/api/core";
++import { playbackSource } from "./playbackSource";
+ import type {
+   CommentPage, Detail, Paged, PlayInfo, Post, RankItem, User, VideoCard,
+ } from "./types";
+@@ -137,8 +138,9 @@
+   const steps: string[] = [];
+   try {
+     const info = await api.play(117, 3);
+-    steps.push(`play:${info?.video_url ? "ok" : "empty"}`);
+-    const hlsUrl = `${LOCAL}/hls?u=${encodeURIComponent(info.video_url)}`;
++    const source = playbackSource(info);
++    steps.push("play:ok");
++    const hlsUrl = `${LOCAL}/hls?u=${encodeURIComponent(source)}`;
+     const r1 = await fetch(hlsUrl);
+     const txt = await r1.text();
+     steps.push(`hls:${r1.status}/${txt.length}/${txt.startsWith("#EXTM3U") ? "m3u8" : "bad"}`);
+diff --git a/src/components/Feed.tsx b/src/components/Feed.tsx
+--- a/src/components/Feed.tsx
++++ b/src/components/Feed.tsx
+@@ -1,5 +1,6 @@
+ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+ import { api, cover, fmt, fmtTime, isMobile, mediaUrl } from "../api";
++import { loadPlayback } from "../playbackSource";
+ import type { Detail, Episode, Post, VideoCard } from "../types";
+ import { useStore } from "../store";
+ import { Avatar, Img, Sheet } from "./ui";
+@@ -238,16 +239,14 @@
+   useEffect(() => {
+     if (!curId) return;
+     if (playUrls[playKey]) return;
+-    let alive = true;
+-    api.play(curId, curEp)
+-      .then((info) => {
+-        if (!alive) return;
+-        if (!info?.video_url) throw new Error("暂无播放地址");
+-        setPlayUrls((m) => ({ ...m, [playKey]: info.video_url }));
++    return loadPlayback(
++      () => api.play(curId, curEp),
++      (source) => {
++        setPlayUrls((m) => ({ ...m, [playKey]: source }));
+         addHistory(curId, curEp);
+-      })
+-      .catch((e) => { if (alive) setErr((e as Error).message || "取播放地址失败"); });
+-    return () => { alive = false; };
++      },
++      (error) => setErr(error.message || "取播放地址失败"),
++    );
+     // eslint-disable-next-line react-hooks/exhaustive-deps
+   }, [curId, curEp]);
+ 

@@ -31,7 +31,7 @@ build() {
 check() {
   cd hghub
   cargo test --manifest-path src-tauri/Cargo.toml --locked --release --lib
-  node --test scripts/test-interface-scale.mjs
+  node --test scripts/test-interface-scale.mjs scripts/test-playback-source.mjs
   desktop-file-validate "$srcdir/packaging/packages/hghub/hghub.desktop"
 }
 

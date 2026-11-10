@@ -4,7 +4,9 @@
 Rust's offline tests cover the AES/HLS transport transformation. This smoke uses
 an injected in-memory HLS fixture loader for native WebKit playback, and checks
 real hg:// routing/security separately. It does not claim an end-to-end fixture
-network fetch through the production transport.
+network fetch through the production transport. A separate live probe uses the
+packaged IPC and media protocol to fetch a current stream, playlist, key and
+segment; it does not replace the deterministic native playback fixture.
 """
 import base64
 import json
@@ -29,7 +31,7 @@ def request(method, path, body=None):
     req = urllib.request.Request(URL + path, data=payload, method=method,
                                  headers={'Content-Type': 'application/json'})
     try:
-        with urllib.request.urlopen(req, timeout=50) as response:
+        with urllib.request.urlopen(req, timeout=200) as response:
             result = json.load(response)
     except urllib.error.HTTPError as error:
         raise AssertionError(f'{method} {path}: {error.read().decode()}') from error
@@ -209,6 +211,72 @@ def fixture_playback(session, percent):
 
 
 
+def live_transport(session):
+    # No raw URLs, signed queries, keys, media bytes or response bodies leave the
+    # WebView. Only anonymous reads through the shipped IPC/protocol are used.
+    session.command('POST', '/timeouts', {'script': 180000, 'implicit': 0, 'pageLoad': 30000})
+    try:
+        return session.async_js(r'''const done=arguments[arguments.length-1];
+          (async()=>{
+            const report={passed:false,transport:'packaged IPC and hg:// media protocol',attempts:[]};
+            const invoke=(cmd,args={})=>window.__TAURI_INTERNALS__.invoke(cmd,args);
+            const failure=(phase,error)=>{
+              const text=String(error),http=/HTTP\s+(\d{3})/.exec(text);
+              return {phase,kind:http?'http':/超时|timeout|timed out/i.test(text)?'timeout':
+                /dns|resolve/i.test(text)?'dns':/内网|禁止|拒绝|private/i.test(text)?'policy':'upstream',
+                ...(http?{status:Number(http[1])}:{})};
+            };
+            let phase='feed';
+            try {
+              const boot=await invoke('app_boot');
+              report.lineHost=new URL(boot.base).host;
+              const feed=await invoke('api_feed',{page:1,size:3});
+              const ids=(feed?.items||[]).map(item=>item.id).filter(Number.isSafeInteger).slice(0,3);
+              if(!ids.length){report.failure={phase:'feed',kind:'empty'};return report;}
+              for(const id of ids){
+                const attempt={};report.attempts.push(attempt);phase='playback';
+                try {
+                  const info=await invoke('api_play',{id,ep:1});
+                  const source=info?.streams?.main||info?.video_url;
+                  if(!source){attempt.failure={phase,kind:'empty'};continue;}
+                  attempt.source=info?.streams?.main?'streams.main':'video_url';
+                  attempt.mediaHost=new URL(source).host;
+                  const local='hg://localhost';
+                  let target=local+'/hls?u='+encodeURIComponent(source),text='';
+                  for(let depth=0;depth<3;depth++){
+                    phase='playlist';const response=await fetch(target);attempt.playlistStatus=response.status;
+                    if(!response.ok)throw Error('HTTP '+response.status);
+                    text=await response.text();
+                    if(!text.replace(/^\uFEFF/,'').startsWith('#EXTM3U'))throw Error('Invalid playlist');
+                    const lines=text.split('\n').map(line=>line.trim());
+                    if(!lines.some(line=>line.startsWith('#EXT-X-STREAM-INF')))break;
+                    target=lines.find(line=>line&&!line.startsWith('#'))||'';
+                    if(!target.startsWith(local+'/hls?'))throw Error('Unproxied child playlist');
+                  }
+                  const lines=text.split('\n').map(line=>line.trim());
+                  const key=lines.find(line=>line.startsWith('#EXT-X-KEY:')&&!line.includes('METHOD=NONE'));
+                  if(key){
+                    phase='key';const target=/URI="([^"]+)"/.exec(key)?.[1];
+                    if(!target?.startsWith(local+'/seg?'))throw Error('Unproxied key');
+                    const response=await fetch(target),bytes=await response.arrayBuffer();
+                    attempt.key={status:response.status,bytes:bytes.byteLength};
+                    if(!response.ok||!bytes.byteLength)throw Error('HTTP '+response.status);
+                  }
+                  phase='segment';const segment=lines.find(line=>line&&!line.startsWith('#'));
+                  if(!segment?.startsWith(local+'/seg?'))throw Error('Missing proxied segment');
+                  const response=await fetch(segment),bytes=await response.arrayBuffer();
+                  attempt.segment={status:response.status,bytes:bytes.byteLength};
+                  if(!response.ok||!bytes.byteLength)throw Error('HTTP '+response.status);
+                  report.passed=true;break;
+                } catch(error){attempt.failure=failure(phase,error);}
+              }
+            } catch(error){report.failure=failure(phase,error);}
+            return report;
+          })().then(done).catch(()=>done({passed:false,failure:{phase:'probe',kind:'script'}}));''')
+    finally:
+        session.command('POST', '/timeouts', {'script': 30000, 'implicit': 0, 'pageLoad': 30000})
+
+
 def main():
     assert os.environ.get('CI') == 'true', 'CI only'
     EVIDENCE.mkdir(parents=True, exist_ok=True)
@@ -265,6 +333,10 @@ def main():
             fixture_playback(session, percent)
         session.scale(100)
         assert session.js('return window.__smokeErrors') == []
+        report['offline_passed'] = True
+        report['live'] = live_transport(session)
+        (EVIDENCE / 'live-transport.json').write_text(json.dumps(report['live'], indent=2) + '\n')
+        assert report['live']['passed'], 'Live playback transport failed; see live-transport.json'
         report['passed'] = True
     except Exception as error:
         report['error'] = str(error)
