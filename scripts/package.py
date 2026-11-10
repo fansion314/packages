@@ -230,6 +230,9 @@ def finalize(project, archive, destination):
         'cache or settings. The upstream dev.egoist.music identity uses a separate '
         'data directory, and the old application data remains untouched.\n'
         if project == 'mygo-music' else '')
+    project_notes = ROOT/'packages'/project/'release-notes.md'
+    if project_notes.is_file():
+        migration_note += '\n' + project_notes.read_text().strip() + '\n'
     (destination/'notes.md').write_text(
         f"{project} {info['version']} packaging revision {info['pkgrel']} for Arch Linux x86_64.\n\n"
         + runtime_note(info) + 'Install the pacman package directly, '

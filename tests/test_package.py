@@ -12,6 +12,31 @@ spec.loader.exec_module(package)
 
 
 class PackageTests(unittest.TestCase):
+    def test_finalization_appends_project_upgrade_notes(self):
+        info = package.manifest('motrix')
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            notes = root/'packages/motrix/release-notes.md'
+            notes.parent.mkdir(parents=True)
+            notes.write_text('Back up before the schema 6 upgrade.\n')
+            archive = root/f"motrix-electron-{info['version']}-{info['pkgrel']}-x86_64.pkg.tar.zst"
+            archive.write_bytes(b'fixture')
+            with patch.object(package, 'ROOT', root), \
+                 patch.object(package, 'manifest', return_value=info), \
+                 patch.object(package, 'recipes', side_effect=lambda project, destination, *args, **kwargs:
+                              Path(destination).mkdir(parents=True)), \
+                 patch.object(package, 'runtime_metadata', return_value={}), \
+                 patch.object(package, 'run', return_value=''):
+                for present in [True, False]:
+                    with self.subTest(project_notes=present):
+                        if not present:
+                            notes.unlink()
+                        output = root/str(present)
+                        package.finalize('motrix', archive, output)
+                        text = (output/'notes.md').read_text()
+                        self.assertIn('Uses system Electron', text)
+                        self.assertEqual('Back up before the schema 6 upgrade.' in text, present)
+
     def test_official_binary_recipes_pin_vendor_input_and_keep_runtime_dependencies(self):
         info = package.manifest('longbridge')
         with tempfile.TemporaryDirectory() as directory:
