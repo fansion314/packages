@@ -1,8 +1,8 @@
 # Maintainer: fansion314 <https://github.com/fansion314>
 pkgname=mygo-music-bin
-pkgver=0.1.22
+pkgver=0.1.24
 pkgrel=1
-_tag=mygo-music-v0.1.22-1
+_tag=mygo-music-v0.1.24-1
 pkgdesc='MyGo Music native music player with adjustable interface scale (prebuilt Arch package)'
 arch=('x86_64')
 url='https://github.com/fansion314/packages'
@@ -15,7 +15,7 @@ options=('!strip')
 _package="mygo-music-${pkgver}-${pkgrel}-x86_64.pkg.tar.zst"
 source=("${url}/releases/download/${_tag}/${_package}")
 noextract=("${_package}")
-sha256sums=('65e3985a3041199acd2fbf86454a560336421eaee8f9bbdd273af1823f9a8fc9')
+sha256sums=('550c04712ed3a6a2a171f5adfadfb00aebe16ffe7059178855973f72bd9ec6d5')
 
 package() {
   bsdtar -xf "$srcdir/$_package" -C "$pkgdir" usr

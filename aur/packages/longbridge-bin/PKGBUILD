@@ -1,8 +1,8 @@
 # Maintainer: fansion314 <https://github.com/fansion314>
 pkgname=longbridge-bin
-pkgver=1.1.0
+pkgver=1.1.2
 pkgrel=1
-_tag=longbridge-v1.1.0-1
+_tag=longbridge-v1.1.2-1
 pkgdesc='Longbridge trading platform desktop application (prebuilt Arch package)'
 arch=('x86_64')
 url='https://github.com/fansion314/packages'
@@ -15,7 +15,7 @@ options=('!strip' '!debug')
 _package="longbridge-${pkgver}-${pkgrel}-x86_64.pkg.tar.zst"
 source=("${url}/releases/download/${_tag}/${_package}")
 noextract=("${_package}")
-sha256sums=('eeb57d05978cd0a9b673e72f50dae4d2402e7aa7315c29ae1a79d7c915ba086c')
+sha256sums=('c230a49423df706cc3d4ebc1cfa2f9f842133c5dc834cb1745ef5eb0f2d55b4c')
 
 package() {
   bsdtar -xf "$srcdir/$_package" -C "$pkgdir" usr

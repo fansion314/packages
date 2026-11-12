@@ -1,6 +1,6 @@
 pkgbase = mygo-music
 	pkgdesc = MyGo Music native music player with adjustable interface scale
-	pkgver = 0.1.22
+	pkgver = 0.1.24
 	pkgrel = 1
 	url = https://github.com/fansion314/packages
 	arch = x86_64
@@ -27,8 +27,8 @@ pkgbase = mygo-music
 	options = !lto
 	options = !debug
 	options = !strip
-	source = mygo-music::git+https://github.com/egoist/mygo-music.git#commit=1af0d8efd77fdf630c27cfc635f12e9cb089ce10
-	source = packaging::git+https://github.com/fansion314/packages.git#tag=mygo-music-v0.1.22-1
+	source = mygo-music::git+https://github.com/egoist/mygo-music.git#commit=552e25c04023aa00c551d77db69aaab16f60bf2d
+	source = packaging::git+https://github.com/fansion314/packages.git#tag=mygo-music-v0.1.24-1
 	sha256sums = SKIP
 	sha256sums = SKIP
 
