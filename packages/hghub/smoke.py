@@ -221,13 +221,14 @@ def live_transport(session):
             const report={passed:false,transport:'packaged IPC and hg:// media protocol',attempts:[]};
             const invoke=(cmd,args={})=>window.__TAURI_INTERNALS__.invoke(cmd,args);
             const failure=(phase,error)=>{
-              const text=String(error),http=/HTTP\s+(\d{3})/.exec(text);
+              const text=String(error),http=/HTTP\s+(\d{3})/.exec(text)||/^(401|403)$/.exec(text);
               return {phase,kind:http?'http':/超时|timeout|timed out/i.test(text)?'timeout':
                 /dns|resolve/i.test(text)?'dns':/内网|禁止|拒绝|private/i.test(text)?'policy':'upstream',
                 ...(http?{status:Number(http[1])}:{})};
             };
             let phase='feed';
             try {
+              await invoke('playback_log_set',{enabled:true});
               const boot=await invoke('app_boot');
               report.lineHost=new URL(boot.base).host;
               const feed=await invoke('api_feed',{page:1,size:3});
@@ -271,6 +272,20 @@ def live_transport(session):
                 } catch(error){attempt.failure=failure(phase,error);}
               }
             } catch(error){report.failure=failure(phase,error);}
+            finally {
+              // Keep only fixed transport fields; URLs, bodies and credentials stay in the WebView.
+              try {
+                const journal=await invoke('playback_log_read');
+                report.network=journal.split('\n').filter(Boolean).map(line=>JSON.parse(line))
+                  .filter(entry=>entry.event==='api.end').map(entry=>{
+                    const data=entry.data||{};
+                    return Object.fromEntries(['operation','method','status','headers_ms','elapsed_ms',
+                      'response_kind','gateway','business_status','error_kind','retryable']
+                      .filter(key=>Object.hasOwn(data,key)).map(key=>[key,data[key]]));
+                  }).slice(-20);
+              } catch { report.networkDiagnosticsUnavailable=true; }
+              await invoke('playback_log_set',{enabled:false}).catch(()=>{});
+            }
             return report;
           })().then(done).catch(()=>done({passed:false,failure:{phase:'probe',kind:'script'}}));''')
     finally:
