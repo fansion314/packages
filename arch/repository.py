@@ -301,7 +301,7 @@ def build(site, settings, active, resume=''):
     ensure_monotonic(packages, previous)
     if not resume and not (site/'snapshots'/snapshot_inputs(packages)[1]/'manifest.json').exists():
         packages = acquire_packages(packages, previous, settings, mirror_state)
-        if settings.get('upstreams') and any(p['id'] == 'fansionia-keyring' for p in settings['projects']):
+        if settings.get('upstreams') and any(p['id'] == 'fansionia-keyring' for p in settings.get('projects', [])):
             require_published_keyring(packages)
     # Changes in inputs, generator or public signing material require a new
     # snapshot. Repeated release notifications reuse the existing signed bytes.
