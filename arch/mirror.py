@@ -115,22 +115,25 @@ def snapshot_plan(site, settings, snapshot, objects=None):
     return result
 
 
-def origin_missing(url):
-    """Only definitive removal pins an origin; other failures keep normal gates."""
+def origin_unavailable(url):
+    """Detect an unavailable origin; recovery still requires verified original bytes."""
+    from upstream import unavailable
     request = urllib.request.Request(url, method='HEAD', headers={
         'User-Agent': 'fansionia-pacman-mirror', 'Cache-Control': 'no-cache'})
     try:
         with urllib.request.urlopen(request, timeout=20):
             return False
     except urllib.error.HTTPError as error:
-        removed = error.code in (404, 410)
+        removed = unavailable(error)
         error.close()
         return removed
-    except OSError:
-        return False
+    except Exception as error:
+        if not unavailable(error):
+            raise
+        return True
 
 
-def recover_missing_upstreams(site, settings, state, candidate):
+def recover_unavailable_upstreams(site, settings, state, candidate):
     """Journal verified archive routes without changing the signed snapshot."""
     recovered = set(state.get('pinned', {}))
     snapshots = {candidate}
@@ -144,13 +147,13 @@ def recover_missing_upstreams(site, settings, state, candidate):
         path = '/'+settings['architecture']+'/'+package['filename']
         if not package.get('upstream') or path in recovered or package.get('archive_url'):
             continue
-        if not any(origin_missing(package[prefix+'url']) for prefix in ['', 'signature_']):
+        if not any(origin_unavailable(package[prefix+'url']) for prefix in ['', 'signature_']):
             continue
         # Both bytes and the original signature must have a verified snapshot
         # receipt and an exact immutable object ledger entry before using them.
         archived_urls(state, settings, package)
         recovered.update([path, path+'.sig'])
-        message = ('Routing removed upstream '+package['name']+' '+package['version']+
+        message = ('Routing unavailable upstream '+package['name']+' '+package['version']+
                    ' to its verified immutable mirror copy')
         print('WARNING:', message)
         if os.environ.get('GITHUB_STEP_SUMMARY'):
@@ -160,14 +163,14 @@ def recover_missing_upstreams(site, settings, state, candidate):
 
 
 def pinned_plan(site, settings, objects, recovered=()):
-    """Protect frozen upstream bytes for every retained primary database."""
+    """Protect archived original bytes for every retained primary database."""
     index = Path(site)/'snapshots.json'
     snapshots = json.loads(index.read_text()) if index.exists() else []
     result = {}
     for snapshot in snapshots:
         manifest = json.loads((Path(site)/'snapshots'/snapshot/'manifest.json').read_text())
-        pinned = [p for p in manifest['packages'] if p.get('upstream') and
-                  (p.get('archive_url') or '/'+settings['architecture']+'/'+p['filename'] in recovered)]
+        pinned = [p for p in manifest['packages'] if p.get('archive_url') or
+                  (p.get('upstream') and '/'+settings['architecture']+'/'+p['filename'] in recovered)]
         if not pinned:
             continue
         plan = snapshot_plan(site, settings, snapshot, objects)
@@ -210,7 +213,7 @@ def stage(site, settings, active, candidate):
     retained = list(dict.fromkeys([*state['successful'], candidate]))
     if len(state['successful']) > 2 or len(retained) > 3:
         raise ValueError('Mirror snapshot retention exceeded')
-    recovered = recover_missing_upstreams(site, settings, state, candidate)
+    recovered = recover_unavailable_upstreams(site, settings, state, candidate)
     state['snapshots'] = {s: {'verified': False, 'routes': snapshot_plan(site, settings, s, state['objects'])}
                           for s in retained}
     state['keys'] = key_plan(site, state['objects'])

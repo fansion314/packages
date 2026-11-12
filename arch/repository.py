@@ -10,10 +10,15 @@ import shutil
 import subprocess
 import tempfile
 import urllib.parse
+import urllib.error
 import urllib.request
 from sign import Signer, checksum
 
 ROOT = Path(__file__).resolve().parent
+
+
+class ReleaseIncomplete(ValueError):
+    """A source has not finished publishing a usable signed release."""
 
 
 def canonical(value):
@@ -46,7 +51,7 @@ def version_key(tag):
 def select_release(project, releases):
     matches = [r for r in releases if not r['draft'] and re.fullmatch(project['tag_pattern'], r['tag_name'])]
     if not matches:
-        raise ValueError('No public release for '+project['id'])
+        raise ReleaseIncomplete('No public release for '+project['id'])
     release = max(matches, key=lambda r: version_key(r['tag_name']))
     assets = {a['name']: a for a in release['assets']}
     result = []
@@ -57,11 +62,13 @@ def select_release(project, releases):
         packages = [(asset, pattern.fullmatch(asset['name'])) for asset in assets.values()]
         packages = [(asset, match) for asset, match in packages if match]
         if len(packages) != 1:
+            if not packages:
+                raise ReleaseIncomplete(f'Missing {name} package in {release["tag_name"]}')
             raise ValueError(f'Expected exactly one {name} package in {release["tag_name"]}')
         asset, match = packages[0]
         signature = assets.get(asset['name']+'.sig')
         if not signature:
-            raise ValueError('Release is not completely signed: '+asset['name'])
+            raise ReleaseIncomplete('Release is not completely signed: '+asset['name'])
         record = {'project': project['id'], 'repository': project['repository'], 'tag': release['tag_name'],
                   'name': name, 'version': match[1]+'-'+match[2], 'architecture': match[3],
                   'filename': asset['name']}
@@ -92,19 +99,46 @@ def require_published_keyring(packages):
                          ' before activating updated upstream signing keys')
 
 
-def discover(settings):
+def defer_packages(settings, mirror_state, records, label, error):
+    """Keep verified original packages for one unavailable source; retry discovery next run."""
+    from mirror import archived_urls
+    result = [dict(p, **archived_urls(mirror_state, settings, p)) for p in records]
+    status = 'HTTP '+str(error.code) if isinstance(error, urllib.error.HTTPError) else type(error).__name__
+    if isinstance(error, urllib.error.HTTPError):
+        error.close()
+    kept = ', '.join(p['name']+' '+p['version'] for p in result) or 'no previous package; skipped'
+    message = f'Deferred {label} ({status}); {kept}. Other packages continue; next sync retries the source.'
+    print('WARNING:', message)
+    if os.environ.get('GITHUB_STEP_SUMMARY'):
+        with open(os.environ['GITHUB_STEP_SUMMARY'], 'a') as summary:
+            summary.write(message+'\n\n')
+    return result
+
+
+def discover(settings, previous=None, mirror_state=None):
+    previous = previous or {'packages': []}
+    mirror_state = mirror_state or {}
     releases = {}
     packages = []
     for project in settings['projects']:
         repository = project['repository']
-        if repository not in releases:
-            releases[repository] = [r for page in github(f'repos/{repository}/releases?per_page=100') for r in page]
-        packages.extend(select_release(project, releases[repository]))
+        try:
+            if repository not in releases:
+                releases[repository] = [r for page in github(f'repos/{repository}/releases?per_page=100') for r in page]
+            packages.extend(select_release(project, releases[repository]))
+        except (subprocess.CalledProcessError, ReleaseIncomplete) as error:
+            records = [p for p in previous['packages'] if p.get('project') == project['id']
+                       and p['repository'] == repository and p['name'] in project['packages']]
+            packages.extend(defer_packages(settings, mirror_state, records, project['id'], error))
     if settings.get('upstreams'):
         if any(p['id'] == 'fansionia-keyring' for p in settings['projects']):
             require_published_keyring(packages)
         from upstream import discover as upstream_discover
-        packages.extend(upstream_discover(settings, [p['name'] for p in packages]))
+        def defer(source, name, error):
+            records = [p for p in previous['packages'] if p.get('upstream') == source
+                       and (name is None or p['name'] == name)]
+            return defer_packages(settings, mirror_state, records, name or source, error)
+        packages.extend(upstream_discover(settings, [p['name'] for p in packages], defer))
     filenames = [p['filename'] for p in packages]
     names = [p['name'] for p in packages]
     if len(filenames) != len(set(filenames)) or len(names) != len(set(names)):
@@ -222,9 +256,38 @@ def snapshot_inputs(packages):
     return inputs, hashlib.sha256(canonical(inputs)).hexdigest()[:32]
 
 
+def acquire_packages(packages, previous, settings, mirror_state):
+    """Validate available inputs before snapshot identity is fixed, deferring only download outages."""
+    from upstream import unavailable
+    old = {p['name']: p for p in previous['packages']} if previous else {}
+    selected = []
+    with tempfile.TemporaryDirectory(prefix='fansionia-preflight-') as temporary:
+        for package in packages:
+            archive = Path(temporary)/package['filename']
+            try:
+                for prefix, destination in [('', archive), ('signature_', Path(str(archive)+'.sig'))]:
+                    cache = ROOT.parent/'.cache/pacman-downloads'/package[prefix+'sha256']
+                    download(package.get(prefix+'archive_url', package[prefix+'url']),
+                             cache, package[prefix+'sha256'])
+                    shutil.copy2(cache, destination)
+            except Exception as error:
+                if not unavailable(error):
+                    raise
+                before = old.get(package['name'])
+                records = [before] if before and before['repository'] == package['repository'] else []
+                selected.extend(defer_packages(settings, mirror_state, records, package['name'], error))
+                continue
+            verify_package(package, archive, ROOT/'keys/fansionia.gpg', settings)
+            selected.append(package)
+    return selected
+
+
 def build(site, settings, active, resume=''):
     site = Path(site)
     site.mkdir(parents=True, exist_ok=True)
+    previous = previous_manifest(site, active)
+    from mirror import read_state
+    mirror_state = read_state(site, settings) if settings.get('mirror') else {}
     if resume:
         manifest_path = site/'snapshots'/resume/'manifest.json'
         if not re.fullmatch(r'[0-9a-f]{32}', resume) or not manifest_path.is_file():
@@ -232,12 +295,14 @@ def build(site, settings, active, resume=''):
         existing = json.loads(manifest_path.read_text())
         packages = existing['packages']
     else:
-        packages = discover(settings)
-    previous = previous_manifest(site, active)
+        packages = discover(settings, previous, mirror_state)
     if not resume and settings.get('mirror'):
-        from mirror import read_state
-        packages = retain_upstream_rebuilds(packages, previous, settings, read_state(site, settings))
+        packages = retain_upstream_rebuilds(packages, previous, settings, mirror_state)
     ensure_monotonic(packages, previous)
+    if not resume and not (site/'snapshots'/snapshot_inputs(packages)[1]/'manifest.json').exists():
+        packages = acquire_packages(packages, previous, settings, mirror_state)
+        if settings.get('upstreams') and any(p['id'] == 'fansionia-keyring' for p in settings['projects']):
+            require_published_keyring(packages)
     # Changes in inputs, generator or public signing material require a new
     # snapshot. Repeated release notifications reuse the existing signed bytes.
     if resume:
@@ -392,9 +457,10 @@ if __name__ == '__main__':
         state = mirror_state() if settings.get('mirror') else {}
         resume = state.get('pending') or (active if state.get('cleanup_pending') else '')
         if not resume:
-            packages = discover(settings)
+            previous = snapshot_manifest(active)
+            packages = discover(settings, previous, state)
             if settings.get('mirror'):
-                packages = retain_upstream_rebuilds(packages, snapshot_manifest(active), settings, state)
+                packages = retain_upstream_rebuilds(packages, previous, settings, state)
             _, candidate = snapshot_inputs(packages)
         else:
             candidate = resume

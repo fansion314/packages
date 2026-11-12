@@ -30,25 +30,25 @@ class FakeClient:
 
 
 class OriginProbeTests(unittest.TestCase):
-    def test_only_definitive_removal_freezes_an_origin(self):
+    def test_acquisition_outages_recover_but_unsupported_methods_do_not(self):
         url = 'https://upstream.example/foo.pkg.tar.zst'
         for code in [404, 410, 403, 405, 429, 500, 503]:
             with self.subTest(code=code), patch.object(mirror.urllib.request, 'urlopen',
                     side_effect=urllib.error.HTTPError(url, code, 'fixture', {}, None)) as probe:
-                self.assertEqual(mirror.origin_missing(url), code in (404, 410))
+                self.assertEqual(mirror.origin_unavailable(url), code != 405)
                 self.assertEqual(probe.call_args.args[0].get_method(), 'HEAD')
         with patch.object(mirror.urllib.request, 'urlopen', side_effect=urllib.error.URLError('timeout')):
-            self.assertFalse(mirror.origin_missing(url))
+            self.assertTrue(mirror.origin_unavailable(url))
         with patch.object(mirror.urllib.request, 'urlopen', return_value=MagicMock()):
-            self.assertFalse(mirror.origin_missing(url))
+            self.assertFalse(mirror.origin_unavailable(url))
 
 
 class MirrorTests(unittest.TestCase):
     def setUp(self):
         self.temporary = tempfile.TemporaryDirectory()
         self.addCleanup(self.temporary.cleanup)
-        probe = patch.object(mirror, 'origin_missing', return_value=False)
-        self.origin_missing = probe.start()
+        probe = patch.object(mirror, 'origin_unavailable', return_value=False)
+        self.origin_unavailable = probe.start()
         self.addCleanup(probe.stop)
         self.site = Path(self.temporary.name)
         self.settings = {'architecture': 'x86_64', 'repository': 'fansionia',
@@ -80,7 +80,7 @@ class MirrorTests(unittest.TestCase):
         urls = mirror.archived_urls(mirror.read_state(self.site, self.settings), self.settings, package)
         self.sources.pop(package['url'])
         self.sources.pop(package['signature_url'])
-        self.origin_missing.return_value = True
+        self.origin_unavailable.return_value = True
         state = mirror.stage(self.site, self.settings, a, a)
         route = '/x86_64/'+package['filename']
         self.assertEqual(set(state['pinned']), {route, route+'.sig'})
@@ -93,13 +93,35 @@ class MirrorTests(unittest.TestCase):
         self.assertEqual(config['assets'][route], urls['archive_url'])
         self.assertEqual(config['assets'][route+'.sig'], urls['signature_archive_url'])
         # A retry cannot silently move the original bytes back to a mutable URL.
-        self.origin_missing.reset_mock(return_value=True)
-        self.origin_missing.return_value = False
+        self.origin_unavailable.reset_mock(return_value=True)
+        self.origin_unavailable.return_value = False
         mirror.stage(self.site, self.settings, a, a)
-        self.origin_missing.assert_not_called()
+        self.origin_unavailable.assert_not_called()
         self.sync()
         self.accept(a)
         self.assertEqual(manifest_path.read_bytes(), original)
+
+    def test_outage_recovers_pending_and_retained_routes_without_resigning(self):
+        a, b = 'a'*32, 'b'*32
+        package = self.upstream_snapshot(a)
+        original = (self.site/'snapshots'/a/'manifest.json').read_bytes()
+        self.snapshot(b, '2')
+        repository.write_json(self.site/'snapshots.json', [a, b])
+        self.sources.pop(package['url'])
+        self.sources.pop(package['signature_url'])
+        self.origin_unavailable.return_value = True
+        mirror.stage(self.site, self.settings, a, b)
+        self.sync()
+        self.accept(b)
+        self.assertEqual((self.site/'snapshots'/a/'manifest.json').read_bytes(), original)
+        output = self.site/'worker.mjs'
+        repository.worker(self.site, self.settings, a, b, 'active', output)
+        assets = json.loads(output.with_suffix('.json').read_text())['assets']
+        route = '/x86_64/'+package['filename']
+        for suffix in ['', '.sig']:
+            self.assertTrue(assets[route+suffix].startswith('https://cnb.cool/'))
+        self.assertEqual(assets['/x86_64/foo-2-1-any.pkg.tar.zst'],
+                         'https://github.com/test/foo/releases/download/v2/foo-2-1-any.pkg.tar.zst')
 
     def test_removed_upstream_requires_both_verified_receipts_and_exact_ledger(self):
         a = 'a'*32
@@ -118,7 +140,7 @@ class MirrorTests(unittest.TestCase):
                     state['objects'][url]['sha256'] = '0'*64
             repository.write_json(self.site/mirror.STATE, state)
             before = (self.site/mirror.STATE).read_bytes()
-            self.origin_missing.return_value = True
+            self.origin_unavailable.return_value = True
             with self.subTest(invalid=invalid), self.assertRaisesRegex(ValueError, 'No verified immutable'):
                 mirror.stage(self.site, self.settings, a, a)
             self.assertEqual((self.site/mirror.STATE).read_bytes(), before)
@@ -127,7 +149,7 @@ class MirrorTests(unittest.TestCase):
         a, b, c, d = ('a'*32, 'b'*32, 'c'*32, 'd'*32)
         package = self.upstream_snapshot(a)
         url = mirror.archived_urls(mirror.read_state(self.site, self.settings), self.settings, package)['archive_url']
-        self.origin_missing.return_value = True
+        self.origin_unavailable.return_value = True
         # The new candidate no longer contains this upstream. Freeze the old
         # verified mirror's copy before its last mirror-database reference ages out.
         for previous, candidate, version in [(a, b, '2'), (b, c, '3'), (c, d, '4')]:

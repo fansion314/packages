@@ -4,18 +4,29 @@ import argparse
 import base64
 import hashlib
 import io
+import http.client
 import json
 from pathlib import Path
 import re
 import subprocess
 import string
+import ssl
 import tarfile
 import tempfile
 import urllib.parse
+import urllib.error
 import urllib.request
 
 ROOT = Path(__file__).resolve().parent
 USER_AGENT = 'pacman/7.1.0 (Linux x86_64) fansionia-sync'
+
+
+def unavailable(error):
+    """Recognize acquisition failures without treating integrity errors as outages."""
+    if isinstance(error, urllib.error.HTTPError):
+        return error.code in (401, 403, 404, 408, 410, 425, 429) or 500 <= error.code < 600
+    return isinstance(error, (urllib.error.URLError, TimeoutError, ConnectionError,
+                              ssl.SSLError, http.client.HTTPException))
 
 
 def fetch(url, limit=16 * 1024 * 1024):
@@ -150,12 +161,21 @@ def parse_database(data, source, architecture):
     return packages
 
 
-def discover(settings, occupied):
+def discover(settings, occupied, defer=None):
     packages = []
     names = set(occupied)
     for source in sources(settings):
         url = server(source, settings['architecture'])+'/'+source['id']+'.db'
-        data, signature = fetch(url), fetch(url+'.sig', 1024 * 1024)
+        try:
+            data, signature = fetch(url), fetch(url+'.sig', 1024 * 1024)
+        except Exception as error:
+            if defer is None or not unavailable(error):
+                raise
+            for package in defer(source['id'], None, error):
+                if package['name'] not in names:
+                    packages.append(package)
+                    names.add(package['name'])
+            continue
         with tempfile.TemporaryDirectory(prefix='fansionia-upstream-db-') as temporary:
             path = Path(temporary)/'upstream.db'
             path.write_bytes(data)
@@ -165,7 +185,14 @@ def discover(settings, occupied):
             if package['name'] in names:
                 print('Skipping colliding upstream package:', source['id'], package['name'])
                 continue
-            signature = fetch(package['signature_url'], 1024 * 1024)
+            try:
+                signature = fetch(package['signature_url'], 1024 * 1024)
+            except Exception as error:
+                if defer is None or not unavailable(error):
+                    raise
+                packages.extend(defer(source['id'], package['name'], error))
+                names.add(package['name'])
+                continue
             embedded = package.pop('embedded_signature', None)
             if embedded is not None and base64.b64decode(embedded, validate=True) != signature:
                 raise ValueError('Detached signature differs from signed upstream database')

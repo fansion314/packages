@@ -28,7 +28,7 @@ internal = {name for p in settings['projects'] for name in p['packages']}
 packages = subprocess.check_output(['pacman', '-Slq', 'fansionia'], text=True).splitlines()
 external = sorted(set(packages)-internal)
 if settings.get('upstreams') and not external:
-    raise SystemExit('Configured upstreams contributed no packages')
+    print('WARNING: no available upstream packages in this snapshot; acquisition failures are retried next sync')
 if external:
     # Separate transactions avoid conflicts between otherwise valid upstream apps.
     for package in external:
@@ -37,13 +37,27 @@ if external:
         subprocess.run(['pacman', '-Qk', package], check=True)
         subprocess.run(['pacman', '-Rns', '--noconfirm', package], check=True)
 PY
-pacman -Si dnr dnr-cef dnr-webview dnc pi-dnr etcher-dnr motrix-electron dsh-electron bitwarden-electron obsidian-electron mygo-music hghub longbridge clash-momo mihomomo python-pptx
+available_names=$(pacman -Slq fansionia)
+mapfile -t available <<< "$available_names"
+has_package() { [[ " ${available[*]} " == *" $1 "* ]]; }
+applications=()
+for package in dnr dnc pi-dnr etcher-dnr motrix-electron dsh-electron bitwarden-electron obsidian-electron mygo-music hghub longbridge clash-momo mihomomo python-pptx; do
+  if has_package "$package"; then applications+=("$package"); fi
+done
 # Download and verify every variant. Mutually conflicting runtime alternatives
 # cannot be installed together, but each must be a valid signed archive.
-pacman -Sw --noconfirm dnr dnc pi-dnr etcher-dnr motrix-electron dsh-electron bitwarden-electron obsidian-electron mygo-music hghub longbridge clash-momo mihomomo python-pptx
-pacman -Sw --noconfirm dnr-cef
-pacman -Sw --noconfirm dnr-webview
-pacman -S --noconfirm dnr dnc pi-dnr etcher-dnr motrix-electron dsh-electron bitwarden-electron obsidian-electron mygo-music hghub longbridge clash-momo mihomomo python-pptx
+if ((${#applications[@]})); then
+  pacman -Si "${applications[@]}"
+  pacman -Sw --noconfirm "${applications[@]}"
+  pacman -S --noconfirm "${applications[@]}"
+fi
+for package in dnr-cef dnr-webview; do
+  if has_package "$package"; then
+    pacman -Si "$package"
+    pacman -Sw --noconfirm "$package"
+  fi
+done
+if has_package longbridge; then
 test -x /usr/bin/longbridge-desktop
 test -r /usr/share/applications/longbridge-desktop.desktop
 grep -Fx 'Exec=longbridge-desktop' /usr/share/applications/longbridge-desktop.desktop
@@ -51,6 +65,8 @@ grep -Fx 'StartupWMClass=com.longbridge.app.desktop' /usr/share/applications/lon
 test -s /usr/share/icons/hicolor/512x512/apps/longbridge.png
 ldd /usr/lib/longbridge/longbridge.app/bin/longbridge > /tmp/longbridge-ldd.txt
 ! grep -F 'not found' /tmp/longbridge-ldd.txt
+fi
+if has_package hghub; then
 test -x /usr/bin/hghub
 test -r /usr/share/applications/com.hghub.huangguo.desktop
 grep -F 'Exec=hghub' /usr/share/applications/com.hghub.huangguo.desktop
@@ -60,12 +76,16 @@ ldd /usr/bin/hghub > /tmp/hghub-ldd.txt
 ! grep -F 'not found' /tmp/hghub-ldd.txt
 grep -F 'libwebkit2gtk-4.1.so' /tmp/hghub-ldd.txt
 grep -F 'libgtk-3.so' /tmp/hghub-ldd.txt
+fi
+if has_package mihomomo; then
 mihomomo -v
 getcap /usr/bin/mihomomo | grep -F 'cap_net_bind_service,cap_net_admin,cap_net_raw=ep'
 test ! -u /usr/bin/mihomomo
-dnr --version
-dnc --version
-pi --help >/dev/null
+fi
+if has_package dnr; then dnr --version; fi
+if has_package dnc; then dnc --version; fi
+if has_package pi-dnr; then pi --help >/dev/null; fi
+if has_package python-pptx; then
 python - <<'PY'
 from pptx import Presentation
 import io
@@ -76,7 +96,8 @@ presentation.save(stream)
 stream.seek(0)
 assert len(Presentation(stream).slides) == 1
 PY
-for package in dnr dnc pi-dnr etcher-dnr motrix-electron dsh-electron bitwarden-electron obsidian-electron mygo-music hghub longbridge clash-momo mihomomo python-pptx fansionia-keyring; do
+fi
+for package in "${applications[@]}" fansionia-keyring; do
   pacman -Q "$package"
   pacman -Qk "$package"
 done

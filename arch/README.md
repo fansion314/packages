@@ -21,7 +21,8 @@ retains the previously accepted package and signature, with a warning in the
 Actions summary. This requires both original objects to exist in a verified CNB
 snapshot and its object ledger; otherwise publication fails closed. Other
 applications can continue updating. A higher upstream version is checked normally.
-An unavailable upstream leaves the active snapshot in service.
+An unavailable source defers its affected packages while other package updates
+continue, as described below.
 
 CI verifies each database signature before parsing metadata, then checks every
 selected package's SHA-256, `.PKGINFO`, and original signature with that source's
@@ -45,16 +46,39 @@ existing immutable attachments before trying the original source; only HTTP 404
 from an interrupted first upload permits a source retry, with the original hash
 still enforced. Packages are never repacked, re-signed or silently replaced.
 
-An upstream may also remove an old archive while a publication is pending. Before
-restaging that candidate, HTTP 404/410 on its package or signature URL can pin both
-routes to the original CNB objects. This requires the previously verified snapshot
-receipts and exact package/signature object ledger; missing proof still stops
-publication. The signed database and manifest stay unchanged. Routing pins are
-journaled before external writes, rechecked by the normal anonymous hash and
-pacman installation gates, and protected until the last retained primary database
-reference disappears. Timeouts and other HTTP errors do not permanently pin an
-origin. Once the pending publication finishes, discovery resumes normally and can
-select the newer upstream packages and application releases.
+## Acquisition failures and retries
+
+Automatic synchronization isolates acquisition failures per source/package. A
+failed GitHub release listing, incomplete signed Release, unavailable upstream
+database/signature, or failed package download keeps the affected package's
+previously accepted version when both its original package and signature have
+verified CNB receipts and matching object-ledger entries. A package with no
+previous version is omitted for that run. Other available packages continue.
+Actions logs and summaries name every deferral; it is never a silent downgrade.
+The next scheduled or manual sync queries the sources again and selects a
+recovered/new version normally, without an operator clearing a skip list.
+
+Source/database signature errors, malformed metadata, digest mismatches,
+downgrades and missing proof for an original archive still fail closed.
+The client keyring must still be published before new signing keys activate.
+A CNB mirror or repository-wide deployment failure still blocks activation:
+both origins must pass the same complete snapshot and installation gates.
+
+For pending snapshots and retained older databases, an unavailable upstream
+package/signature endpoint (HTTP errors such as 404/410/429/503 or a transport
+failure) can route both original objects to their verified CNB copies. No signed
+database or manifest bytes are changed. The routing journal protects those
+objects while retained primary databases reference them. HTTP failure alone
+cannot authorize unverified bytes; normal anonymous full-hash checks and both
+candidate/public pacman installation gates remain mandatory. Subsequent source
+discovery is always retried even while historical URLs use the archive.
+
+On 2026-11-12, openSUSE's `downloadcontent` OBS backend returned HTTP 503 for
+both the msime database and `msime-bin 0.16.1-1`. Discovery moved to the official
+GWDG openSUSE mirror. The complete 107,075,069-byte package and original
+signature matched the accepted SHA-256 values and verified with the existing
+msime key. The pending HGhub snapshot can use its verified CNB originals and
+continue without rebuilding, re-signing or replacing msime.
 
 `publish-pacman.yml` checks all sources twice an hour (UTC minutes 9 and 39;
 GitHub schedules may be delayed). Release dispatches still check immediately.
@@ -109,9 +133,10 @@ candidate testing and Worker deployment to that same commit. Concurrent recipe
 auto-commits cannot mix generator or Worker code within a publication.
 
 `publish-pacman.yml` checks the newest matching Release of every allowlisted
-project. An incomplete newest Release fails the candidate instead of falling back
-silently. GitHub digests, downloaded SHA-256, package metadata and the expected
-source signing subkey must all agree. Arch `vercmp` rejects downgrades, and an
+project. An incomplete newest Release is explicitly deferred, keeping its
+verified prior version while unrelated packages continue; the next sync retries
+it. GitHub digests, downloaded SHA-256, package metadata and the expected source
+signing subkey must all agree. Arch `vercmp` rejects downgrades, and an
 unchanged package version cannot acquire different bytes or a different URL.
 
 The generated `pacman-pages` branch stores complete snapshots and their ordered

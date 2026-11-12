@@ -80,7 +80,7 @@
 - Actions secrets：`ARCH_SIGNING_PRIVATE_KEY`、`ARCH_SIGNING_PASSPHRASE`、`ARCH_SIGNING_KEY_ID`；只上传所属签名子密钥，主认证私钥绝不上传。`backfill-signatures.yml` 只为验证过的旧公开原字节补 `.sig`，不改包。
 - 离线恢复资料在维护机 `~/.local/share/fansionia-packages/signing/`，恢复密码位于登录 Keychain 的 service `world.fansionia.packages.signing` / account `primary-key-recovery`。不读出到日志，不在清理时删除。子密钥到期前 45 天拒绝发布；续期/吊销/轮换按 `arch/README.md`。
 - `publish-pacman.yml`：固定维护 SHA → 签名输入验证 → 完整数据库快照 → 持久化 `pacman-pages` → Pages → 候选真实 pacman 安装 → Worker 两阶段部署 → 正式域名真实安装。
-- Pages 地址 `https://fansion314.github.io/packages/`。数据库/签名采用不可变快照，最多保留 32 个（包含 staged candidate，active 不淘汰）；别删除 generated branch 或重写快照。最新匹配 Release 不完整时失败，不默默退回旧版。
+- Pages 地址 `https://fansion314.github.io/packages/`。数据库/签名采用不可变快照，最多保留 32 个（包含 staged candidate，active 不淘汰）；别删除 generated branch 或重写快照。最新匹配 Release 不完整或源获取失败时，明确记录延后该包并保留有验证凭据的旧包，其他正常包继续发布；无旧版的新包本轮跳过，下次同步重新尝试。签名、摘要、元数据错误仍失败。
 - Worker `fansionia-packages` 只将精确路径 302 到嵌入的 Pages/Release URL；不使用 KV、不运行时拉 JSON、不代理包体。prepare 同时含新旧映射且仍选旧 DB；确认部署后 active 切新 DB。HTTP 检查是操作门禁，不宣称跨独立 HTTP 请求的全球原子事务。
 - 回滚要选择保留的旧数据库、同时保留新包映射，不能直接恢复缺新映射的历史 Worker。激活后公开安装失败可重跑 failed job；新手动 publication 也会重新验收已 active 的快照，定时无变化时不重复安装/部署。
 - 外部源同版本重打包/重签名时拒绝新输入；只有原包和原签名存在于已验证 CNB 快照及对象账本时，保留原记录并警告，允许其他包更新。冻结包的主源及镜像路由均指向原 CNB 字节，所有仍保留的主源数据库引用都保护这些对象；新版本照常完整验证，内部同版本替换仍失败。不得通过重打包、重签名或关闭校验恢复同步。

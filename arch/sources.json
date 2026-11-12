@@ -23,7 +23,7 @@
     },
     {
       "id": "home_msime_Arch",
-      "server": "https://downloadcontent.opensuse.org/repositories/home:/msime/Arch/$arch",
+      "server": "https://ftp.gwdg.de/pub/opensuse/repositories/home:/msime/Arch/$arch",
       "key": "upstream-keys/home_msime_Arch.asc",
       "fingerprint": "F339A91A4C77008B49101BEFF9D283EB1137FF6B"
     }
