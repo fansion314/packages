@@ -1,8 +1,16 @@
 diff --git a/apps/desktop/README.i18n.yaml b/apps/desktop/README.i18n.yaml
-index 7b4f37e1ad44b5e4c629cdf9ed608d2eed4e0bf7..a66debf72d826732b3bfffdd7651cdd282fcffc4 100644
+index 7b4f37e1ad44b5e4c629cdf9ed608d2eed4e0bf7..a90d3cfeafe1ab2cb03901cc797fdeedd9e427fc 100644
 --- a/apps/desktop/README.i18n.yaml
 +++ b/apps/desktop/README.i18n.yaml
-@@ -21,8 +21,8 @@
+@@ -15,14 +15,14 @@
+   en: 127ea90553cb6af7
+   zh: 7b1c5aec8558c684
+ /deepseek-harness-desktop/application-overview:
+-  en: 37d36f8d57214336
+-  zh: ceb50c0fa866eb24
++  en: a443668361cdea91
++  zh: 6344ed48874c61b7
+ /deepseek-harness-desktop/terminal-command:
    en: 5f2d25a1d8472647
    zh: 2acb5c5d7d1917e2
  /deepseek-harness-desktop/closing-the-window-and-quitting:
@@ -13,6 +21,17 @@ index 7b4f37e1ad44b5e4c629cdf9ed608d2eed4e0bf7..a66debf72d826732b3bfffdd7651cdd2
  /deepseek-harness-desktop/key-technical-decisions:
    en: 3724c53da4f7647b
    zh: 76ae549d43c99bb4
+@@ -33,8 +33,8 @@
+   en: 372297005b57a08b
+   zh: 074a635ac17e4362
+ /deepseek-harness-desktop/installation-ownership:
+-  en: 575d82acb5d61018
+-  zh: b1064786f63863f7
++  en: 4c361dd81e28d933
++  zh: f3f0cbcd667cc5cb
+ /deepseek-harness-desktop/installation-ownership/runtime-and-plugin-activation:
+   en: 4951cd3ee659eb33
+   zh: 96bdd6358dad587a
 @@ -42,8 +42,8 @@
    en: 98cf848762482d48
    zh: 74f9100a39ec8c2f
@@ -835,22 +854,22 @@ index dfa756943b8d0df22e5b5f425ec241dcec64771b..44ae3751a6b2d75331183d78a90ab1c3
      const { runtime } = await bench()
      const slot = runtime.renderSlot('sidebar', { collapsed: false, width: 300, drawer: false })
 diff --git a/packages/extensions/cordis-client-runner/src/client/slot-catalog.ts b/packages/extensions/cordis-client-runner/src/client/slot-catalog.ts
-index 36cbd48ee7af27a727b14d073cf772ceb814fe24..951f2076d943ca5c0087fa7688899d510096696d 100644
+index 36cbd48ee7af27a727b14d073cf772ceb814fe24..134d20f2f75575a3d497efa2112e1f26826c0bf5 100644
 --- a/packages/extensions/cordis-client-runner/src/client/slot-catalog.ts
 +++ b/packages/extensions/cordis-client-runner/src/client/slot-catalog.ts
-@@ -3457,6 +3457,7 @@ export const CLIENT_SLOT_API: readonly ClientSlotEntry[] = [
+@@ -3456,6 +3456,7 @@ export const CLIENT_SLOT_API: readonly ClientSlotEntry[] = [
+       'client-ui-permission-presets PermissionRow id \'permission\'',
        'client-ui-settings-general DeveloperToolsRow id \'developer-tools\'',
        'client-ui-settings-general CurrentVersionRow id \'current-version\'',
-       'client-ui-settings-general DesktopChannelRow id \'desktop-update-channel\'',
 +      'client-ui-settings-general DesktopScaleRow id \'desktop-scale\'',
+       'client-ui-settings-general DesktopChannelRow id \'desktop-update-channel\'',
        'client-ui-settings-session-log UploadRow',
        'client-ui-shortcuts ShortcutsRow id \'shortcuts\'',
-       'client-ui-theme AppearanceRow id \'appearance\'',
-@@ -4060,6 +4061,7 @@ export const CLIENT_SLOT_API: readonly ClientSlotEntry[] = [
+@@ -4059,6 +4060,7 @@ export const CLIENT_SLOT_API: readonly ClientSlotEntry[] = [
+       'client-ui-schedule ScheduleDeleteToast id \'schedule.delete-toast\'',
        'client-ui-settings-account DesktopOnboardingEntry id \'desktop-onboarding\'',
        'client-ui-settings-account AccountPlatformHost id \'account.platform-page\'',
-       'client-ui-settings-general DesktopChannelToast id \'desktop-channel-toast\'',
 +      'client-ui-settings-general DesktopScaleNotice id \'desktop-scale-notice\'',
+       'client-ui-settings-general DesktopChannelToast id \'desktop-channel-toast\'',
        'client-ui-settings-general HostReleasePrompt id \'host-release-change\'',
        'client-ui-settings-session-log UploadToast id \'session-log-upload-toast\'',
-       'client-ui-shortcuts ShortcutReference id \'shortcuts\'',
