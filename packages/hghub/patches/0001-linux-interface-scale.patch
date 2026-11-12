@@ -1,5 +1,5 @@
 diff --git a/src-tauri/capabilities/default.json b/src-tauri/capabilities/default.json
-index add1ba9..5bcd51e 100644
+index add1ba9b2cf54713f717ab4265346abc28277c09..5bcd51e11aff2a8c4a4db0c32b5e04bc646fd9fe 100644
 --- a/src-tauri/capabilities/default.json
 +++ b/src-tauri/capabilities/default.json
 @@ -5,6 +5,7 @@
@@ -11,7 +11,7 @@ index add1ba9..5bcd51e 100644
      "core:window:allow-start-dragging",
      "core:window:allow-start-resize-dragging",
 diff --git a/src-tauri/tauri.conf.json b/src-tauri/tauri.conf.json
-index 90e62ad..2b3a3d7 100644
+index a7693f3b1f60e459a112cf4b1cbc68c7a29d2e89..d7c06d1862b2584fb5337c4b88d350d3ccb1374c 100644
 --- a/src-tauri/tauri.conf.json
 +++ b/src-tauri/tauri.conf.json
 @@ -21,6 +21,7 @@
@@ -23,10 +23,10 @@ index 90e62ad..2b3a3d7 100644
        }
      ],
 diff --git a/src/App.tsx b/src/App.tsx
-index 933989c..a4d4c82 100644
+index 6b1bcc4ffb5f34c5d18cc8286feb1f95c481a1ad..86f0ccf73411d3da381cdb10f526bc7a6ae1ff4a 100644
 --- a/src/App.tsx
 +++ b/src/App.tsx
-@@ -155,7 +155,7 @@ function DesktopShell() {
+@@ -156,7 +156,7 @@ function DesktopShell() {
          <ShellInner collapsed={collapsed || theater} theater={theater} />
        </div>
        {/* 边缘缩放热区只对无边框窗口（Windows）有效，macOS 走原生窗口边框 */}
@@ -36,20 +36,24 @@ index 933989c..a4d4c82 100644
    );
  }
 diff --git a/src/api.ts b/src/api.ts
-index 35e5278..63c3009 100644
+index 5b07301ff35f10c9aa530ce01a418a30bc46c03b..5ec083313e71cb8a9480795d7e6b5abbd2525f3d 100644
 --- a/src/api.ts
 +++ b/src/api.ts
-@@ -8,21 +8,15 @@ import type {
+@@ -8,25 +8,16 @@ import type {
  /** 应用版本（构建时由 vite.config.ts 从 package.json 注入） */
  export const APP_VERSION = __APP_VERSION__;
  
 -const ua = navigator.userAgent;
--export const isAndroid = /Android/i.test(ua);
 -/** iPhone 的 UA 也带「like Mac OS X」，必须先于 macOS 判断；iPadOS 默认伪装成 Mac，用触点数区分。 */
--export const isIos = /iPhone|iPad|iPod/i.test(ua) || (/Macintosh/i.test(ua) && navigator.maxTouchPoints > 1);
+-export const isIos =
+-  /iPhone|iPad|iPod/i.test(ua) ||
+-  (/Macintosh/i.test(ua) && navigator.maxTouchPoints > 1) ||
+-  (typeof navigator.platform === "string" && navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+-export const isAndroid = /Android/i.test(ua);
 -export const isMacos = !isIos && /Macintosh|Mac OS X/i.test(ua);
--export const platform: "android" | "ios" | "windows" | "macos" =
--  isAndroid ? "android" : isIos ? "ios" : isMacos ? "macos" : "windows";
+-export const isLinux = !isAndroid && !isIos && /Linux/i.test(ua);
+-export const platform: "android" | "ios" | "windows" | "macos" | "linux" =
+-  isAndroid ? "android" : isIos ? "ios" : isMacos ? "macos" : isLinux ? "linux" : "windows";
 -/** 移动端（安卓 / iOS）共用触屏界面 */
 -export const isMobile = isAndroid || isIos;
 +import { detectPlatform, mediaOrigin } from "./platform";
@@ -58,35 +62,23 @@ index 35e5278..63c3009 100644
 - *  Windows / Android → `http://<scheme>.localhost`
 - *  macOS / iOS / Linux → `<scheme>://localhost`
 - *  Rust 侧 `src-tauri/src/lib.rs` 里改写 m3u8 用的 scheme 必须与此一致。 */
--export const LOCAL = isMacos || isIos ? "hg://localhost" : "http://hg.localhost";
-+export const platform = detectPlatform(navigator.userAgent, navigator.maxTouchPoints);
+-export const LOCAL = isMacos || isIos || isLinux ? "hg://localhost" : "http://hg.localhost";
++export const platform = detectPlatform(navigator.userAgent, navigator.maxTouchPoints, navigator.platform);
 +export const isAndroid = platform === "android";
 +export const isIos = platform === "ios";
 +export const isMacos = platform === "macos";
++export const isLinux = platform === "linux";
 +export const isMobile = isAndroid || isIos;
 +/** Keep this address aligned with Rust media::LOCAL_ORIGIN. */
 +export const LOCAL = mediaOrigin(platform);
  
  /** src 是否已是本地协议地址（避免在详情页把代理地址再包一层） */
  export const isLocalMedia = (src: string) => src.startsWith(`${LOCAL}/`);
-diff --git a/src/components/DesktopChrome.tsx b/src/components/DesktopChrome.tsx
-index 867beee..119efe1 100644
---- a/src/components/DesktopChrome.tsx
-+++ b/src/components/DesktopChrome.tsx
-@@ -110,7 +110,7 @@ export function DesktopRail({ collapsed }: { collapsed: boolean }) {
-               <small>{user ? "你的精彩，都在这里" : "留住每一次心动"}</small>
-             </span>
-           </button>
--          <span className="win-sidebar-version">HGhub for {platform === "macos" ? "macOS" : "Windows"} {APP_VERSION}</span>
-+          <span className="win-sidebar-version">HGhub for {platform === "macos" ? "macOS" : platform === "linux" ? "Linux" : "Windows"} {APP_VERSION}</span>
-         </div>
-       </div>
-     </nav>
 diff --git a/src/index.css b/src/index.css
-index fbc63bc..def6500 100644
+index dbed0e2a265bbdbae99ca043dc6b5b4facaa7e47..ee83dfddc6476673ab9c3fedb477d55d51fdf50b 100644
 --- a/src/index.css
 +++ b/src/index.css
-@@ -238,6 +238,7 @@ input[type="range"].hg-range::-webkit-slider-thumb { -webkit-appearance: none; w
+@@ -239,6 +239,7 @@ input[type="range"].hg-range::-webkit-slider-thumb { -webkit-appearance: none; w
  
  /* 仅桌面窗口（Windows 无边框 / macOS Overlay）：右侧/底部留 12px 呼吸位 + 圆角。
     安卓必须不加，否则内容比屏幕小一圈（右侧、底部各 12px 露 canvas 底）。 */
@@ -95,7 +87,7 @@ index fbc63bc..def6500 100644
  .plat-macos .win-main {
    margin: 0 12px 12px 0;
 diff --git a/src/main.tsx b/src/main.tsx
-index 2e34a14..f9364f8 100644
+index 2e34a14d45802b6437173518d840c0ea154ac08b..f9364f87c8d41f87928b8e64b829b01c4cc89d8e 100644
 --- a/src/main.tsx
 +++ b/src/main.tsx
 @@ -4,6 +4,7 @@ import App from "./App";
@@ -120,7 +112,7 @@ index 2e34a14..f9364f8 100644
  );
 +});
 diff --git a/src/pages/Settings.tsx b/src/pages/Settings.tsx
-index e584d83..38a6a7c 100644
+index a8da53f15bd140f927508fd9b62a3ddfcb7a2521..068f1f91b4f274daa44894c25ddee9bcf760adc3 100644
 --- a/src/pages/Settings.tsx
 +++ b/src/pages/Settings.tsx
 @@ -4,12 +4,15 @@ import { useStore } from "../store";
@@ -184,41 +176,19 @@ index e584d83..38a6a7c 100644
                </div>
                <IChevR size={15} className="text-mut" />
              </button>
-@@ -201,7 +224,7 @@ export default function Settings({ onBack, wide }: { onBack: () => void; wide: b
-             </button>
-           </Section>
- 
--          <div className="text-center text-[10px] text-dim mt-5">HGhub {APP_VERSION} · {platform === "android" ? "Android" : platform === "ios" ? "iOS" : platform === "macos" ? "macOS" : "Windows"} 客户端</div>
-+          <div className="text-center text-[10px] text-dim mt-5">HGhub {APP_VERSION} · {platform === "android" ? "Android" : platform === "ios" ? "iOS" : platform === "macos" ? "macOS" : platform === "linux" ? "Linux" : "Windows"} 客户端</div>
-         </div>
-       </div>
- 
-@@ -218,7 +241,7 @@ export default function Settings({ onBack, wide }: { onBack: () => void; wide: b
-           </div>
- 
-           <p className="text-[12px] text-on/70 leading-relaxed mt-4">
--            基于 Rust + Tauri 2 构建的跨平台客户端，支持 Windows、macOS 与 Android。
-+            基于 Rust + Tauri 2 构建的跨平台客户端，支持 Windows、macOS、Linux 与 Android。
-             界面遵循 Fluent 设计语言，播放器采用沉浸式竖屏信息流。
-           </p>
- 
 diff --git a/src/store.tsx b/src/store.tsx
-index 2ad3f1a..3344e50 100644
+index 5e6dad4c04e3a6fe7dea83992c5bea0cd447de9d..8b4aa43ab32d33ee1f4a5a96fa9241efcce0500f 100644
 --- a/src/store.tsx
 +++ b/src/store.tsx
-@@ -1,9 +1,10 @@
- import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
+@@ -2,6 +2,7 @@ import React, { createContext, useCallback, useContext, useEffect, useMemo, useR
+ import { invoke } from "@tauri-apps/api/core";
  import { api, platform as envPlatform } from "./api";
  import { isStrictSecurity, setStrictSecurity as setHtmlStrictSecurity } from "./html";
 +import { useInterfaceScale } from "./interfaceScaleRuntime";
  import type { User } from "./types";
  
--export type Platform = "android" | "ios" | "windows" | "macos";
-+export type Platform = "android" | "ios" | "windows" | "macos" | "linux";
- export type Theme = "dark" | "light";
- export type Tab = "home" | "search" | "category" | "profile";
- 
-@@ -189,6 +190,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
+ export type Platform = "android" | "ios" | "windows" | "macos" | "linux";
+@@ -193,6 +194,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
      window.setTimeout(() => setToasts((t) => t.filter((x) => x.id !== id)), 2200);
    }, []);
  
@@ -227,6 +197,6 @@ index 2ad3f1a..3344e50 100644
 +    if (scale.error) toast(scale.error, "info");
 +  }, [scale.error, toast]);
 +
-   const setTab = useCallback((t: Tab) => { setTabRaw(t); setStack([]); }, []);
+   const setTab = useCallback((t: Tab) => { setTabRaw(t); setStack([]); setCleanState(false); }, []);
    const push = useCallback((pg: PageInput) => {
-     setStack((s) => [...s, { ...pg, key: `p${++seq}` } as Page]);
+     setCleanState(false);

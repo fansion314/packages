@@ -18,6 +18,7 @@ test("Linux protocol agrees with Rust and mobile UA precedence stays intact", ()
     ["Mozilla/5.0 (Macintosh; Intel Mac OS X)", 0, "macos"],
     ["Mozilla/5.0 (Windows NT 10.0)", 0, "windows"],
   ]) assert.equal(detectPlatform(ua, points), expected);
+  assert.equal(detectPlatform("Mozilla/5.0 AppleWebKit", 5, "MacIntel"), "ios");
   for (const platform of ["linux", "macos", "ios"]) assert.equal(mediaOrigin(platform), "hg://localhost");
   for (const platform of ["android", "windows"]) assert.equal(mediaOrigin(platform), "http://hg.localhost");
 });

@@ -12,7 +12,7 @@ makedepends=('git' 'python' 'nodejs>=24' 'pnpm' 'rust>=1.90' 'cargo' 'pkgconf' '
 conflicts=('hghub-bin' 'hghub-git')
 options=('!lto' '!debug' '!strip')
 _packaging_ref='@PACKAGING_REF@'
-source=("hghub::git+https://github.com/Minireel/HGhub.git#commit=@UPSTREAM_COMMIT@"
+source=("hghub::git+https://github.com/bashirian777/HGhub.git#commit=@UPSTREAM_COMMIT@"
         "packaging::git+https://github.com/@REPOSITORY@.git#${_packaging_ref}")
 sha256sums=('SKIP' 'SKIP')
 

@@ -1,0 +1,30 @@
+diff --git a/src-tauri/src/api.rs b/src-tauri/src/api.rs
+index dee5714e757becb1b28cdd15a266e32285732a2f..a5bd3a3caf3634fb4bdd6594edda714a711b9df3 100644
+--- a/src-tauri/src/api.rs
++++ b/src-tauri/src/api.rs
+@@ -94,7 +94,7 @@ pub async fn line_probe(urls: Vec<String>) -> Result<Value, String> {
+ 
+ /* ───────────────────────── 更新检查 ───────────────────────── */
+ 
+-const REPO: &str = "Minireel/HGhub";
++const REPO: &str = "bashirian777/HGhub";
+ 
+ fn ver_parts(v: &str) -> Vec<u64> {
+     v.trim()
+diff --git a/src/pages/Settings.tsx b/src/pages/Settings.tsx
+index 068f1f91b4f274daa44894c25ddee9bcf760adc3..126920a956cff6f3c35c619eb7dff144998c2205 100644
+--- a/src/pages/Settings.tsx
++++ b/src/pages/Settings.tsx
+@@ -251,10 +251,10 @@ export default function Settings({ onBack, wide }: { onBack: () => void; wide: b
+           </div>
+ 
+           <div className="mt-4 divide-y divide-s3">
+-            <button onClick={() => { navigator.clipboard?.writeText("https://github.com/Minireel/HGhub").then(() => toast("仓库地址已复制", "ok")).catch(() => {}); }}
++            <button onClick={() => { navigator.clipboard?.writeText("https://github.com/bashirian777/HGhub").then(() => toast("仓库地址已复制", "ok")).catch(() => {}); }}
+               className="w-full flex items-center gap-2 py-2.5 text-left pressable">
+               <ILink size={15} className="text-mut" />
+-              <span className="text-[12px] text-on/85">github.com/Minireel/HGhub</span>
++              <span className="text-[12px] text-on/85">github.com/bashirian777/HGhub</span>
+               <span className="ml-auto text-[10.5px] text-primary">复制</span>
+             </button>
+             <button onClick={() => { navigator.clipboard?.writeText("https://huangguoai.com").then(() => toast("站点地址已复制", "ok")).catch(() => {}); }}
