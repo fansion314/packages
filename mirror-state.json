@@ -1,5 +1,5 @@
 {
-  "cleanup_pending": true,
+  "cleanup_pending": false,
   "keys": {
     "/keys/fansionia.asc": {
       "filename": "fansionia.asc",
@@ -50,18 +50,6 @@
       "sha256": "bf0496df1e9d4239a7f28d073e7db3e40d95dae5d945ba535cd9bac07d437e5d",
       "size": 119,
       "tag": "clash-momo-v2.0.4-8"
-    },
-    "https://cnb.cool/fansionia/packages/-/releases/download/deepseek-harness-v0.2.2-rc.1-1/dsh-electron-0.2.2rc.1-1-x86_64.pkg.tar.zst": {
-      "filename": "dsh-electron-0.2.2rc.1-1-x86_64.pkg.tar.zst",
-      "sha256": "18fa0b8fa6e3b73cf37aad19532e51e547281188d484cfe6b59a2638f2b2dc08",
-      "size": 187805116,
-      "tag": "deepseek-harness-v0.2.2-rc.1-1"
-    },
-    "https://cnb.cool/fansionia/packages/-/releases/download/deepseek-harness-v0.2.2-rc.1-1/dsh-electron-0.2.2rc.1-1-x86_64.pkg.tar.zst.sig": {
-      "filename": "dsh-electron-0.2.2rc.1-1-x86_64.pkg.tar.zst.sig",
-      "sha256": "7f795756191210be13f02d0a7fd48039d11dee16e29699a4237d6eaa4bdce162",
-      "size": 119,
-      "tag": "deepseek-harness-v0.2.2-rc.1-1"
     },
     "https://cnb.cool/fansionia/packages/-/releases/download/deepseek-harness-v0.2.2-rc.2-1/dsh-electron-0.2.2rc.2-1-x86_64.pkg.tar.zst": {
       "filename": "dsh-electron-0.2.2rc.2-1-x86_64.pkg.tar.zst",
@@ -146,18 +134,6 @@
       "sha256": "9706507d91efec4d60abc4530da4a002e777198f81778f806b59288cacbfaeeb",
       "size": 119,
       "tag": "motrix-v2.4.1-1"
-    },
-    "https://cnb.cool/fansionia/packages/-/releases/download/mygo-music-v0.1.22-1/mygo-music-0.1.22-1-x86_64.pkg.tar.zst": {
-      "filename": "mygo-music-0.1.22-1-x86_64.pkg.tar.zst",
-      "sha256": "65e3985a3041199acd2fbf86454a560336421eaee8f9bbdd273af1823f9a8fc9",
-      "size": 10261691,
-      "tag": "mygo-music-v0.1.22-1"
-    },
-    "https://cnb.cool/fansionia/packages/-/releases/download/mygo-music-v0.1.22-1/mygo-music-0.1.22-1-x86_64.pkg.tar.zst.sig": {
-      "filename": "mygo-music-0.1.22-1-x86_64.pkg.tar.zst.sig",
-      "sha256": "93bd8351855a1b418d20e5c86cba971c17e8dd4edad6571489f30810378cbbd8",
-      "size": 119,
-      "tag": "mygo-music-v0.1.22-1"
     },
     "https://cnb.cool/fansionia/packages/-/releases/download/mygo-music-v0.1.24-1/mygo-music-0.1.24-1-x86_64.pkg.tar.zst": {
       "filename": "mygo-music-0.1.24-1-x86_64.pkg.tar.zst",
@@ -398,60 +374,6 @@
       "sha256": "8f2bcb33f24c8f40af18e53fb913def9e038b8a78b42e7c88ff83fed81bf4a31",
       "size": 17767,
       "tag": "snapshot-a266a2399c5bb3db82a561e1ff954a9e"
-    },
-    "https://cnb.cool/fansionia/packages/-/releases/download/snapshot-bb90e6382d8d6274dc6a36652e061568/fansionia.db": {
-      "filename": "fansionia.db",
-      "sha256": "e45cf38b0181f687eadc8299185f31b3815bf4c5a8d1eb8354e58a7715acf595",
-      "size": 10821,
-      "tag": "snapshot-bb90e6382d8d6274dc6a36652e061568"
-    },
-    "https://cnb.cool/fansionia/packages/-/releases/download/snapshot-bb90e6382d8d6274dc6a36652e061568/fansionia.db.sig": {
-      "filename": "fansionia.db.sig",
-      "sha256": "9afe564fe161cafcf0dde42db75fccd6d8ab0aca62553149602d393c7dae56d7",
-      "size": 119,
-      "tag": "snapshot-bb90e6382d8d6274dc6a36652e061568"
-    },
-    "https://cnb.cool/fansionia/packages/-/releases/download/snapshot-bb90e6382d8d6274dc6a36652e061568/fansionia.db.tar.gz": {
-      "filename": "fansionia.db.tar.gz",
-      "sha256": "e45cf38b0181f687eadc8299185f31b3815bf4c5a8d1eb8354e58a7715acf595",
-      "size": 10821,
-      "tag": "snapshot-bb90e6382d8d6274dc6a36652e061568"
-    },
-    "https://cnb.cool/fansionia/packages/-/releases/download/snapshot-bb90e6382d8d6274dc6a36652e061568/fansionia.db.tar.gz.sig": {
-      "filename": "fansionia.db.tar.gz.sig",
-      "sha256": "9afe564fe161cafcf0dde42db75fccd6d8ab0aca62553149602d393c7dae56d7",
-      "size": 119,
-      "tag": "snapshot-bb90e6382d8d6274dc6a36652e061568"
-    },
-    "https://cnb.cool/fansionia/packages/-/releases/download/snapshot-bb90e6382d8d6274dc6a36652e061568/fansionia.files": {
-      "filename": "fansionia.files",
-      "sha256": "5de9eb5fa0397bb9df905608f2ce384020342301dbf7af2896588db349b6d3b5",
-      "size": 147883,
-      "tag": "snapshot-bb90e6382d8d6274dc6a36652e061568"
-    },
-    "https://cnb.cool/fansionia/packages/-/releases/download/snapshot-bb90e6382d8d6274dc6a36652e061568/fansionia.files.sig": {
-      "filename": "fansionia.files.sig",
-      "sha256": "59104c245b1591a852cd242b7b21cdc9edc17193c4ea1d30ab6ef251ff74ce06",
-      "size": 119,
-      "tag": "snapshot-bb90e6382d8d6274dc6a36652e061568"
-    },
-    "https://cnb.cool/fansionia/packages/-/releases/download/snapshot-bb90e6382d8d6274dc6a36652e061568/fansionia.files.tar.gz": {
-      "filename": "fansionia.files.tar.gz",
-      "sha256": "5de9eb5fa0397bb9df905608f2ce384020342301dbf7af2896588db349b6d3b5",
-      "size": 147883,
-      "tag": "snapshot-bb90e6382d8d6274dc6a36652e061568"
-    },
-    "https://cnb.cool/fansionia/packages/-/releases/download/snapshot-bb90e6382d8d6274dc6a36652e061568/fansionia.files.tar.gz.sig": {
-      "filename": "fansionia.files.tar.gz.sig",
-      "sha256": "59104c245b1591a852cd242b7b21cdc9edc17193c4ea1d30ab6ef251ff74ce06",
-      "size": 119,
-      "tag": "snapshot-bb90e6382d8d6274dc6a36652e061568"
-    },
-    "https://cnb.cool/fansionia/packages/-/releases/download/snapshot-bb90e6382d8d6274dc6a36652e061568/manifest.json": {
-      "filename": "manifest.json",
-      "sha256": "993fe89ab65d1489f85e142a1544211c645d71c4f7bfc61e664f8628e7cf50d9",
-      "size": 17767,
-      "tag": "snapshot-bb90e6382d8d6274dc6a36652e061568"
     },
     "https://cnb.cool/fansionia/packages/-/releases/download/upstream-denial-070ceb3497056d1eb4ef5ae72b21aad4/denial-0.6.0-1-x86_64.pkg.tar.zst": {
       "filename": "denial-0.6.0-1-x86_64.pkg.tar.zst",
