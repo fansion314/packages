@@ -1,17 +1,17 @@
 {
   "repository": "fansion314/pi",
-  "tag": "pi-dnr-v1.5.1-1",
-  "version": "1.5.1",
+  "tag": "pi-dnr-v1.5.2-1",
+  "version": "1.5.2",
   "release": 1,
   "revision": 1,
-  "asset": "pi-dnr-1.5.1-1-macos-arm64-r1.tar.gz",
-  "url": "https://github.com/fansion314/pi/releases/download/pi-dnr-v1.5.1-1/pi-dnr-1.5.1-1-macos-arm64-r1.tar.gz",
-  "github_digest": "sha256:3c4941fa912f3576c520daac0f47a357821f40c90da59201a1368c6897be7b09",
-  "sha256": "3c4941fa912f3576c520daac0f47a357821f40c90da59201a1368c6897be7b09",
+  "asset": "pi-dnr-1.5.2-1-macos-arm64-r1.tar.gz",
+  "url": "https://github.com/fansion314/pi/releases/download/pi-dnr-v1.5.2-1/pi-dnr-1.5.2-1-macos-arm64-r1.tar.gz",
+  "github_digest": "sha256:f35dbee1863a2ad2de05e41150d1501119982562ac21eede1709cefd01ea6643",
+  "sha256": "f35dbee1863a2ad2de05e41150d1501119982562ac21eede1709cefd01ea6643",
   "key": [
     1,
     5,
-    1,
+    2,
     1,
     1
   ]
