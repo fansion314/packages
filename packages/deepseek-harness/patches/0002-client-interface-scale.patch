@@ -681,10 +681,10 @@ index b573b19cc83cc0d6880ab6d284d140e1c24c67c2..a8b4aa466cb9a68fa91cd9f4bab188db
                        </span>
                      ),
 diff --git a/packages/client/ui-sidebar/tests/__snapshots__/sidebar-snapshot.client.spec.tsx.snap b/packages/client/ui-sidebar/tests/__snapshots__/sidebar-snapshot.client.spec.tsx.snap
-index 186d9ef6d93546c8e02667c554dcc69a91e081e8..ce4394456426034c1f0037f46308fbe7b408356c 100644
+index 186d9ef6d93546c8e02667c554dcc69a91e081e8..6b6d0170c50fabbec89654f4511cb5e4d0807990 100644
 --- a/packages/client/ui-sidebar/tests/__snapshots__/sidebar-snapshot.client.spec.tsx.snap
 +++ b/packages/client/ui-sidebar/tests/__snapshots__/sidebar-snapshot.client.spec.tsx.snap
-@@ -684,3 +684,147 @@ exports[`sidebar shell snapshots > renders the expanded column in the default lo
+@@ -684,3 +684,160 @@ exports[`sidebar shell snapshots > renders the expanded column in the default lo
    </div>
  </div>
  `;
@@ -802,11 +802,24 @@ index 186d9ef6d93546c8e02667c554dcc69a91e081e8..ce4394456426034c1f0037f46308fbe7
 +      </span>
 +    </button>
 +    <div
-+      class="regionArea"
++      class="scrollRegion"
 +    >
 +      <div
-+        data-slot="sidebar.workspaces"
-+        style="display: contents;"
++        class="scrollArea"
++        data-sidebar-scrollport=""
++      >
++        <div
++          class="regionArea"
++        >
++          <div
++            data-slot="sidebar.workspaces"
++            style="display: contents;"
++          />
++        </div>
++      </div>
++      <span
++        aria-hidden="true"
++        class="scrollFade"
 +      />
 +    </div>
 +    <div
