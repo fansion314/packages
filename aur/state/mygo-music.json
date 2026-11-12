@@ -1,26 +1,26 @@
 {
   "repository": "fansion314/packages",
-  "reference": "mygo-music-v0.1.22-1",
+  "reference": "mygo-music-v0.1.24-1",
   "packages": {
     "mygo-music": {
-      "version": "0:0.1.22-1",
+      "version": "0:0.1.24-1",
       "files": {
-        ".SRCINFO": "4511683f5f5f71ad3a2747af55a667a18206e2e2de99d8af334e375c156d6f75",
-        "PKGBUILD": "2095df082cba3a5bb6cd9005539de6a74350d357d97ec72ee036f19700296764"
+        ".SRCINFO": "8d3f9ae6befdaa3d78d02915571ca874d5477da27b990183864b5ca6185728aa",
+        "PKGBUILD": "cd7762b88f89aa2dd3421e0b5c756291b798f3b63d0476eadac9b997ff4f8b4c"
       },
       "assets": []
     },
     "mygo-music-bin": {
-      "version": "0:0.1.22-1",
+      "version": "0:0.1.24-1",
       "files": {
-        ".SRCINFO": "589be005ca430b5efa2dce8679afb8bb4fb8c807b7c322b2e77218972ad71c86",
-        "PKGBUILD": "0a56b206e79e2f51d4916db40f7758391ec48833cc530a8d3d6f307e33054335"
+        ".SRCINFO": "c052446de28ea84ad0d47babb2ee0c34823d5da32d56968eff387fca4739e307",
+        "PKGBUILD": "bc169a4f7e1b0aa0f7f5eb45e356356bd4108ab312c20112882222b6a273ad6c"
       },
       "assets": [
         {
-          "url": "https://github.com/fansion314/packages/releases/download/mygo-music-v0.1.22-1/mygo-music-0.1.22-1-x86_64.pkg.tar.zst",
-          "sha256": "65e3985a3041199acd2fbf86454a560336421eaee8f9bbdd273af1823f9a8fc9",
-          "size": 10261691
+          "url": "https://github.com/fansion314/packages/releases/download/mygo-music-v0.1.24-1/mygo-music-0.1.24-1-x86_64.pkg.tar.zst",
+          "sha256": "550c04712ed3a6a2a171f5adfadfb00aebe16ffe7059178855973f72bd9ec6d5",
+          "size": 10312394
         }
       ]
     }
