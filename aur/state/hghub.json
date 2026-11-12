@@ -1,26 +1,26 @@
 {
   "repository": "fansion314/packages",
-  "reference": "hghub-v1.2.0-2",
+  "reference": "hghub-v1.2.1-1",
   "packages": {
     "hghub": {
-      "version": "0:1.2.0-2",
+      "version": "0:1.2.1-1",
       "files": {
-        ".SRCINFO": "83ba53d59599f58d57f19edb19084c2145adbb285d042d2141a6d3579ce550f5",
-        "PKGBUILD": "84f9f6785714e362da8cc0677f1d2fef5c7f88b0ada1a8889644f40e00e8eb9c"
+        ".SRCINFO": "15f66d42b38a7d90e05af3b9d5615b786bc1dbdf3fa00dab90c69c1a6d569989",
+        "PKGBUILD": "e79cbbb660d252a2b9480635e41ea1be50f3ac623076e0f6fb99b86b34918e3f"
       },
       "assets": []
     },
     "hghub-bin": {
-      "version": "0:1.2.0-2",
+      "version": "0:1.2.1-1",
       "files": {
-        ".SRCINFO": "bd3217580fa9a5fe7f4b774528514c493db6e86e4f2711f2fd8bd82fa1177e97",
-        "PKGBUILD": "4628abb5dc350f3cda380badca446b6c12240b73d95580821bb75afb3d7c8abb"
+        ".SRCINFO": "77a03e86f351c68bf0f0e6aa4ae5b31f943750fd09cfeeec64f585c84f88be6b",
+        "PKGBUILD": "2525da72389a9ec9077727ff856825b45047b629eb82808b405c0dea5f8841ec"
       },
       "assets": [
         {
-          "url": "https://github.com/fansion314/packages/releases/download/hghub-v1.2.0-2/hghub-1.2.0-2-x86_64.pkg.tar.zst",
-          "sha256": "153c47d63b83a69fc6925f5ff9abcc7ac0d3b6baba1de490160fd1775dacfead",
-          "size": 3158903
+          "url": "https://github.com/fansion314/packages/releases/download/hghub-v1.2.1-1/hghub-1.2.1-1-x86_64.pkg.tar.zst",
+          "sha256": "1bc18ac9cd51dc24c47d172ef03a2da364c9f56d9a32428de435350a5174ca8f",
+          "size": 3168306
         }
       ]
     }

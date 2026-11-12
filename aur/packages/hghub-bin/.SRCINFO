@@ -1,7 +1,7 @@
 pkgbase = hghub-bin
 	pkgdesc = HGhub community Linux client with persistent interface scaling (prebuilt Arch package)
-	pkgver = 1.2.0
-	pkgrel = 2
+	pkgver = 1.2.1
+	pkgrel = 1
 	url = https://github.com/fansion314/packages
 	arch = x86_64
 	license = PolyForm-Noncommercial-1.0.0
@@ -17,12 +17,12 @@ pkgbase = hghub-bin
 	depends = hicolor-icon-theme
 	depends = xdg-utils
 	depends = noto-fonts-cjk
-	provides = hghub=1.2.0
+	provides = hghub=1.2.1
 	conflicts = hghub
 	conflicts = hghub-git
-	noextract = hghub-1.2.0-2-x86_64.pkg.tar.zst
+	noextract = hghub-1.2.1-1-x86_64.pkg.tar.zst
 	options = !strip
-	source = https://github.com/fansion314/packages/releases/download/hghub-v1.2.0-2/hghub-1.2.0-2-x86_64.pkg.tar.zst
-	sha256sums = 153c47d63b83a69fc6925f5ff9abcc7ac0d3b6baba1de490160fd1775dacfead
+	source = https://github.com/fansion314/packages/releases/download/hghub-v1.2.1-1/hghub-1.2.1-1-x86_64.pkg.tar.zst
+	sha256sums = 1bc18ac9cd51dc24c47d172ef03a2da364c9f56d9a32428de435350a5174ca8f
 
 pkgname = hghub-bin

@@ -1,7 +1,7 @@
 pkgbase = hghub
 	pkgdesc = HGhub community Linux client with persistent interface scaling
-	pkgver = 1.2.0
-	pkgrel = 2
+	pkgver = 1.2.1
+	pkgrel = 1
 	url = https://github.com/fansion314/packages
 	arch = x86_64
 	license = PolyForm-Noncommercial-1.0.0
@@ -30,8 +30,8 @@ pkgbase = hghub
 	options = !lto
 	options = !debug
 	options = !strip
-	source = hghub::git+https://github.com/Minireel/HGhub.git#commit=79827baa7542fead68919e7b45f5bfde86b18ee7
-	source = packaging::git+https://github.com/fansion314/packages.git#tag=hghub-v1.2.0-2
+	source = hghub::git+https://github.com/bashirian777/HGhub.git#commit=bba3152215ca0e18a3042fa854ff2dae743c2fe0
+	source = packaging::git+https://github.com/fansion314/packages.git#tag=hghub-v1.2.1-1
 	sha256sums = SKIP
 	sha256sums = SKIP
 
