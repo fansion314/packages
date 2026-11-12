@@ -1,6 +1,6 @@
 # Maintainer: fansion314 <https://github.com/fansion314>
 pkgname=longbridge
-pkgver=1.1.0
+pkgver=1.1.2
 pkgrel=1
 pkgdesc='Longbridge trading platform desktop application (official Linux binary)'
 arch=('x86_64')
@@ -10,8 +10,8 @@ depends=('glibc>=2.39' 'gcc-libs' 'gtk3' 'webkit2gtk-4.1' 'libsoup3' 'glib2' 'li
 optdepends=('vulkan-driver: GPU rendering' 'noto-fonts-cjk: Chinese text rendering' 'org.freedesktop.secrets: secure credential storage')
 conflicts=('longbridge-bin' 'longbridge-desktop')
 options=('!strip' '!debug')
-source=("longbridge-${pkgver}-linux-x86_64.tar.gz::https://assets.lbkrs.com/github/release/longbridge-desktop/stable/longbridge-v1.1.0-linux-x86_64.tar.gz")
-sha256sums=('2ac881df53f47080a0315f4a0f4db794529e36c005ccd51c6903388b4e31a238')
+source=("longbridge-${pkgver}-linux-x86_64.tar.gz::https://assets.lbkrs.com/github/release/longbridge-desktop/stable/longbridge-v1.1.2-linux-x86_64.tar.gz")
+sha256sums=('151972de8efe538ade492bcd399c9634b1ed20ecc8608f5a2f21a9dbdb8d88d9')
 
 package() {
   # Keep the official .app layout, executable bytes and upstream application ID.
