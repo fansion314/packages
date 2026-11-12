@@ -2,12 +2,12 @@
 import { execFileSync } from 'node:child_process'
 import { chmodSync, cpSync, existsSync, mkdirSync, readFileSync, readdirSync, realpathSync, rmSync, symlinkSync, writeFileSync } from 'node:fs'
 import { dirname, join, relative, resolve, sep } from 'node:path'
-import { prepareOfficeSkillAssets } from '../scripts/primary-runtime/prepare.ts'
 import { prepareSystemRuntime } from './system-runtime.mjs'
 import { buildSystemSharp } from './build-sharp.mjs'
 import { packDesktopAsar } from './pack-asar.mjs'
 import { writeDesktopRuntime, verifyDesktopRuntime } from '../apps/desktop/src/runtime-tree.ts'
 import { DESKTOP_HOST_PROTOCOL_VERSION } from '../apps/desktop/src/host-protocol.ts'
+import { selectOfficeEngine } from '../scripts/libreoffice-packages.mjs'
 import { desktopRuntimeFileExclusion } from '../apps/desktop/scripts/runtime-file-policy.ts'
 
 const root = resolve(import.meta.dirname, '..')
@@ -70,6 +70,9 @@ function deploy(name: string, source: string, destination: string): void {
     cpSync(from, target, { recursive: true, dereference: true,
       filter: path => path !== join(from, 'node_modules') && !path.startsWith(join(from, 'node_modules') + sep) })
   }
+  const kit = join(staging, 'node_modules/@deepseek-ai/libreoffice-kit/package.json')
+  const officeEngine = existsSync(kit)
+    ? selectOfficeEngine(JSON.parse(readFileSync(kit, 'utf8')), { platform: 'linux', arch: 'x64' }) : 'wasm'
   mkdirSync(destination, { recursive: true })
   cpSync(staging, destination, { recursive: true, dereference: true, filter: path => {
     const entry = relative(staging, path)
@@ -77,7 +80,7 @@ function deploy(name: string, source: string, destination: string): void {
       && !['package.json', 'lib', 'renderer', 'resources', 'node_modules'].includes(entry.split(sep)[0]!)) return false
     const modules = `node_modules${sep}`
     return !entry.startsWith(modules)
-      || desktopRuntimeFileExclusion(entry.slice(modules.length), { platform: 'linux', arch: 'x64' }, 'wasm') === undefined
+      || desktopRuntimeFileExclusion(entry.slice(modules.length), { platform: 'linux', arch: 'x64' }, officeEngine) === undefined
   } })
 }
 
@@ -111,7 +114,7 @@ symlinkSync('../../pnpm', join(runtime, 'primary-runtime/dependencies/pnpm'))
 buildSystemSharp(join(dsh, 'node_modules'))
 run('patch', ['--batch', '--forward', '-p1', '-d', join(dsh, 'node_modules/node-addon-require-builtin'),
   '-i', join(root, 'aur/require-builtin.patch')])
-await prepareOfficeSkillAssets(resolve('packages/skill/skill-office/assets'), join(runtime, 'office-skills'))
+copy('packages/skill/skill-office/assets', join(runtime, 'office-skills'))
 const systemRuntime = prepareSystemRuntime(app, join(work, 'system-runtimes'))
 const sharedNames = readdirSync(join(dsh, 'node_modules/@deepseek-ai')).map(name => `@deepseek-ai/${name}`)
 const ripgrep = join(dsh, 'node_modules/@vscode/ripgrep-linux-x64/bin/rg')

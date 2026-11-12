@@ -1,16 +1,8 @@
 diff --git a/apps/desktop/README.i18n.yaml b/apps/desktop/README.i18n.yaml
-index 3dfceaccd1dbd65bf2a7c485213321bff16848e8..c1cbe0f93a401d6dd447ec399698665e7fa34496 100644
+index 7b4f37e1ad44b5e4c629cdf9ed608d2eed4e0bf7..a66debf72d826732b3bfffdd7651cdd282fcffc4 100644
 --- a/apps/desktop/README.i18n.yaml
 +++ b/apps/desktop/README.i18n.yaml
-@@ -15,14 +15,14 @@
-   en: 127ea90553cb6af7
-   zh: 7b1c5aec8558c684
- /deepseek-harness-desktop/application-overview:
--  en: 1667e3d6ffddea4a
--  zh: 4661a42b9ef4f673
-+  en: f5b368e98060298d
-+  zh: 78f9f0ab6f6c910e
- /deepseek-harness-desktop/terminal-command:
+@@ -21,8 +21,8 @@
    en: 5f2d25a1d8472647
    zh: 2acb5c5d7d1917e2
  /deepseek-harness-desktop/closing-the-window-and-quitting:
@@ -21,17 +13,6 @@ index 3dfceaccd1dbd65bf2a7c485213321bff16848e8..c1cbe0f93a401d6dd447ec399698665e
  /deepseek-harness-desktop/key-technical-decisions:
    en: 3724c53da4f7647b
    zh: 76ae549d43c99bb4
-@@ -33,8 +33,8 @@
-   en: 372297005b57a08b
-   zh: 074a635ac17e4362
- /deepseek-harness-desktop/installation-ownership:
--  en: 160b500cdcd6a39a
--  zh: 6c267f1762ec3689
-+  en: 726134b4f6cd471a
-+  zh: 9674ee7ec9a0fb11
- /deepseek-harness-desktop/installation-ownership/runtime-and-plugin-activation:
-   en: 4951cd3ee659eb33
-   zh: 96bdd6358dad587a
 @@ -42,8 +42,8 @@
    en: 98cf848762482d48
    zh: 74f9100a39ec8c2f
@@ -110,24 +91,24 @@ index 0000000000000000000000000000000000000000..b2e27689818a3deec9b730396cf8654f
 +  - menuitem "175%"
 +  - menuitem "200%"
 diff --git a/apps/web/tsconfig.json b/apps/web/tsconfig.json
-index 47acf9c48c7b391c98e990b24256527d4d509241..ec150525214a1ac9c454ff529122fafe2c15f730 100644
+index a70870d5ecc5a046ffb336517e20c5a5f840760f..314022a7e68db63c033998976a2a23a0720dfe10 100644
 --- a/apps/web/tsconfig.json
 +++ b/apps/web/tsconfig.json
-@@ -131,6 +131,7 @@
-     "tests/desktop-locale.e2e.ts",
+@@ -136,6 +136,7 @@
      "tests/settings-import.e2e.ts",
      "tests/desktop-updates.e2e.ts",
+     "tests/desktop-channel.e2e.ts",
 +    "tests/desktop-scale.e2e.ts",
      "tests/developer-tools-settings.e2e.ts",
      "tests/models-settings.e2e.ts",
      "tests/deepseek-messages-settings.e2e.ts",
 diff --git a/packages/client/ui-settings-general/README.i18n.yaml b/packages/client/ui-settings-general/README.i18n.yaml
-index 3d8f2a3a55048d02c2f27b2e79b387e04f1b644d..c2bbb4c01337fc60b0981382c954991a910f4faf 100644
+index a3e6d06c2b7f4c0bc908de2efa059434ed9f7f68..a5c922385db0b9d1cba1a86bd77cedc21e1d898b 100644
 --- a/packages/client/ui-settings-general/README.i18n.yaml
 +++ b/packages/client/ui-settings-general/README.i18n.yaml
 @@ -18,8 +18,8 @@
-   en: d427d20b4dab6653
-   zh: 84e80592f0a30a9f
+   en: 8ae337011190f5f3
+   zh: 508eca60c6fcdc34
  /deepseek-ai-dsh-client-ui-settings-general/use-this-package/the-general-section:
 -  en: de35e867b2a56d73
 -  zh: 6d4e5c912636f889
@@ -137,7 +118,7 @@ index 3d8f2a3a55048d02c2f27b2e79b387e04f1b644d..c2bbb4c01337fc60b0981382c954991a
    en: 597df68b5913e8d7
    zh: bc9114f3e877679a
 diff --git a/packages/client/ui-settings-general/README.md b/packages/client/ui-settings-general/README.md
-index 0cc3645d8edad0d4c5fb7d51f80104f8347b6db2..9aeaa526dc9ecbbca03cd98468a0c634074e99a5 100644
+index a7782b05187b017b3eee60b02a3dec986f231729..c303e8490b4e3307522cd1253d24cb73dacaac5e 100644
 --- a/packages/client/ui-settings-general/README.md
 +++ b/packages/client/ui-settings-general/README.md
 @@ -45,6 +45,8 @@ Settings visibility and section selection live in the shell owner store. The she
@@ -150,7 +131,7 @@ index 0cc3645d8edad0d4c5fb7d51f80104f8347b6db2..9aeaa526dc9ecbbca03cd98468a0c634
  
  The Coding Tools switch controls the shared `ui-settings.enabled` preference described by [ui-settings](../ui-settings/README.md#use-this-package). It is available in both Web and desktop, follows accepted changes immediately, and disables duplicate input while a write settles. A failed write displays localized retry guidance. On Desktop, a change made with this switch reports `code_work_view_toggle` with the new value through the optional [product analytics](../product-analytics/README.md) service, timestamped at the click. Only a write that changes a known value and leaves the preference at the requested value reports; requesting the current value, an unknown previous value, a failed write, and preference updates made elsewhere report nothing.
 diff --git a/packages/client/ui-settings-general/README.zh.md b/packages/client/ui-settings-general/README.zh.md
-index 8ff8cc8e57ffd368cbd39232d971828d976c6b0c..5690d2121e3297cc19c8786b7d0585fbddcb8849 100644
+index a9e949c08efacff3d0148e89bb3c0fd88eade856..1b4410c67adb2e0c1fa2262475053bf7292e7942 100644
 --- a/packages/client/ui-settings-general/README.zh.md
 +++ b/packages/client/ui-settings-general/README.zh.md
 @@ -45,6 +45,8 @@ kind: "package-reference"
@@ -347,21 +328,23 @@ index 0000000000000000000000000000000000000000..440d7daf679c22fd78b6d30af791f7e4
 +  dispose(): void { this.live = false; this.unsubscribe() }
 +}
 diff --git a/packages/client/ui-settings-general/src/client/index.ts b/packages/client/ui-settings-general/src/client/index.ts
-index 0e6fae5e58942a453798bfa6c2bf281920df63cb..5d8d64b243ef1103410fd9d23572b29b1c2ea6a2 100644
+index 3ee2c01e05698719ea61e81e575ce3078a7c2db1..021155440155418984f50f611d0e838451769dc3 100644
 --- a/packages/client/ui-settings-general/src/client/index.ts
 +++ b/packages/client/ui-settings-general/src/client/index.ts
-@@ -34,7 +34,9 @@ import type { ShortcutCommandId } from '@deepseek-ai/dsh-client-shortcuts/client
+@@ -34,9 +34,11 @@ import type { ShortcutCommandId } from '@deepseek-ai/dsh-client-shortcuts/client
  import { createSettingsShellStore } from './shell-store.ts'
  import { SettingsRoot } from './SettingsRoot.tsx'
  import { DesktopUpdateBadge } from './DesktopUpdateIndicator.tsx'
 -import type { DesktopUpdateBridge } from '../types.ts'
 +import type { DesktopScaleBridge, DesktopUpdateBridge } from '../types.ts'
+ import { DesktopChannelSource } from './desktop-channel-source.ts'
+ import { DesktopChannelRow, DesktopChannelToast } from './DesktopChannelRow.tsx'
 +import { DesktopScaleSource } from './desktop-scale-source.ts'
 +import { DesktopScaleRow, DesktopScaleNotice, type DesktopScaleInjected } from './DesktopScaleRow.tsx'
  import { DesktopUpdateSource } from './desktop-update-source.ts'
  import { CloseLabel, HeaderContent, TriggerContent } from './chrome.tsx'
  import { GeneralSection } from './GeneralSection.tsx'
-@@ -101,7 +103,23 @@ export function apply(ctx: ClientContext): void {
+@@ -103,7 +105,23 @@ export function apply(ctx: ClientContext): void {
    }, CurrentVersionRow))
    ctx.effect(() => ctx.locale.register(NS, { zh, en, ja, es, fr, de, ru, pt }), 'ui-settings-general: dictionaries')
    const connection = ctx.get('connection') as ConnectionHandle
@@ -385,12 +368,12 @@ index 0e6fae5e58942a453798bfa6c2bf281920df63cb..5d8d64b243ef1103410fd9d23572b29b
 +  }
    const desktopUpdate = new DesktopUpdateSource(carrier?.protocolVersion === 1 ? carrier.updates : undefined)
    ctx.effect(() => () => { desktopUpdate.dispose() }, 'ui-settings-general: desktop update carrier')
-   ctx.slots.inject('sidebar.toggle.badge', () => ctx.slots.register({
+   const channelBridge = carrier?.protocolVersion === 1 ? carrier.updates?.channels : undefined
 diff --git a/packages/client/ui-settings-general/src/client/locales.ts b/packages/client/ui-settings-general/src/client/locales.ts
-index 58afc6bba7414003165cc66a3f919697e26d782d..38f5df4b94eeae124a1b67afa91dd5d6017ba0e8 100644
+index a6a6bc28a4efa52ac30049b64a490fadbae74cde..e136659a67784e8037510d30b32cdfad6dd0dc6d 100644
 --- a/packages/client/ui-settings-general/src/client/locales.ts
 +++ b/packages/client/ui-settings-general/src/client/locales.ts
-@@ -28,6 +28,11 @@ export const zh = {
+@@ -51,6 +51,11 @@ export const zh = {
    'openDocument': '打开配置文件',
    'openDocument.error': '无法打开配置文件',
    'general.nav': '通用设置',
@@ -402,7 +385,7 @@ index 58afc6bba7414003165cc66a3f919697e26d782d..38f5df4b94eeae124a1b67afa91dd5d6
    'general.currentVersion': '当前版本：{version}',
    'developerTools.title': '显示代码工作视图',
    'developerTools.error': '保存失败，请重试',
-@@ -77,6 +82,11 @@ export const en = {
+@@ -123,6 +128,11 @@ export const en = {
    'openDocument': 'Open configuration file',
    'openDocument.error': 'Could not open configuration file',
    'general.nav': 'General',
@@ -414,10 +397,10 @@ index 58afc6bba7414003165cc66a3f919697e26d782d..38f5df4b94eeae124a1b67afa91dd5d6
    'general.currentVersion': 'Current version: {version}',
    'developerTools.title': 'Show coding view',
    'developerTools.error': 'Could not save. Please try again.',
-@@ -97,6 +107,11 @@ export const en = {
- 
- /** Japanese copy, checked against the English keys. */
- export const ja = {
+@@ -163,6 +173,11 @@ export const ja = {
+   'desktop.update.configuration.format': '更新を停止中：設定ファイルの形式が不正です',
+   'desktop.update.configuration.channel': '更新を停止中：channel は nightly または stable にしてください',
+   'desktop.update.configuration.cleanup': '更新を停止中：以前の更新を削除できません。アプリを再起動してください',
 +  'desktop.scale.title': '表示倍率',
 +  'desktop.scale.description': 'デスクトップ全体の表示サイズを調整します。この端末のみに保存されます',
 +  'desktop.scale.retry': '表示倍率を再読み込み',
@@ -426,10 +409,10 @@ index 58afc6bba7414003165cc66a3f919697e26d782d..38f5df4b94eeae124a1b67afa91dd5d6
    'trigger': '設定',
    'shortcut.open': '設定を開く',
    'desktop.update.available': '更新',
-@@ -143,6 +158,11 @@ export const ja = {
- 
- /** Spanish dictionary, checked against the English keys. */
- export const es = {
+@@ -232,6 +247,11 @@ export const es = {
+   'desktop.update.configuration.format': 'Actualizaciones pausadas: archivo de configuración no válido',
+   'desktop.update.configuration.channel': 'Actualizaciones pausadas: channel debe ser nightly o stable',
+   'desktop.update.configuration.cleanup': 'Actualizaciones pausadas: no se pudo descartar la actualización anterior; reinicia la aplicación',
 +  'desktop.scale.title': 'Escala de la interfaz',
 +  'desktop.scale.description': 'Ajusta el tamaño del escritorio completo; se guarda solo en este dispositivo',
 +  'desktop.scale.retry': 'Recargar la escala',
@@ -438,10 +421,10 @@ index 58afc6bba7414003165cc66a3f919697e26d782d..38f5df4b94eeae124a1b67afa91dd5d6
    'trigger': 'Configuración',
    'shortcut.open': 'Abrir configuración',
    'desktop.update.available': 'Actualizar',
-@@ -189,6 +209,11 @@ export const es = {
- 
- /** French dictionary, checked against the English keys. */
- export const fr = {
+@@ -301,6 +321,11 @@ export const fr = {
+   'desktop.update.configuration.format': 'Mises à jour suspendues : fichier de paramètres invalide',
+   'desktop.update.configuration.channel': 'Mises à jour suspendues : channel doit être nightly ou stable',
+   'desktop.update.configuration.cleanup': 'Mises à jour suspendues : suppression de la mise à jour précédente impossible ; redémarrez l’application',
 +  'desktop.scale.title': 'Échelle de l’interface',
 +  'desktop.scale.description': 'Ajuste la taille de tout le bureau, enregistrée uniquement sur cet appareil',
 +  'desktop.scale.retry': 'Recharger l’échelle',
@@ -450,10 +433,10 @@ index 58afc6bba7414003165cc66a3f919697e26d782d..38f5df4b94eeae124a1b67afa91dd5d6
    'trigger': 'Paramètres',
    'shortcut.open': 'Ouvrir les paramètres',
    'desktop.update.available': 'Mise à jour',
-@@ -235,6 +260,11 @@ export const fr = {
- 
- /** German dictionary, checked against the English keys. */
- export const de = {
+@@ -370,6 +395,11 @@ export const de = {
+   'desktop.update.configuration.format': 'Updates pausiert: ungültige Einstellungsdatei',
+   'desktop.update.configuration.channel': 'Updates pausiert: channel muss nightly oder stable sein',
+   'desktop.update.configuration.cleanup': 'Updates pausiert: vorheriges Update nicht verwerfbar; App neu starten',
 +  'desktop.scale.title': 'Oberflächenskalierung',
 +  'desktop.scale.description': 'Passt die Größe des gesamten Desktops an; nur auf diesem Gerät gespeichert',
 +  'desktop.scale.retry': 'Skalierung neu laden',
@@ -462,10 +445,10 @@ index 58afc6bba7414003165cc66a3f919697e26d782d..38f5df4b94eeae124a1b67afa91dd5d6
    'trigger': 'Einstellungen',
    'shortcut.open': 'Einstellungen öffnen',
    'desktop.update.available': 'Aktualisieren',
-@@ -281,6 +311,11 @@ export const de = {
- 
- /** Russian dictionary, checked against the English keys. */
- export const ru = {
+@@ -439,6 +469,11 @@ export const ru = {
+   'desktop.update.configuration.format': 'Обновления приостановлены: неверный формат файла настроек',
+   'desktop.update.configuration.channel': 'Обновления приостановлены: channel должен быть nightly или stable',
+   'desktop.update.configuration.cleanup': 'Обновления приостановлены: не удалось удалить предыдущее обновление; перезапустите приложение',
 +  'desktop.scale.title': 'Масштаб интерфейса',
 +  'desktop.scale.description': 'Размер всего рабочего пространства; сохраняется только на этом устройстве',
 +  'desktop.scale.retry': 'Перезагрузить масштаб',
@@ -474,10 +457,10 @@ index 58afc6bba7414003165cc66a3f919697e26d782d..38f5df4b94eeae124a1b67afa91dd5d6
    'trigger': 'Настройки',
    'shortcut.open': 'Открыть настройки',
    'desktop.update.available': 'Обновить',
-@@ -327,6 +362,11 @@ export const ru = {
- 
- /** Portuguese dictionary, checked against the English keys. */
- export const pt = {
+@@ -508,6 +543,11 @@ export const pt = {
+   'desktop.update.configuration.format': 'Atualizações pausadas: arquivo de configurações inválido',
+   'desktop.update.configuration.channel': 'Atualizações pausadas: channel deve ser nightly ou stable',
+   'desktop.update.configuration.cleanup': 'Atualizações pausadas: não foi possível descartar a atualização anterior; reinicie o aplicativo',
 +  'desktop.scale.title': 'Escala da interface',
 +  'desktop.scale.description': 'Ajusta o tamanho de todo o ambiente; salvo apenas neste dispositivo',
 +  'desktop.scale.retry': 'Recarregar escala',
@@ -487,12 +470,12 @@ index 58afc6bba7414003165cc66a3f919697e26d782d..38f5df4b94eeae124a1b67afa91dd5d6
    'shortcut.open': 'Abrir configurações',
    'desktop.update.available': 'Atualizar',
 diff --git a/packages/client/ui-settings-general/src/types.ts b/packages/client/ui-settings-general/src/types.ts
-index 9aa0ea95e328e7c20d13707e05edf7f00278a502..4466c8bdbedf3119860a793db4863983872f92ea 100644
+index 33edb975e04f5dbcfa350e3bb53717b588ed893f..d02da558579c1a7012fcae7099363c63fae18699 100644
 --- a/packages/client/ui-settings-general/src/types.ts
 +++ b/packages/client/ui-settings-general/src/types.ts
-@@ -34,3 +34,25 @@ export interface DesktopUpdateView {
-   readonly failed: boolean
-   readonly opening: boolean
+@@ -72,3 +72,25 @@ export interface DesktopChannelBridge {
+    */
+   subscribe(listener: (state: DesktopChannelState) => void): () => void
  }
 +
 +/** Device-local workspace zoom and the factors accepted by the desktop shell. */
@@ -621,7 +604,7 @@ index 0000000000000000000000000000000000000000..e31ed88b9875bc0e30d060850410df1d
 +  } finally { f.source.dispose() }
 +})
 diff --git a/packages/client/ui-sidebar/README.i18n.yaml b/packages/client/ui-sidebar/README.i18n.yaml
-index 50458ab3dacc2ac54470cf839824edfabe2b2830..bf9cd8309b9a9246cd619cbf19efab832fc242d8 100644
+index 6ce427862169bfb3a29e2a8c4badc71b57153705..f3b46d29309cb635ed7c60b1af4900e2879cc33c 100644
 --- a/packages/client/ui-sidebar/README.i18n.yaml
 +++ b/packages/client/ui-sidebar/README.i18n.yaml
 @@ -18,8 +18,8 @@
@@ -633,10 +616,10 @@ index 50458ab3dacc2ac54470cf839824edfabe2b2830..bf9cd8309b9a9246cd619cbf19efab83
 +  en: 91b3d0aa64a6e108
 +  zh: 934f3ee5d30613f4
  /deepseek-ai-dsh-client-ui-sidebar/use-this-package/global-panel-entries:
-   en: e7f316023445511b
-   zh: 6271c8c011533877
+   en: 8a23eab217042cc6
+   zh: 2d760de4c83f996c
 diff --git a/packages/client/ui-sidebar/README.md b/packages/client/ui-sidebar/README.md
-index 8783f2622c341d0d73ddca7139c175156ce87088..a5c0d948e3a72eb1f3b850400c1cbb3548ce6f14 100644
+index ea682c7e41baf3f199a479a49a1d8d94e78dfead..8a1bdfe6707a05b53e27e13990e110a2a82e3714 100644
 --- a/packages/client/ui-sidebar/README.md
 +++ b/packages/client/ui-sidebar/README.md
 @@ -35,7 +35,7 @@ Below 768px, without a native Windows caption, the sidebar keeps its expanded co
@@ -649,7 +632,7 @@ index 8783f2622c341d0d73ddca7139c175156ce87088..a5c0d948e3a72eb1f3b850400c1cbb35
  ### Global panel entries
  
 diff --git a/packages/client/ui-sidebar/README.zh.md b/packages/client/ui-sidebar/README.zh.md
-index 15acbfc85965d2345024d1a0a7e29d0d02482bf7..1d6ffeb70244bd2f2479cc01b32507272211732b 100644
+index 58ccbebef23c7179eba5d54ddaa2f8cf1a58bfc6..bb8f652f6446f651d45dd088cf0233f36766a64b 100644
 --- a/packages/client/ui-sidebar/README.zh.md
 +++ b/packages/client/ui-sidebar/README.zh.md
 @@ -35,7 +35,7 @@ dsh Web 客户端的侧边栏让用户识别当前构建、启动新会话、将
@@ -662,10 +645,10 @@ index 15acbfc85965d2345024d1a0a7e29d0d02482bf7..1d6ffeb70244bd2f2479cc01b3250727
  ### 全局面板入口
  
 diff --git a/packages/client/ui-sidebar/src/client/SidebarRoot.tsx b/packages/client/ui-sidebar/src/client/SidebarRoot.tsx
-index f03ecc32aae8728aa544307ced0e44cb49b3c999..e5b7f5fda60b9cc4d9a5656b06114897270134ec 100644
+index b573b19cc83cc0d6880ab6d284d140e1c24c67c2..a8b4aa466cb9a68fa91cd9f4bab188db25d4e3c6 100644
 --- a/packages/client/ui-sidebar/src/client/SidebarRoot.tsx
 +++ b/packages/client/ui-sidebar/src/client/SidebarRoot.tsx
-@@ -322,10 +322,10 @@ export function SidebarRoot({
+@@ -347,10 +347,10 @@ export function SidebarRoot({
                <span className={css.brandName}>
                  {renderSlot('sidebar.brand.name', {}, {
                    fallback: buildVersion === undefined
@@ -679,10 +662,10 @@ index f03ecc32aae8728aa544307ced0e44cb49b3c999..e5b7f5fda60b9cc4d9a5656b06114897
                        </span>
                      ),
 diff --git a/packages/client/ui-sidebar/tests/__snapshots__/sidebar-snapshot.client.spec.tsx.snap b/packages/client/ui-sidebar/tests/__snapshots__/sidebar-snapshot.client.spec.tsx.snap
-index 7f6e1ba454f229a76aa7685746c174ced407d4e8..6cdbed63b023a21bce1519a5e8def59de4e0712a 100644
+index 186d9ef6d93546c8e02667c554dcc69a91e081e8..ce4394456426034c1f0037f46308fbe7b408356c 100644
 --- a/packages/client/ui-sidebar/tests/__snapshots__/sidebar-snapshot.client.spec.tsx.snap
 +++ b/packages/client/ui-sidebar/tests/__snapshots__/sidebar-snapshot.client.spec.tsx.snap
-@@ -621,3 +621,147 @@ exports[`sidebar shell snapshots > renders the expanded column in the default lo
+@@ -684,3 +684,147 @@ exports[`sidebar shell snapshots > renders the expanded column in the default lo
    </div>
  </div>
  `;
@@ -852,21 +835,21 @@ index dfa756943b8d0df22e5b5f425ec241dcec64771b..44ae3751a6b2d75331183d78a90ab1c3
      const { runtime } = await bench()
      const slot = runtime.renderSlot('sidebar', { collapsed: false, width: 300, drawer: false })
 diff --git a/packages/extensions/cordis-client-runner/src/client/slot-catalog.ts b/packages/extensions/cordis-client-runner/src/client/slot-catalog.ts
-index 11311bce0764f2c1592a4f334fbe9b0c85ac0d5e..8f96d2fcaea426020f60292a53eded7a0610ee13 100644
+index 36cbd48ee7af27a727b14d073cf772ceb814fe24..951f2076d943ca5c0087fa7688899d510096696d 100644
 --- a/packages/extensions/cordis-client-runner/src/client/slot-catalog.ts
 +++ b/packages/extensions/cordis-client-runner/src/client/slot-catalog.ts
-@@ -3207,6 +3207,7 @@ export const CLIENT_SLOT_API: readonly ClientSlotEntry[] = [
-       'client-ui-permission-presets PermissionRow id \'permission\'',
+@@ -3457,6 +3457,7 @@ export const CLIENT_SLOT_API: readonly ClientSlotEntry[] = [
        'client-ui-settings-general DeveloperToolsRow id \'developer-tools\'',
        'client-ui-settings-general CurrentVersionRow id \'current-version\'',
+       'client-ui-settings-general DesktopChannelRow id \'desktop-update-channel\'',
 +      'client-ui-settings-general DesktopScaleRow id \'desktop-scale\'',
        'client-ui-settings-session-log UploadRow',
        'client-ui-shortcuts ShortcutsRow id \'shortcuts\'',
        'client-ui-theme AppearanceRow id \'appearance\'',
-@@ -3774,6 +3775,7 @@ export const CLIENT_SLOT_API: readonly ClientSlotEntry[] = [
-       'client-ui-schedule ScheduleDeleteToast id \'schedule.delete-toast\'',
+@@ -4060,6 +4061,7 @@ export const CLIENT_SLOT_API: readonly ClientSlotEntry[] = [
        'client-ui-settings-account DesktopOnboardingEntry id \'desktop-onboarding\'',
        'client-ui-settings-account AccountPlatformHost id \'account.platform-page\'',
+       'client-ui-settings-general DesktopChannelToast id \'desktop-channel-toast\'',
 +      'client-ui-settings-general DesktopScaleNotice id \'desktop-scale-notice\'',
        'client-ui-settings-general HostReleasePrompt id \'host-release-change\'',
        'client-ui-settings-session-log UploadToast id \'session-log-upload-toast\'',
