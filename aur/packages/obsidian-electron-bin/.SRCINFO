@@ -1,6 +1,6 @@
 pkgbase = obsidian-electron-bin
 	pkgdesc = Obsidian with the latest system Electron (prebuilt GitHub release)
-	pkgver = 1.15.0
+	pkgver = 1.15.1
 	pkgrel = 1
 	url = https://github.com/fansion314/packages
 	arch = x86_64
@@ -10,14 +10,14 @@ pkgbase = obsidian-electron-bin
 	depends = fontconfig
 	depends = zlib
 	depends = hicolor-icon-theme
-	provides = obsidian=1.15.0
-	provides = obsidian-electron=1.15.0
+	provides = obsidian=1.15.1
+	provides = obsidian-electron=1.15.1
 	conflicts = obsidian
 	conflicts = obsidian-electron
-	noextract = obsidian-electron-1.15.0-1-x86_64.pkg.tar.zst
+	noextract = obsidian-electron-1.15.1-1-x86_64.pkg.tar.zst
 	options = !strip
 	options = !debug
-	source_x86_64 = https://github.com/fansion314/packages/releases/download/obsidian-v1.15.0-1/obsidian-electron-1.15.0-1-x86_64.pkg.tar.zst
-	sha256sums_x86_64 = 193fccfe94cbe25cc1b3edbf4d09ac47269a87ec7364ada512374e69df929d40
+	source_x86_64 = https://github.com/fansion314/packages/releases/download/obsidian-v1.15.1-1/obsidian-electron-1.15.1-1-x86_64.pkg.tar.zst
+	sha256sums_x86_64 = 7425bda0bbf786c2b9af933fce051777e7881eb1f8aefef8023e04acd7ce3c59
 
 pkgname = obsidian-electron-bin
