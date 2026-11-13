@@ -5,6 +5,7 @@ const { app } = require('electron')
 
 const archive = path.resolve(process.argv[2], 'app.asar')
 const metadata = require(path.join(archive, 'package.json'))
+assert.equal(app.getVersion(), metadata.version)
 app.setAppPath(archive)
 app.setName(metadata.name)
 let finished = false
