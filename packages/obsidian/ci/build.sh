@@ -75,4 +75,9 @@ cp "$outdir/$payload" "$root/.cache/sources/$payload"
 build_recipe obsidian-electron-bin dist/bin-recipe
 diff -r obsidian-electron/pkg/obsidian-electron/usr/lib/obsidian-electron \
     dist/bin-recipe/pkg/obsidian-electron-bin/usr/lib/obsidian-electron
+smoke_home=$(mktemp -d)
+trap 'rm -f "$metadata" "$config"; rm -rf "$smoke_home"' EXIT
+HOME="$smoke_home" XDG_CONFIG_HOME="$smoke_home/config" XDG_CACHE_HOME="$smoke_home/cache" \
+    dbus-run-session -- xvfb-run -a /usr/bin/electron "$root/ci/smoke.cjs" \
+    "$root/obsidian-electron/pkg/obsidian-electron/usr/lib/obsidian-electron"
 printf 'Built one release payload and verified both recipes for %s\n' "$version"
