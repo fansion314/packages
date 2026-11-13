@@ -1,5 +1,5 @@
 {
-  "cleanup_pending": true,
+  "cleanup_pending": false,
   "keys": {
     "/keys/fansionia.asc": {
       "filename": "fansionia.asc",
@@ -146,18 +146,6 @@
       "sha256": "9f3db8e2cb27ce45c00c4ffbd873d04a51f15e880f7c9720f2572103cb19f9d2",
       "size": 119,
       "tag": "mygo-music-v0.1.24-1"
-    },
-    "https://cnb.cool/fansionia/packages/-/releases/download/obsidian-v1.15.0-1/obsidian-electron-1.15.0-1-x86_64.pkg.tar.zst": {
-      "filename": "obsidian-electron-1.15.0-1-x86_64.pkg.tar.zst",
-      "sha256": "193fccfe94cbe25cc1b3edbf4d09ac47269a87ec7364ada512374e69df929d40",
-      "size": 8061269,
-      "tag": "obsidian-v1.15.0-1"
-    },
-    "https://cnb.cool/fansionia/packages/-/releases/download/obsidian-v1.15.0-1/obsidian-electron-1.15.0-1-x86_64.pkg.tar.zst.sig": {
-      "filename": "obsidian-electron-1.15.0-1-x86_64.pkg.tar.zst.sig",
-      "sha256": "614dd1ae7ab25015f06ca3f6c94fc152405b3f882e5986937ca4d98d0ed92d63",
-      "size": 119,
-      "tag": "obsidian-v1.15.0-1"
     },
     "https://cnb.cool/fansionia/packages/-/releases/download/obsidian-v1.15.1-1/obsidian-electron-1.15.1-1-x86_64.pkg.tar.zst": {
       "filename": "obsidian-electron-1.15.1-1-x86_64.pkg.tar.zst",
@@ -386,60 +374,6 @@
       "sha256": "0e49393ff32bd70ae287f53eb8703628acfffc133bd9826320b962d907d1cd55",
       "size": 18133,
       "tag": "snapshot-32d6326514a25ea5c8aeb3466a87cf0c"
-    },
-    "https://cnb.cool/fansionia/packages/-/releases/download/snapshot-474812d9b8eec408ace821c2c6bf7d26/fansionia.db": {
-      "filename": "fansionia.db",
-      "sha256": "7111994e4092847d173a7afe411350ee18b558b80bfba5ba28d72116f761dcff",
-      "size": 10812,
-      "tag": "snapshot-474812d9b8eec408ace821c2c6bf7d26"
-    },
-    "https://cnb.cool/fansionia/packages/-/releases/download/snapshot-474812d9b8eec408ace821c2c6bf7d26/fansionia.db.sig": {
-      "filename": "fansionia.db.sig",
-      "sha256": "67e6b06369bcae08b0c8c58928277624f9b840ece0bb90f371db298357e0ca86",
-      "size": 119,
-      "tag": "snapshot-474812d9b8eec408ace821c2c6bf7d26"
-    },
-    "https://cnb.cool/fansionia/packages/-/releases/download/snapshot-474812d9b8eec408ace821c2c6bf7d26/fansionia.db.tar.gz": {
-      "filename": "fansionia.db.tar.gz",
-      "sha256": "7111994e4092847d173a7afe411350ee18b558b80bfba5ba28d72116f761dcff",
-      "size": 10812,
-      "tag": "snapshot-474812d9b8eec408ace821c2c6bf7d26"
-    },
-    "https://cnb.cool/fansionia/packages/-/releases/download/snapshot-474812d9b8eec408ace821c2c6bf7d26/fansionia.db.tar.gz.sig": {
-      "filename": "fansionia.db.tar.gz.sig",
-      "sha256": "67e6b06369bcae08b0c8c58928277624f9b840ece0bb90f371db298357e0ca86",
-      "size": 119,
-      "tag": "snapshot-474812d9b8eec408ace821c2c6bf7d26"
-    },
-    "https://cnb.cool/fansionia/packages/-/releases/download/snapshot-474812d9b8eec408ace821c2c6bf7d26/fansionia.files": {
-      "filename": "fansionia.files",
-      "sha256": "e4f038040123658ed44ae924920cb244385eabe16e003b1dd2bce5eab5ac0e43",
-      "size": 148252,
-      "tag": "snapshot-474812d9b8eec408ace821c2c6bf7d26"
-    },
-    "https://cnb.cool/fansionia/packages/-/releases/download/snapshot-474812d9b8eec408ace821c2c6bf7d26/fansionia.files.sig": {
-      "filename": "fansionia.files.sig",
-      "sha256": "29240abfcbca1a5ea3b6d9a1bd04360edcf9383ad1fdbce0fa82128ac262674a",
-      "size": 119,
-      "tag": "snapshot-474812d9b8eec408ace821c2c6bf7d26"
-    },
-    "https://cnb.cool/fansionia/packages/-/releases/download/snapshot-474812d9b8eec408ace821c2c6bf7d26/fansionia.files.tar.gz": {
-      "filename": "fansionia.files.tar.gz",
-      "sha256": "e4f038040123658ed44ae924920cb244385eabe16e003b1dd2bce5eab5ac0e43",
-      "size": 148252,
-      "tag": "snapshot-474812d9b8eec408ace821c2c6bf7d26"
-    },
-    "https://cnb.cool/fansionia/packages/-/releases/download/snapshot-474812d9b8eec408ace821c2c6bf7d26/fansionia.files.tar.gz.sig": {
-      "filename": "fansionia.files.tar.gz.sig",
-      "sha256": "29240abfcbca1a5ea3b6d9a1bd04360edcf9383ad1fdbce0fa82128ac262674a",
-      "size": 119,
-      "tag": "snapshot-474812d9b8eec408ace821c2c6bf7d26"
-    },
-    "https://cnb.cool/fansionia/packages/-/releases/download/snapshot-474812d9b8eec408ace821c2c6bf7d26/manifest.json": {
-      "filename": "manifest.json",
-      "sha256": "520d5b4d639a1b8638027a61fc95ab3899113c684def48fe9897597a1aca5203",
-      "size": 18133,
-      "tag": "snapshot-474812d9b8eec408ace821c2c6bf7d26"
     },
     "https://cnb.cool/fansionia/packages/-/releases/download/upstream-denial-070ceb3497056d1eb4ef5ae72b21aad4/denial-0.6.0-1-x86_64.pkg.tar.zst": {
       "filename": "denial-0.6.0-1-x86_64.pkg.tar.zst",
