@@ -87,6 +87,6 @@ import sys
 Path(sys.argv[1]).write_text(json.dumps({'name': 'obsidian', 'version': sys.argv[2], 'main': sys.argv[3]}))
 PY
 HOME="$smoke_home" XDG_CONFIG_HOME="$smoke_home/config" XDG_CACHE_HOME="$smoke_home/cache" \
-    dbus-run-session -- xvfb-run -a /usr/bin/electron --no-sandbox "$smoke_home" \
+    timeout --kill-after=10s 90s dbus-run-session -- xvfb-run -a /usr/bin/electron --no-sandbox "$smoke_home" \
     "$root/obsidian-electron/pkg/obsidian-electron/usr/lib/obsidian-electron"
 printf 'Built one release payload and verified both recipes for %s\n' "$version"
