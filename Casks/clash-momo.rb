@@ -1,8 +1,8 @@
 cask "clash-momo" do
-  version "2.0.4-8,8"
-  sha256 "d2619dce090dd6b84e21443df68a782b22d9ed45429741aac3b0d36758d89ae5"
+  version "2.0.4-9,9"
+  sha256 "0241c5ee771086915872715dd26c90afa9fb213008429556f87511c1f77aab2a"
 
-  url "https://github.com/fansion314/momo/releases/download/clash-momo-v2.0.4-8/clash-momo-2.0.4-8-macos-arm64-r8.tar.gz"
+  url "https://github.com/fansion314/momo/releases/download/clash-momo-v2.0.4-9/clash-momo-2.0.4-9-macos-arm64-r9.tar.gz"
   name "Clash Momo"
   desc "Graphical proxy client using Mihomomo"
   homepage "https://github.com/fansion314/momo"
