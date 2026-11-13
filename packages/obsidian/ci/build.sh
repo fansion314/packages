@@ -75,6 +75,9 @@ cp "$outdir/$payload" "$root/.cache/sources/$payload"
 build_recipe obsidian-electron-bin dist/bin-recipe
 diff -r obsidian-electron/pkg/obsidian-electron/usr/lib/obsidian-electron \
     dist/bin-recipe/pkg/obsidian-electron-bin/usr/lib/obsidian-electron
+# GitHub's disposable Docker runner blocks Chromium's user namespace sandbox.
+# Limit this test-only switch to CI; the installed launcher keeps its defaults.
+[[ ${CI:-} == true && ${GITHUB_ACTIONS:-} == true ]]
 smoke_home=$(mktemp -d)
 trap 'rm -f "$metadata" "$config"; rm -rf "$smoke_home"' EXIT
 python3 - "$smoke_home/package.json" "$pkgver" "$root/ci/smoke.cjs" <<'PY'
@@ -84,6 +87,6 @@ import sys
 Path(sys.argv[1]).write_text(json.dumps({'name': 'obsidian', 'version': sys.argv[2], 'main': sys.argv[3]}))
 PY
 HOME="$smoke_home" XDG_CONFIG_HOME="$smoke_home/config" XDG_CACHE_HOME="$smoke_home/cache" \
-    dbus-run-session -- xvfb-run -a /usr/bin/electron "$smoke_home" \
+    dbus-run-session -- xvfb-run -a /usr/bin/electron --no-sandbox "$smoke_home" \
     "$root/obsidian-electron/pkg/obsidian-electron/usr/lib/obsidian-electron"
 printf 'Built one release payload and verified both recipes for %s\n' "$version"
