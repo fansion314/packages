@@ -3,7 +3,7 @@ const assert = require('node:assert/strict')
 const path = require('node:path')
 const { app } = require('electron')
 
-const archive = path.resolve(process.argv[2], 'app.asar')
+const archive = path.resolve(process.env.OBSIDIAN_SMOKE_APPDIR, 'app.asar')
 const metadata = require(path.join(archive, 'package.json'))
 assert.equal(app.getVersion(), metadata.version)
 app.setAppPath(archive)
