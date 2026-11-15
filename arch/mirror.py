@@ -2,6 +2,7 @@
 """Mirror immutable pacman bytes to CNB Releases; prune only after acceptance."""
 import argparse
 import hashlib
+import http.client
 import json
 import os
 from pathlib import Path
@@ -233,19 +234,29 @@ def references(state):
     return result
 
 
-def verify_remote(url, expected):
+def verify_remote(url, expected, expected_size):
     request = urllib.request.Request(url, headers={'User-Agent': 'fansionia-pacman-mirror'})
     # Deliberately anonymous and uncached. Check all bytes, including on retries.
     for attempt in range(4):
         try:
             digest = hashlib.sha256()
+            received = 0
             with urllib.request.urlopen(request, timeout=90) as response:
+                declared = response.headers.get('Content-Length')
                 while block := response.read(1024*1024):
+                    received += len(block)
                     digest.update(block)
+                # HTTPResponse.read(amt) can return EOF without raising when
+                # the connection closes before Content-Length is satisfied.
+                # Retry that incomplete transfer, never a complete bad digest.
+                if declared is not None and received < int(declared):
+                    raise http.client.IncompleteRead(b'', int(declared)-received)
+            if received != expected_size:
+                raise ValueError('CNB anonymous download size mismatch: '+url.rsplit('/', 1)[-1])
             if digest.hexdigest() != expected:
-                raise ValueError('CNB anonymous download SHA-256 mismatch')
+                raise ValueError('CNB anonymous download SHA-256 mismatch: '+url.rsplit('/', 1)[-1])
             return
-        except OSError:
+        except (OSError, http.client.IncompleteRead):
             if attempt == 3:
                 raise RuntimeError('CNB anonymous download failed') from None
             time.sleep(2**attempt)
@@ -293,7 +304,7 @@ def sync(site, settings, client=None):
             uploaded += 1
         else:
             reused += 1
-        verify_remote(url, item['sha256'])
+        verify_remote(url, item['sha256'], record['size'])
         print('Verified CNB attachment:', item['filename'])
     for snapshot in state['snapshots'].values():
         snapshot['verified'] = True

@@ -1,6 +1,8 @@
 """Mirror publication, recovery and reference-based collection boundaries."""
 import json
 import io
+import hashlib
+import http.client
 from pathlib import Path
 import sys
 import tempfile
@@ -41,6 +43,56 @@ class OriginProbeTests(unittest.TestCase):
             self.assertTrue(mirror.origin_unavailable(url))
         with patch.object(mirror.urllib.request, 'urlopen', return_value=MagicMock()):
             self.assertFalse(mirror.origin_unavailable(url))
+
+
+class AnonymousDownloadTests(unittest.TestCase):
+    url = 'https://cnb.cool/test/mirror/-/releases/download/v1/foo.pkg.tar.zst'
+    body = b'verified package'
+
+    def response(self, body, *, declared=None, chunked=False):
+        class Socket:
+            def makefile(self, *args):
+                headers = b'Transfer-Encoding: chunked' if chunked else (
+                    f'Content-Length: {len(body) if declared is None else declared}'.encode())
+                return io.BytesIO(b'HTTP/1.1 200 OK\r\n'+headers+b'\r\n\r\n'+body)
+        response = http.client.HTTPResponse(Socket())
+        response.begin()
+        return response
+
+    def verify(self):
+        mirror.verify_remote(self.url, hashlib.sha256(self.body).hexdigest(), len(self.body))
+
+    def test_short_content_length_transfer_retries_from_the_start(self):
+        # Exercise real HTTPResponse framing: read(amt) silently returns this
+        # prefix at EOF even though the declared response is longer.
+        with patch.object(mirror.urllib.request, 'urlopen', side_effect=[
+                self.response(self.body[:3], declared=len(self.body)), self.response(self.body)]) as fetch, \
+                patch.object(mirror.time, 'sleep'):
+            self.verify()
+        self.assertEqual(fetch.call_count, 2)
+
+    def test_incomplete_chunked_transfer_retries(self):
+        with patch.object(mirror.urllib.request, 'urlopen', side_effect=[
+                self.response(b'10\r\nshort', chunked=True), self.response(self.body)]) as fetch, \
+                patch.object(mirror.time, 'sleep'):
+            self.verify()
+        self.assertEqual(fetch.call_count, 2)
+
+    def test_complete_wrong_digest_or_size_fails_without_retry(self):
+        for body, message in [(b'x'*len(self.body), 'SHA-256 mismatch'), (b'wrong', 'size mismatch')]:
+            with self.subTest(body=body), patch.object(mirror.urllib.request, 'urlopen',
+                    return_value=self.response(body)) as fetch, patch.object(mirror.time, 'sleep'):
+                with self.assertRaisesRegex(ValueError, message):
+                    self.verify()
+                self.assertEqual(fetch.call_count, 1)
+
+    def test_exhausted_incomplete_transfers_still_block_publication(self):
+        with patch.object(mirror.urllib.request, 'urlopen', side_effect=[
+                self.response(self.body[:3], declared=len(self.body)) for _ in range(4)]) as fetch, \
+                patch.object(mirror.time, 'sleep'):
+            with self.assertRaisesRegex(RuntimeError, 'CNB anonymous download failed'):
+                self.verify()
+        self.assertEqual(fetch.call_count, 4)
 
 
 class MirrorTests(unittest.TestCase):
