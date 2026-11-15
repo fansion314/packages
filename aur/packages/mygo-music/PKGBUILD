@@ -1,8 +1,8 @@
 # Maintainer: fansion314 <https://github.com/fansion314>
 pkgname=mygo-music
-pkgver=0.1.24
+pkgver=0.1.25
 pkgrel=1
-_tag=mygo-music-v0.1.24-1
+_tag=mygo-music-v0.1.25-1
 pkgdesc='MyGo Music native music player with adjustable interface scale'
 arch=('x86_64')
 url='https://github.com/fansion314/packages'
@@ -12,8 +12,8 @@ optdepends=('gnome-keyring: store login credentials' 'libayatana-appindicator: s
 makedepends=('git' 'go>=1.27.3' 'python' 'nodejs>=24' 'desktop-file-utils' 'imagemagick' 'kiconthemes' 'xorg-xprop' 'xdotool')
 conflicts=('mygo-music-bin' 'mygo-music-git')
 options=('!lto' '!debug' '!strip')
-_packaging_ref='tag=mygo-music-v0.1.24-1'
-source=("mygo-music::git+https://github.com/egoist/mygo-music.git#commit=552e25c04023aa00c551d77db69aaab16f60bf2d"
+_packaging_ref='tag=mygo-music-v0.1.25-1'
+source=("mygo-music::git+https://github.com/egoist/mygo-music.git#commit=298c88a03407844ac1c4eb76e3590edfe4577121"
         "packaging::git+https://github.com/fansion314/packages.git#${_packaging_ref}")
 sha256sums=('SKIP' 'SKIP')
 

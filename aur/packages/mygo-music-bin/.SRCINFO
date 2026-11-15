@@ -1,6 +1,6 @@
 pkgbase = mygo-music-bin
 	pkgdesc = MyGo Music native music player with adjustable interface scale (prebuilt Arch package)
-	pkgver = 0.1.24
+	pkgver = 0.1.25
 	pkgrel = 1
 	url = https://github.com/fansion314/packages
 	arch = x86_64
@@ -13,12 +13,12 @@ pkgbase = mygo-music-bin
 	depends = hicolor-icon-theme
 	optdepends = gnome-keyring: store login credentials
 	optdepends = libayatana-appindicator: system tray integration
-	provides = mygo-music=0.1.24
+	provides = mygo-music=0.1.25
 	conflicts = mygo-music
 	conflicts = mygo-music-git
-	noextract = mygo-music-0.1.24-1-x86_64.pkg.tar.zst
+	noextract = mygo-music-0.1.25-1-x86_64.pkg.tar.zst
 	options = !strip
-	source = https://github.com/fansion314/packages/releases/download/mygo-music-v0.1.24-1/mygo-music-0.1.24-1-x86_64.pkg.tar.zst
-	sha256sums = 550c04712ed3a6a2a171f5adfadfb00aebe16ffe7059178855973f72bd9ec6d5
+	source = https://github.com/fansion314/packages/releases/download/mygo-music-v0.1.25-1/mygo-music-0.1.25-1-x86_64.pkg.tar.zst
+	sha256sums = 9842d8cd348cb75bf26f2cf90ae593991ce34012a8950dbafc91c59594329341
 
 pkgname = mygo-music-bin
