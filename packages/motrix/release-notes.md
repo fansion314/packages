@@ -1,4 +1,9 @@
-## Motrix 2.4.1 upgrade notes
+## Motrix 2.4.2 upgrade notes
+
+Deleting a task now cancels unfinished file finalization recovery in the same
+database transaction. Startup also retires orphaned recovery records left by
+older versions. This release updates better-sqlite3 to 13.2.0 and ws to 8.23.0,
+including the fix for memory exhaustion from Ping frame flooding.
 
 This package uses system Electron and bundles the pinned Motrix aria2
 1.37.0-motrix.24 engine. Native modules are rebuilt and tested against the
@@ -12,5 +17,5 @@ engines before restoring a verified backup to a separate path for a downgrade.
 Do not reset or delete the upgraded database as a substitute for recovery.
 
 Users migrating from Motrix v1 should follow the
-[upstream migration guide](https://github.com/agalwood/Motrix/blob/v2.4.1/docs/legacy-migration.md)
+[upstream migration guide](https://github.com/agalwood/Motrix/blob/v2.4.2/docs/legacy-migration.md)
 and retain their original profile and engine database backups.
