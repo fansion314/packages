@@ -1,9 +1,9 @@
 # Maintainer: fansion314 <https://github.com/fansion314>
 pkgname=dsh-electron-bin
-pkgver=0.2.2rc.3
+pkgver=0.2.2rc.4
 pkgrel=1
-_version=0.2.2-rc.3
-_tag=deepseek-harness-v0.2.2-rc.3-1
+_version=0.2.2-rc.4
+_tag=deepseek-harness-v0.2.2-rc.4-1
 pkgdesc='DeepSeek Harness desktop using system Electron (prebuilt)'
 arch=('x86_64')
 url='https://github.com/fansion314/packages'
@@ -18,7 +18,7 @@ options=('!strip')
 _package="dsh-electron-${pkgver}-${pkgrel}-x86_64.pkg.tar.zst"
 source=("${url}/releases/download/${_tag}/${_package}")
 noextract=("${_package}")
-sha256sums=('058ba008affce746dff831350fbd1cb851ca43b665519fe486553c35ca47b47b')
+sha256sums=('d3d7c0ac78cb268f657ed0c3a718d0a350fdc58f3fe8e385f0ab15bb5158dc66')
 
 package() {
   bsdtar -xf "$srcdir/$_package" -C "$pkgdir" usr
