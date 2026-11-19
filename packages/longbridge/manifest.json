@@ -1,12 +1,12 @@
 {
   "id": "longbridge",
-  "version": "1.1.2",
+  "version": "1.2.0",
   "pkgrel": 1,
   "package": "longbridge",
   "runtime": "official-binary",
   "source": {
-    "manifest_url": "https://assets.lbkrs.com/github/release/longbridge-desktop/stable/v1.1.2.json",
-    "url": "https://assets.lbkrs.com/github/release/longbridge-desktop/stable/longbridge-v1.1.2-linux-x86_64.tar.gz",
-    "sha256": "151972de8efe538ade492bcd399c9634b1ed20ecc8608f5a2f21a9dbdb8d88d9"
+    "manifest_url": "https://assets.lbkrs.com/github/release/longbridge-desktop/stable/v1.2.0.json",
+    "url": "https://assets.lbkrs.com/github/release/longbridge-desktop/stable/longbridge-v1.2.0-g7595e75-linux-x86_64.tar.gz",
+    "sha256": "f2a70851026b303c7df83caf77673e224fb21c502b6f202a995b2887fa43b507"
   }
 }
