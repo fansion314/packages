@@ -1,26 +1,26 @@
 {
   "repository": "fansion314/packages",
-  "reference": "longbridge-v1.1.2-1",
+  "reference": "longbridge-v1.2.0-1",
   "packages": {
     "longbridge": {
-      "version": "0:1.1.2-1",
+      "version": "0:1.2.0-1",
       "files": {
-        ".SRCINFO": "cd5a4f90a4c1d3967657e720aad75aa19e3e91b1edf1af53186e598f3920eea5",
-        "PKGBUILD": "ebdf4c2de4f71789a18af606659500cd651fa9b18f3b3f69c587665d64a0ba37"
+        ".SRCINFO": "3d0c217681fa8c46aeaa2f1be08d4c8731640501a595409af8bd696049d16e59",
+        "PKGBUILD": "fa3ab7a64b1e40f51c6d78a4a7356e97b5d57bf809bc5b42572a3ec143479bf5"
       },
       "assets": []
     },
     "longbridge-bin": {
-      "version": "0:1.1.2-1",
+      "version": "0:1.2.0-1",
       "files": {
-        ".SRCINFO": "f7b47244ca6c6c8f040c0043e052a4d31e9054e2a5f5dfac83084c48c69cc28c",
-        "PKGBUILD": "429258f9182bbc6c543f0e665eb3c60b657ec45967bca310a9cf9469d082eba5"
+        ".SRCINFO": "181257cc1520e7b5d0fa1a7f9d2cc3fb993f6e5e0c2814ecb805e53c20670875",
+        "PKGBUILD": "0e118cec373e17daa10c4bd68961782a1734fdda2c2a171d046b07714eee2f3a"
       },
       "assets": [
         {
-          "url": "https://github.com/fansion314/packages/releases/download/longbridge-v1.1.2-1/longbridge-1.1.2-1-x86_64.pkg.tar.zst",
-          "sha256": "c230a49423df706cc3d4ebc1cfa2f9f842133c5dc834cb1745ef5eb0f2d55b4c",
-          "size": 93798673
+          "url": "https://github.com/fansion314/packages/releases/download/longbridge-v1.2.0-1/longbridge-1.2.0-1-x86_64.pkg.tar.zst",
+          "sha256": "a5a40d4240e78847d63c9170c8ba8d2c1547a022c63d01d1ab8650bab1780642",
+          "size": 123680927
         }
       ]
     }
