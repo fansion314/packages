@@ -1,5 +1,5 @@
 {
-  "cleanup_pending": true,
+  "cleanup_pending": false,
   "keys": {
     "/keys/fansionia.asc": {
       "filename": "fansionia.asc",
@@ -98,18 +98,6 @@
       "sha256": "3c8f454cd0ea1db234d1aeb8999d0b4d28bd7603490494cf18c5ef7e8b08621c",
       "size": 119,
       "tag": "hghub-v1.2.1-1"
-    },
-    "https://cnb.cool/fansionia/packages/-/releases/download/longbridge-v1.1.2-1/longbridge-1.1.2-1-x86_64.pkg.tar.zst": {
-      "filename": "longbridge-1.1.2-1-x86_64.pkg.tar.zst",
-      "sha256": "c230a49423df706cc3d4ebc1cfa2f9f842133c5dc834cb1745ef5eb0f2d55b4c",
-      "size": 93798673,
-      "tag": "longbridge-v1.1.2-1"
-    },
-    "https://cnb.cool/fansionia/packages/-/releases/download/longbridge-v1.1.2-1/longbridge-1.1.2-1-x86_64.pkg.tar.zst.sig": {
-      "filename": "longbridge-1.1.2-1-x86_64.pkg.tar.zst.sig",
-      "sha256": "83954d5e352f567bdd822f859184525ed52f9b44d87008ee172bc7f0e54448ce",
-      "size": 119,
-      "tag": "longbridge-v1.1.2-1"
     },
     "https://cnb.cool/fansionia/packages/-/releases/download/longbridge-v1.2.0-1/longbridge-1.2.0-1-x86_64.pkg.tar.zst": {
       "filename": "longbridge-1.2.0-1-x86_64.pkg.tar.zst",
@@ -332,60 +320,6 @@
       "sha256": "f453428865b42f87fceeaa2d8962695233d9efd58f27908fb746c0be59db2f3a",
       "size": 18133,
       "tag": "snapshot-7201e6c6803c37b403b59f035978a92c"
-    },
-    "https://cnb.cool/fansionia/packages/-/releases/download/snapshot-bf7220f47ec3a0a45df24804f8110684/fansionia.db": {
-      "filename": "fansionia.db",
-      "sha256": "45cf1cb30afe2a399e6e1889b1734aa7529e23f20c76ca9ba0f56966dcfe5a4e",
-      "size": 10874,
-      "tag": "snapshot-bf7220f47ec3a0a45df24804f8110684"
-    },
-    "https://cnb.cool/fansionia/packages/-/releases/download/snapshot-bf7220f47ec3a0a45df24804f8110684/fansionia.db.sig": {
-      "filename": "fansionia.db.sig",
-      "sha256": "1bf897b78a57da4dfd2099d3b4595ac75d0682f6b9fe391d3adf01c76dd2857e",
-      "size": 119,
-      "tag": "snapshot-bf7220f47ec3a0a45df24804f8110684"
-    },
-    "https://cnb.cool/fansionia/packages/-/releases/download/snapshot-bf7220f47ec3a0a45df24804f8110684/fansionia.db.tar.gz": {
-      "filename": "fansionia.db.tar.gz",
-      "sha256": "45cf1cb30afe2a399e6e1889b1734aa7529e23f20c76ca9ba0f56966dcfe5a4e",
-      "size": 10874,
-      "tag": "snapshot-bf7220f47ec3a0a45df24804f8110684"
-    },
-    "https://cnb.cool/fansionia/packages/-/releases/download/snapshot-bf7220f47ec3a0a45df24804f8110684/fansionia.db.tar.gz.sig": {
-      "filename": "fansionia.db.tar.gz.sig",
-      "sha256": "1bf897b78a57da4dfd2099d3b4595ac75d0682f6b9fe391d3adf01c76dd2857e",
-      "size": 119,
-      "tag": "snapshot-bf7220f47ec3a0a45df24804f8110684"
-    },
-    "https://cnb.cool/fansionia/packages/-/releases/download/snapshot-bf7220f47ec3a0a45df24804f8110684/fansionia.files": {
-      "filename": "fansionia.files",
-      "sha256": "a99ef9c011c4a597acbcf68fb005c23ee90548a0371cb1fdba347e1b2022304e",
-      "size": 147711,
-      "tag": "snapshot-bf7220f47ec3a0a45df24804f8110684"
-    },
-    "https://cnb.cool/fansionia/packages/-/releases/download/snapshot-bf7220f47ec3a0a45df24804f8110684/fansionia.files.sig": {
-      "filename": "fansionia.files.sig",
-      "sha256": "d7633868514ccfda2a75a495957e3d586d994e00424927899792eeb30212ba75",
-      "size": 119,
-      "tag": "snapshot-bf7220f47ec3a0a45df24804f8110684"
-    },
-    "https://cnb.cool/fansionia/packages/-/releases/download/snapshot-bf7220f47ec3a0a45df24804f8110684/fansionia.files.tar.gz": {
-      "filename": "fansionia.files.tar.gz",
-      "sha256": "a99ef9c011c4a597acbcf68fb005c23ee90548a0371cb1fdba347e1b2022304e",
-      "size": 147711,
-      "tag": "snapshot-bf7220f47ec3a0a45df24804f8110684"
-    },
-    "https://cnb.cool/fansionia/packages/-/releases/download/snapshot-bf7220f47ec3a0a45df24804f8110684/fansionia.files.tar.gz.sig": {
-      "filename": "fansionia.files.tar.gz.sig",
-      "sha256": "d7633868514ccfda2a75a495957e3d586d994e00424927899792eeb30212ba75",
-      "size": 119,
-      "tag": "snapshot-bf7220f47ec3a0a45df24804f8110684"
-    },
-    "https://cnb.cool/fansionia/packages/-/releases/download/snapshot-bf7220f47ec3a0a45df24804f8110684/manifest.json": {
-      "filename": "manifest.json",
-      "sha256": "f57a8001fb8d32ab6ea46e43411da47b58b06f9510c2d0a413cb45986f2ae33a",
-      "size": 18133,
-      "tag": "snapshot-bf7220f47ec3a0a45df24804f8110684"
     },
     "https://cnb.cool/fansionia/packages/-/releases/download/snapshot-d07dc7a924b65cfbc9ecc92d5a7e1570/fansionia.db": {
       "filename": "fansionia.db",
@@ -728,30 +662,6 @@
       "sha256": "f1f2706adf0b2d34c56984fcd892a5a397910a0b0b99e9b53b9549378ca5e8dd",
       "size": 566,
       "tag": "upstream-warpdotdev-3d0e645926f8adaaf5127da48381ee45"
-    },
-    "https://cnb.cool/fansionia/packages/-/releases/download/upstream-warpdotdev-634094d8cdc5ecfb4922f2cb8e1e93ba/warp-terminal-v0.2026.11.03.17.08.stable_00-1-x86_64.pkg.tar.zst": {
-      "filename": "warp-terminal-v0.2026.11.03.17.08.stable_00-1-x86_64.pkg.tar.zst",
-      "sha256": "267c19d33e6705b58f5952d1c92df6561319e674a5f142e098a4ae6ccb1a6561",
-      "size": 151195715,
-      "tag": "upstream-warpdotdev-634094d8cdc5ecfb4922f2cb8e1e93ba"
-    },
-    "https://cnb.cool/fansionia/packages/-/releases/download/upstream-warpdotdev-634094d8cdc5ecfb4922f2cb8e1e93ba/warp-terminal-v0.2026.11.03.17.08.stable_00-1-x86_64.pkg.tar.zst.sig": {
-      "filename": "warp-terminal-v0.2026.11.03.17.08.stable_00-1-x86_64.pkg.tar.zst.sig",
-      "sha256": "b63b7340e3b568d26da07e8c917f7590df08439ef5d34e116738884badbdf559",
-      "size": 566,
-      "tag": "upstream-warpdotdev-634094d8cdc5ecfb4922f2cb8e1e93ba"
-    },
-    "https://cnb.cool/fansionia/packages/-/releases/download/upstream-warpdotdev-a154ca135935130720f07e23f82c19fa/oz-stable-v0.2026.11.03.17.08.stable_00-1-x86_64.pkg.tar.zst": {
-      "filename": "oz-stable-v0.2026.11.03.17.08.stable_00-1-x86_64.pkg.tar.zst",
-      "sha256": "3add57b2d2e7cbac1eedb9e86eb3f26235374d3564d08ddb4b272d651a226774",
-      "size": 55329889,
-      "tag": "upstream-warpdotdev-a154ca135935130720f07e23f82c19fa"
-    },
-    "https://cnb.cool/fansionia/packages/-/releases/download/upstream-warpdotdev-a154ca135935130720f07e23f82c19fa/oz-stable-v0.2026.11.03.17.08.stable_00-1-x86_64.pkg.tar.zst.sig": {
-      "filename": "oz-stable-v0.2026.11.03.17.08.stable_00-1-x86_64.pkg.tar.zst.sig",
-      "sha256": "afe60018fd1b5d7424319c8ebb27ce3722ad85c8875d5ee4c429a02616898843",
-      "size": 566,
-      "tag": "upstream-warpdotdev-a154ca135935130720f07e23f82c19fa"
     },
     "https://cnb.cool/fansionia/packages/-/releases/download/upstream-warpdotdev-afddcc3068a107c23035f6d02a3ddf7d/warp-terminal-v0.2026.11.11.08.17.stable_01-1-x86_64.pkg.tar.zst": {
       "filename": "warp-terminal-v0.2026.11.11.08.17.stable_01-1-x86_64.pkg.tar.zst",
