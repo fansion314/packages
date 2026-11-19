@@ -1,9 +1,9 @@
 # Maintainer: fansion314 <https://github.com/fansion314>
 pkgname=dsh-electron
-pkgver=0.2.2rc.4
+pkgver=0.2.2rc.5
 pkgrel=1
-_version=0.2.2-rc.4
-_tag=deepseek-harness-v0.2.2-rc.4-1
+_version=0.2.2-rc.5
+_tag=deepseek-harness-v0.2.2-rc.5-1
 pkgdesc='DeepSeek Harness desktop using system Electron'
 arch=('x86_64')
 url='https://github.com/fansion314/packages'
@@ -15,8 +15,8 @@ depends=('electron' 'libvips' 'python' 'python-numpy' 'python-pandas'
 makedepends=('git' 'python' 'rust' 'clang' 'cmake' 'nodejs>=24.9.0' 'pnpm' 'node-gyp' 'pkgconf')
 conflicts=('dsh-electron-bin')
 options=('!strip')
-_packaging_ref='tag=deepseek-harness-v0.2.2-rc.4-1'
-source=("deepseek-harness::git+https://github.com/deepseek-ai/deepseek-harness.git#commit=3f321d32bfe382212a8ed8785c1d47a5a300aa23"
+_packaging_ref='tag=deepseek-harness-v0.2.2-rc.5-1'
+source=("deepseek-harness::git+https://github.com/deepseek-ai/deepseek-harness.git#commit=9c2670d3bce5275e0d1610272958121af87787bb"
         "packaging::git+https://github.com/fansion314/packages.git#${_packaging_ref}")
 sha256sums=('SKIP' 'SKIP')
 
