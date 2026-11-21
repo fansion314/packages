@@ -48,6 +48,22 @@ still enforced. Packages are never repacked, re-signed or silently replaced.
 
 ## Acquisition failures and retries
 
+### Droidloom
+
+The x86_64 Droidloom sync runs at UTC minutes 7 and 37. It reads the official
+`[droidloom]` database and checks the SHA-256 of `droidloom-runtime`,
+`droidloom-image`, and `droidloom-base` against the corresponding GitHub Release
+asset digest. CI compares the downloaded bytes to that digest and verifies the
+package identities and versioned dependencies. The upstream publishes unsigned
+packages. The detached signatures on our releases identify Fansionia as the
+distributor of the original upstream bytes.
+
+The base has its own versioned Release so Android system partitions can be reused
+across runtime updates. Pacman selects the runtime and image Release together
+with its exact base version. A package fetch outage defers the entire set. The
+existing Fansionia key and `Required TrustedOnly` policy cover all three packages.
+Candidate and public CI install them in one transaction through each origin.
+
 Automatic synchronization isolates acquisition failures per source/package. A
 failed GitHub release listing, incomplete signed Release, unavailable upstream
 database/signature, or failed package download keeps the affected package's

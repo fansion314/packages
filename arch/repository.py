@@ -53,9 +53,33 @@ def select_release(project, releases):
     if not matches:
         raise ReleaseIncomplete('No public release for '+project['id'])
     release = max(matches, key=lambda r: version_key(r['tag_name']))
+    if project.get('upstream'):
+        return select_droidloom_release(project, releases, release)
+    return release_packages(project, release, project['packages'])
+
+
+def select_droidloom_release(project, releases, release):
+    body = '\n'.join((release.get('body') or '').splitlines())
+    base = re.findall(r'^Droidloom base version: ([0-9]+\.[0-9]+\.[0-9]+-[0-9]+)$', body, re.M)
+    if len(base) != 1:
+        raise ValueError('Droidloom release does not identify exactly one base version')
+    base_tag = 'droidloom-base-v'+base[0]
+    base_release = next((r for r in releases if r['tag_name'] == base_tag and not r['draft']), None)
+    if base_release is None:
+        raise ReleaseIncomplete('Missing signed Droidloom base release '+base_tag)
+    main = release_packages(project, release, ['droidloom-runtime', 'droidloom-image'])
+    packages = main + release_packages(project, base_release, ['droidloom-base'])
+    version = release['tag_name'].removeprefix('droidloom-v')
+    if [p['version'] for p in packages] != [version, version, base[0]] or \
+            any(p['architecture'] != 'x86_64' for p in packages):
+        raise ValueError('Droidloom release assets do not match their tags')
+    return packages
+
+
+def release_packages(project, release, names):
     assets = {a['name']: a for a in release['assets']}
     result = []
-    for name in project['packages']:
+    for name in names:
         # Arch pkgver cannot contain '-'. Requiring a numeric version start
         # prevents dnr from also matching dnr-cef and dnr-webview archives.
         pattern = re.compile(re.escape(name)+r'-([0-9][A-Za-z0-9.+_~]*)-(\d+)-(x86_64|any)\.pkg\.tar\.zst')
@@ -163,7 +187,7 @@ def download(url, destination, expected):
     return destination
 
 
-def verify_package(package, archive, public_key, settings=None):
+def package_metadata(package, archive):
     metadata = subprocess.check_output(['bsdtar', '-xOf', str(archive), '.PKGINFO'], text=True)
     fields = {}
     for line in metadata.splitlines():
@@ -174,6 +198,11 @@ def verify_package(package, archive, public_key, settings=None):
                             ('arch', package['architecture'])]:
         if fields.get(field) != [expected]:
             raise ValueError('Package metadata mismatch: '+field)
+    return fields
+
+
+def verify_package(package, archive, public_key, settings=None):
+    fields = package_metadata(package, archive)
     if package.get('upstream'):
         from upstream import sources, verify
         source = next((s for s in sources(settings) if s['id'] == package['upstream']), None)
@@ -261,8 +290,11 @@ def acquire_packages(packages, previous, settings, mirror_state):
     from upstream import unavailable
     old = {p['name']: p for p in previous['packages']} if previous else {}
     selected = []
+    droidloom_error = None
     with tempfile.TemporaryDirectory(prefix='fansionia-preflight-') as temporary:
         for package in packages:
+            if droidloom_error is not None and package.get('project') == 'droidloom':
+                continue
             archive = Path(temporary)/package['filename']
             try:
                 for prefix, destination in [('', archive), ('signature_', Path(str(archive)+'.sig'))]:
@@ -273,12 +305,20 @@ def acquire_packages(packages, previous, settings, mirror_state):
             except Exception as error:
                 if not unavailable(error):
                     raise
+                if package.get('project') == 'droidloom':
+                    droidloom_error = error
+                    continue
                 before = old.get(package['name'])
                 records = [before] if before and before['repository'] == package['repository'] else []
                 selected.extend(defer_packages(settings, mirror_state, records, package['name'], error))
                 continue
             verify_package(package, archive, ROOT/'keys/fansionia.gpg', settings)
             selected.append(package)
+    if droidloom_error is not None:
+        selected = [p for p in selected if p.get('project') != 'droidloom']
+        records = [p for p in old.values() if p.get('project') == 'droidloom']
+        selected.extend(defer_packages(settings, mirror_state, records, 'droidloom', droidloom_error))
+        selected.sort(key=lambda p: p['name'])
     return selected
 
 

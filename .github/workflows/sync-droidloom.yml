@@ -1,0 +1,37 @@
+name: Sign and sync Droidloom packages
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '7,37 * * * *'
+permissions:
+  contents: read
+concurrency:
+  group: droidloom-publication
+  cancel-in-progress: false
+jobs:
+  publish:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    container: archlinux:base
+    permissions:
+      contents: write
+      actions: write
+    steps:
+      - run: pacman -Syu --noconfirm --needed python gnupg github-cli libarchive
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - name: Verify upstream packages and publish Fansionia signatures
+        id: release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ARCH_SIGNING_PRIVATE_KEY: ${{ secrets.ARCH_SIGNING_PRIVATE_KEY }}
+          ARCH_SIGNING_PASSPHRASE: ${{ secrets.ARCH_SIGNING_PASSPHRASE }}
+          ARCH_SIGNING_KEY_ID: ${{ secrets.ARCH_SIGNING_KEY_ID }}
+        run: python arch/sync-droidloom.py
+      - name: Publish the pacman snapshot
+        if: steps.release.outputs.changed == 'true' || github.event_name == 'workflow_dispatch'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run publish-pacman.yml -R "$GITHUB_REPOSITORY" --ref main

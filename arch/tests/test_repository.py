@@ -77,6 +77,28 @@ class RepositoryTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'completely signed'):
             repository.select_release(self.project, [self.release(), self.release('2.0.0', False)])
 
+    def test_droidloom_release_selects_the_base_required_by_the_image(self):
+        settings = json.loads((ROOT/'sources.json').read_text())
+        project = next(p for p in settings['projects'] if p['id'] == 'droidloom')
+
+        def signed(tag, version, names, body=''):
+            assets = []
+            for name in names:
+                filename = f'{name}-{version}-x86_64.pkg.tar.zst'
+                for asset in (filename, filename+'.sig'):
+                    url = f'https://github.com/{project["repository"]}/releases/download/{tag}/{asset}'
+                    assets.append({'name': asset, 'digest': 'sha256:'+'a'*64, 'browser_download_url': url})
+            return dict(tag_name=tag, draft=False, assets=assets, body=body)
+
+        main = signed('droidloom-v0.1.0-51', '0.1.0-51', ['droidloom-runtime', 'droidloom-image'],
+                      'Droidloom base version: 0.1.0-49')
+        base = signed('droidloom-base-v0.1.0-49', '0.1.0-49', ['droidloom-base'])
+        next_base = signed('droidloom-base-v0.1.0-50', '0.1.0-50', ['droidloom-base'])
+        selected = repository.select_release(project, [main, base, next_base])
+        self.assertEqual([p['version'] for p in selected], ['0.1.0-51', '0.1.0-51', '0.1.0-49'])
+        with self.assertRaisesRegex(repository.ReleaseIncomplete, 'Missing signed Droidloom base'):
+            repository.select_release(project, [main, dict(base, draft=True), next_base])
+
     def test_numeric_versions_and_prerelease_promotion(self):
         tags = ['motrix-v2.0.0-beta.52-2', 'motrix-v2.0.0-1', 'motrix-v2.0.0-2', 'motrix-v2.0.10-1']
         self.assertEqual(sorted(reversed(tags), key=repository.version_key), tags)

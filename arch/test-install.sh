@@ -40,6 +40,11 @@ PY
 available_names=$(pacman -Slq fansionia)
 mapfile -t available <<< "$available_names"
 has_package() { [[ " ${available[*]} " == *" $1 "* ]]; }
+if has_package droidloom-runtime || has_package droidloom-image || has_package droidloom-base; then
+  droidloom=(droidloom-runtime droidloom-image droidloom-base)
+  pacman -S --noconfirm "${droidloom[@]/#/fansionia/}"
+  pacman -Qk "${droidloom[@]}"
+fi
 applications=()
 for package in dnr dnc pi-dnr etcher-dnr motrix-electron dsh-electron bitwarden-electron obsidian-electron mygo-music hghub longbridge clash-momo mihomomo python-pptx; do
   if has_package "$package"; then applications+=("$package"); fi
