@@ -3,7 +3,7 @@
 # https://gitlab.archlinux.org/archlinux/packaging/packages/bitwarden/-/blob/main/PKGBUILD
 # https://aur.archlinux.org/cgit/aur.git/tree/PKGBUILD?h=bitwarden-bin
 pkgname=bitwarden-electron
-pkgver=2026.10.4
+pkgver=2026.11.0
 pkgrel=1
 pkgdesc='Bitwarden official binaries using the latest system Electron'
 arch=('x86_64')
@@ -15,9 +15,9 @@ makedepends=('asar' 'nodejs')
 provides=("bitwarden=$pkgver")
 conflicts=('bitwarden' 'bitwarden-bin' 'bitwarden-electron-bin')
 options=('!strip' '!debug')
-source=("https://github.com/bitwarden/clients/releases/download/desktop-v${pkgver}/Bitwarden-${pkgver}-amd64.deb"
+source=("https://github.com/bitwarden/clients/releases/download/desktop-v${pkgver}/bit-Bitwarden-${pkgver}-amd64.deb"
         'bitwarden.sh')
-sha256sums=('a45a34a20a9d5becbb1c710851717583ad578597d10fbd2bd57fe597f7625f41'
+sha256sums=('e8c95d91a96661ea827fbc0626d76a1ef7825ee54c8f46f23f218d7c1c88c95a'
             'd13e5137334dfda41999aeabff4c29cfe4b1a15bb7d14e5c9ebe7bed7fc8c829')
 
 prepare() {
