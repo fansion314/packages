@@ -67,7 +67,7 @@ def prepare(project, directory, packages, existing):
         fields = package_metadata(package, archive)
         dependency = package.get('required_dependency')
         if dependency and [value for value in fields.get('depend', [])
-                           if re.split(r'[<>=]', value, 1)[0] == dependency.split('=', 1)[0]] != [dependency]:
+                           if re.split(r'[<>=]', value, maxsplit=1)[0] == dependency.split('=', 1)[0]] != [dependency]:
             raise ValueError(f'{archive.name} does not require {dependency}')
 
 
@@ -99,13 +99,15 @@ def publish(project, tag, packages, directory, current, notes):
                 raise ValueError('Droidloom release asset differs: '+path.name)
         else:
             subprocess.run([*gh, 'upload', tag, '-R', repository, str(path)], check=True)
+    # GitHub gives draft assets temporary URLs until the tag is published.
     uploaded = release(repository, tag)
-    check_published(project, uploaded, packages)
     uploaded_digests = {a['name']: a.get('digest') for a in uploaded['assets']}
     for path in directory.iterdir():
         if uploaded_digests.get(path.name) != 'sha256:'+checksum(path):
             raise ValueError('Droidloom release upload digest mismatch: '+path.name)
     subprocess.run([*gh, 'edit', tag, '-R', repository, '--draft=false', '--latest=false'], check=True)
+    published = api(f'repos/{repository}/releases/tags/{tag}')
+    check_published(project, published, packages)
     print('Published', tag, flush=True)
     return True
 
