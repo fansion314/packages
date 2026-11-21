@@ -1,6 +1,6 @@
 pkgbase = pi-dnr-bin
 	pkgdesc = Pi coding agent for the shared dnr runtime (prebuilt)
-	pkgver = 1.5.2
+	pkgver = 1.6.0
 	pkgrel = 1
 	url = https://github.com/fansion314/pi
 	arch = x86_64
@@ -15,16 +15,16 @@ pkgbase = pi-dnr-bin
 	optdepends = npm: install dependencies for npm and Git extensions
 	optdepends = wl-clipboard: Wayland clipboard support
 	optdepends = xclip: X11 clipboard writes and fallback reads
-	provides = pi-dnr=1.5.2
-	provides = pi-coding-agent=1.5.2
+	provides = pi-dnr=1.6.0
+	provides = pi-coding-agent=1.6.0
 	conflicts = pi-dnr
 	conflicts = pi-coding-agent
-	noextract = pi-dnr-1.5.2-1-x86_64.pkg.tar.zst
+	noextract = pi-dnr-1.6.0-1-x86_64.pkg.tar.zst
 	options = !strip
 	options = !debug
-	source = https://github.com/fansion314/pi/releases/download/pi-dnr-v1.5.2-1/pi-dnr-1.5.2-1-x86_64.pkg.tar.zst
-	source = https://github.com/fansion314/pi/releases/download/pi-dnr-v1.5.2-1/pi-dnr-1.5.2-1-x86_64.pkg.tar.zst.sha256
-	sha256sums = 2929f29e48bd76d876540b27a5e066637c13cc6711ff849ab550419be8df7c28
-	sha256sums = ab991f5a49ef26e7524ea33fa63b34a84855074cd23099e8cb9e46ddebcbd028
+	source = https://github.com/fansion314/pi/releases/download/pi-dnr-v1.6.0-1/pi-dnr-1.6.0-1-x86_64.pkg.tar.zst
+	source = https://github.com/fansion314/pi/releases/download/pi-dnr-v1.6.0-1/pi-dnr-1.6.0-1-x86_64.pkg.tar.zst.sha256
+	sha256sums = e37c2c819f4415b61a1ce2550a9151ebdfbfe84056548b9bbbc359a86f1ec1d5
+	sha256sums = ecb485fdb9dc3f1b64ddcfc2d1397dae3a70371bc0749c3e60ac5350ce48c1c7
 
 pkgname = pi-dnr-bin
