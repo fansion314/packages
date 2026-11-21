@@ -8,6 +8,7 @@
 
 - 用户给出“项目 + 版本”默认授权核实上游、更新源码/成品配方、解决兼容问题、提交推送、CI 发布、同步适用下游并验证完成。跟进时从最早未完成步骤继续；不要重复递增版本、移动标签或重复发布。
 - **本机不编译、不重建原生模块、不运行 makepkg、不安装应用验收。** 应用构建、打包和安装测试均交 GitHub Actions。允许 Git、元数据生成、lint、无产物类型检查和不触发构建的针对性测试；先读脚本，不能把 bundle、cargo check/test 或安装生命周期当静态检查。
+- **本机不重复下载已由 CI 验证的发布成品。** 对照准确的提交和标签，复用 CI 的摘要、签名及安装结果。核对公开分发时使用 Release asset digest、校验和文件和仓库元数据。排查具体失败且现有证据不足时，再获取必要的文件。
 - 补充远端验证前读 `/Users/peilin/.codex/CROSS_PLATFORM.md`，使用 xjtuse 原生 Arch 与增量同步。Rust 默认保留 sccache；权限问题申请提权，不清空 wrapper。不要自动创建本地 ExecPlan。
 - 本机命令遵守 `/Users/peilin/.codex/RTK.md`。外部信息优先网页搜索；标签、提交、Actions、Release 优先 Git/GitHub API。依赖选兼容的最新稳定版，指定的 beta/rc 应用沿指定通道发布。
 - 保留用户修改、既有应用身份、配置目录、数据与 fork 功能。不自动 stash/reset、不重写公开历史、不 force-push main。提交只包含本任务路径，使用英文 Conventional Commits。
