@@ -1,6 +1,6 @@
 pkgbase = motrix-electron-bin
 	pkgdesc = Motrix download manager using system Electron (prebuilt Arch package)
-	pkgver = 2.4.3
+	pkgver = 2.4.5
 	pkgrel = 1
 	url = https://github.com/fansion314/packages
 	arch = x86_64
@@ -12,9 +12,9 @@ pkgbase = motrix-electron-bin
 	depends = xdg-utils
 	optdepends = libayatana-appindicator: system tray integration
 	optdepends = ffmpeg: media downloads
-	provides = motrix=2.4.3
-	provides = motrix2=2.4.3
-	provides = motrix-electron=2.4.3
+	provides = motrix=2.4.5
+	provides = motrix2=2.4.5
+	provides = motrix-electron=2.4.5
 	conflicts = motrix
 	conflicts = motrix-bin
 	conflicts = motrix-git
@@ -22,9 +22,9 @@ pkgbase = motrix-electron-bin
 	conflicts = motrix2
 	conflicts = motrix2-bin
 	conflicts = motrix-electron
-	noextract = motrix-electron-2.4.3-1-x86_64.pkg.tar.zst
+	noextract = motrix-electron-2.4.5-1-x86_64.pkg.tar.zst
 	options = !strip
-	source = https://github.com/fansion314/packages/releases/download/motrix-v2.4.3-1/motrix-electron-2.4.3-1-x86_64.pkg.tar.zst
-	sha256sums = 048df73f0dd61550b801258c3286c505b9ff624ec8e37f27ba007c23fe1e8882
+	source = https://github.com/fansion314/packages/releases/download/motrix-v2.4.5-1/motrix-electron-2.4.5-1-x86_64.pkg.tar.zst
+	sha256sums = e281b85f842e75f24b0352b1bfb421d3957a29bd23c14c40bf066edaacdaaf94
 
 pkgname = motrix-electron-bin
