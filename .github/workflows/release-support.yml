@@ -41,12 +41,16 @@ jobs:
       - name: Build support package as an ordinary user
         env:
           PROJECT: ${{ steps.resolve.outputs.project }}
+          PACKAGER: Fansionia Packages <packages@fansionia.world>
         run: |
           useradd --create-home builder
           chown -R builder:builder "$GITHUB_WORKSPACE"
           runuser -u builder -- bash -c 'cd "arch/support/$1" && makepkg --noconfirm --nodeps' -- "$PROJECT"
           mkdir -p dist/support
           cp arch/support/"$PROJECT"/*.pkg.tar.zst dist/support/
+          for archive in dist/support/*.pkg.tar.zst; do
+            bsdtar -xOf "$archive" .PKGINFO | grep -Fx "packager = $PACKAGER"
+          done
           (cd dist/support && sha256sum ./*.pkg.tar.zst > SHA256SUMS)
       - name: Install and exercise the dependency or keyring
         env:

@@ -8,6 +8,7 @@ cd "$root"
 export ELECTRON_SKIP_BINARY_DOWNLOAD=1
 export MOTRIX_SKIP_ELECTRON_REBUILD=1
 export MOTRIX_SKIP_ENGINE_FETCH=1
+export PACKAGER='Fansionia Packages <packages@fansionia.world>'
 packaging_ref="commit=$(git rev-parse HEAD)"
 release_tag=${RELEASE_TAG:-}
 if [[ -z $release_tag && ${GITHUB_REF_TYPE:-} == tag ]]; then release_tag=$GITHUB_REF_NAME; fi
@@ -88,6 +89,7 @@ esac
 if [[ $project == bitwarden || $project == obsidian ]]; then
   python scripts/verify-native.py "$project" "$archive"
 fi
+bsdtar -xOf "$archive" .PKGINFO | grep -Fx "packager = $PACKAGER"
 python scripts/package.py finalize "$project" "$archive" "$root/dist/$project"
 # Exercise the exact published recipe with the already-built input as source cache.
 cp "$archive" "$root/dist/$project/aur/$name-bin/"
