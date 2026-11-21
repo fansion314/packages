@@ -1,19 +1,19 @@
 {
   "repository": "fansion314/momo",
-  "tag": "clash-momo-v2.0.4-9",
-  "version": "2.0.4",
-  "release": 9,
-  "revision": 9,
-  "asset": "clash-momo-2.0.4-9-macos-arm64-r9.tar.gz",
-  "url": "https://github.com/fansion314/momo/releases/download/clash-momo-v2.0.4-9/clash-momo-2.0.4-9-macos-arm64-r9.tar.gz",
-  "github_digest": "sha256:0241c5ee771086915872715dd26c90afa9fb213008429556f87511c1f77aab2a",
-  "source_sha": "753942f3da93660927c2700d32a4e99ef644ce5c",
-  "sha256": "0241c5ee771086915872715dd26c90afa9fb213008429556f87511c1f77aab2a",
+  "tag": "clash-momo-v2.0.5-1",
+  "version": "2.0.5",
+  "release": 1,
+  "revision": 1,
+  "asset": "clash-momo-2.0.5-1-macos-arm64-r1.tar.gz",
+  "url": "https://github.com/fansion314/momo/releases/download/clash-momo-v2.0.5-1/clash-momo-2.0.5-1-macos-arm64-r1.tar.gz",
+  "github_digest": "sha256:06588d3c42cbe3f90120df2e8c966a942b2385ff9cafaadc9e49a57be94ec818",
+  "source_sha": "cab05e215136a9ed5d4bd0ea30ebaf8a31eb6fe5",
+  "sha256": "06588d3c42cbe3f90120df2e8c966a942b2385ff9cafaadc9e49a57be94ec818",
   "key": [
     2,
     0,
-    4,
-    9,
-    9
+    5,
+    1,
+    1
   ]
 }
