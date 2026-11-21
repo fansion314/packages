@@ -106,11 +106,15 @@ sudo pacman -S mygo-music
 sudo pacman -S hghub
 sudo pacman -S longbridge
 sudo pacman -S clash-momo  # 自动安装 mihomomo 和系统 Electron
+sudo pacman -S fansionia/droidloom-runtime fansionia/droidloom-image fansionia/droidloom-base
 ```
 
 按需安装即可，不必安装上面所有应用。依赖由 pacman 自动解析。
 日常用 `sudo pacman -Syu` 更新；不要仅刷新数据库后做部分升级。
 例如要明确选本仓库，可以使用 `sudo pacman -S fansionia/pi-dnr`。
+
+Droidloom 提供 x86_64 上游原包，由 Fansionia 核对摘要并签名发布。已有
+`[droidloom]` 仓库配置时，使用上面的仓库限定包名可明确选择 Fansionia 源。
 
 此前安装了对应 `-bin` 包时，显式安装上表的 pacman 包名，并检查冲突替换提示。
 `dnr`、`dnr-cef`、`dnr-webview` 不能同时安装，请按需要选择一个后端。
