@@ -346,11 +346,13 @@ def validate():
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('projects', nargs='*', choices=list(PROJECTS))
+    parser.add_argument('projects', nargs='*', metavar='PROJECT')
     actions = parser.add_mutually_exclusive_group()
     actions.add_argument('--validate', action='store_true')
     actions.add_argument('--install', action='store_true')
     args = parser.parse_args()
+    if unknown := set(args.projects)-PROJECTS.keys():
+        parser.error('unknown Homebrew project: '+', '.join(sorted(unknown)))
     if args.validate:
         validate()
     elif args.install:
