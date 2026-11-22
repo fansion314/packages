@@ -410,7 +410,9 @@ class WindowsRoutingTests(unittest.TestCase):
                                'GITHUB_OUTPUT': str(output)}, check=True)
                 self.assertEqual(dict(line.split('=') for line in output.read_text().splitlines()), expected)
         self.assertIn("inputs.platform == 'arch'", workflow)
-        self.assertIn("github.event_name != 'schedule'", workflow)
+        self.assertNotIn('\n  schedule:', workflow)
+        standalone = (mirror.ROOT/'.github/workflows/sync-windows-clash-momo.yml').read_text()
+        self.assertIn('\n  schedule:', standalone)
 
 
 if __name__ == '__main__':
