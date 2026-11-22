@@ -34,6 +34,7 @@ class Client:
         if not self.token:
             raise ValueError('CNB_MIRROR_TOKEN is required')
         self.opener = urllib.request.build_opener(NoRedirect())
+        self._asset_releases = {}
 
     def request(self, method, path, data=None, missing=False):
         # Never follow a redirect with the bearer token or include API response
@@ -107,7 +108,27 @@ class Client:
         query = dict(urllib.parse.parse_qsl(verify.query))
         query['ttl'] = '0'
         self.request('POST', verify.path+'?'+urllib.parse.urlencode(query))
+        self._asset_releases.pop(item['tag'], None)
         return True
+
+    def asset(self, item, refresh=False):
+        """Read authenticated attachment identity once per release, without writes."""
+        tag = item['tag']
+        if refresh or tag not in self._asset_releases:
+            self._asset_releases[tag] = self.release(tag)
+        release = self._asset_releases[tag]
+        matches = [a for a in ((release or {}).get('assets') or []) if a['name'] == item['filename']]
+        if len(matches) > 1:
+            raise ValueError('Duplicate CNB attachment')
+        if not matches:
+            return None
+        asset = matches[0]
+        if asset['size'] != item['size']:
+            raise ValueError('Refusing to overwrite a different CNB attachment')
+        if (asset.get('hash_algo') or '').lower().replace('-', '') == 'sha256' and \
+                (asset.get('hash_value') or '').lower() != item['sha256']:
+            raise ValueError('Refusing to overwrite a different CNB digest')
+        return asset
 
     def delete(self, item):
         release = self.release(item['tag'])

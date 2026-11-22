@@ -237,6 +237,7 @@ def references(state):
 def verify_remote(url, expected, expected_size):
     request = urllib.request.Request(url, headers={'User-Agent': 'fansionia-pacman-mirror'})
     # Deliberately anonymous and uncached. Check all bytes, including on retries.
+    transferred = 0
     for attempt in range(4):
         try:
             digest = hashlib.sha256()
@@ -245,6 +246,7 @@ def verify_remote(url, expected, expected_size):
                 declared = response.headers.get('Content-Length')
                 while block := response.read(1024*1024):
                     received += len(block)
+                    transferred += len(block)
                     digest.update(block)
                 # HTTPResponse.read(amt) can return EOF without raising when
                 # the connection closes before Content-Length is satisfied.
@@ -255,24 +257,75 @@ def verify_remote(url, expected, expected_size):
                 raise ValueError('CNB anonymous download size mismatch: '+url.rsplit('/', 1)[-1])
             if digest.hexdigest() != expected:
                 raise ValueError('CNB anonymous download SHA-256 mismatch: '+url.rsplit('/', 1)[-1])
-            return
+            return transferred
         except (OSError, http.client.IncompleteRead):
             if attempt == 3:
                 raise RuntimeError('CNB anonymous download failed') from None
             time.sleep(2**attempt)
 
 
-def sync(site, settings, client=None):
+def attachment_identity(asset):
+    """Bind a full-byte receipt to the server's stable attachment identity."""
+    if not asset or not asset.get('id'):
+        return None
+    return {key: asset.get(key) for key in ['id', 'name', 'size', 'hash_algo', 'hash_value']}
+
+
+def verify_available(url, size):
+    request = urllib.request.Request(url, method='HEAD', headers={
+        'User-Agent': 'fansionia-pacman-mirror', 'Cache-Control': 'no-cache'})
+    for attempt in range(4):
+        try:
+            with urllib.request.urlopen(request, timeout=30) as response:
+                length = response.headers.get('Content-Length')
+                if length is not None and int(length) != size:
+                    raise ValueError('CNB anonymous attachment size changed')
+            return
+        except OSError:
+            if attempt == 3:
+                raise RuntimeError('CNB anonymous attachment is unavailable') from None
+            time.sleep(2**attempt)
+
+
+def report(stats):
+    message = ('CNB mirror: uploaded {uploaded} attachments, reused {reused} verified receipts, '
+               'verified {verified} full attachments ({bytes} bytes)').format(**stats)
+    print(message)
+    if os.environ.get('GITHUB_STEP_SUMMARY'):
+        with open(os.environ['GITHUB_STEP_SUMMARY'], 'a') as output:
+            output.write(message+'\n\n')
+    return stats
+
+
+def sync(site, settings, client=None, full=False):
     site = Path(site)
     state = read_state(site, settings)
     if not state['pending']:
         raise ValueError('Stage a mirror candidate before syncing')
     client = client or Client(state['repository'])
-    uploaded = reused = 0
+    stats = {'uploaded': 0, 'reused': 0, 'verified': 0, 'bytes': 0}
     for url, item in references(state).items():
         before = state['objects'].get(url)
         if before is not None and any(before[k] != item[k] for k in ['tag', 'filename', 'sha256']):
             raise ValueError('Refusing to replace an immutable mirrored object')
+        # The object ledger is journaled before upload. Only a separate receipt
+        # written after a complete anonymous read can authorize this fast path.
+        if before is not None:
+            asset = client.asset(dict(item, size=before['size']))
+            identity = attachment_identity(asset)
+            receipt = before.get('verified')
+            if asset is not None:
+                if not full and identity and receipt == {'sha256': item['sha256'], 'attachment': identity}:
+                    verify_available(url, before['size'])
+                    stats['reused'] += 1
+                else:
+                    transferred = verify_remote(url, item['sha256'], before['size'])
+                    if identity:
+                        before['verified'] = {'sha256': item['sha256'], 'attachment': identity}
+                    write_json(site/STATE, state)
+                    stats['verified'] += 1
+                    stats['bytes'] += transferred if isinstance(transferred, int) else before['size']
+                continue
         if 'source' in item:
             cache = ROOT.parent/'.cache/pacman-downloads'/item['sha256']
             # Reuse permanent mirror bytes, even if the upstream has removed
@@ -290,7 +343,7 @@ def sync(site, settings, client=None):
             raise ValueError('Mirror source checksum mismatch')
         record = {k: item[k] for k in ['tag', 'filename', 'sha256']}
         record['size'] = source.stat().st_size
-        if before is not None and before != record:
+        if before is not None and any(before[k] != record[k] for k in record):
             raise ValueError('Refusing to replace an immutable mirrored object')
         # A conservative repository budget leaves room for other shared
         # organization objects. The platform's free quota remains the hard
@@ -301,10 +354,14 @@ def sync(site, settings, client=None):
         state['objects'][url] = record
         write_json(site/STATE, state)  # journal before any external write
         if client.upload(dict(record, title=item.get('title')), source):
-            uploaded += 1
-        else:
-            reused += 1
-        verify_remote(url, item['sha256'], record['size'])
+            stats['uploaded'] += 1
+        transferred = verify_remote(url, item['sha256'], record['size'])
+        identity = attachment_identity(client.asset(record))
+        if identity:
+            record['verified'] = {'sha256': item['sha256'], 'attachment': identity}
+        write_json(site/STATE, state)
+        stats['verified'] += 1
+        stats['bytes'] += transferred if isinstance(transferred, int) else record['size']
         print('Verified CNB attachment:', item['filename'])
     for snapshot in state['snapshots'].values():
         snapshot['verified'] = True
@@ -313,7 +370,31 @@ def sync(site, settings, client=None):
         for item in mapping.values():
             item.pop('local', None)
     write_json(site/STATE, state)
-    print(f'CNB sync complete: uploaded {uploaded} new attachments; reused {reused} existing attachments')
+    return report(stats)
+
+
+def audit(site, settings, active, client=None, public=None):
+    """Read every retained object without staging, uploading or changing state."""
+    from state import public_status
+    state = read_state(site, settings)
+    public = public if public is not None else public_status()
+    if not active or state['pending'] or state['cleanup_pending'] or not state['successful'] or \
+            state['successful'][-1] != active or public.get('active') != active or \
+            public.get('phase') != 'active' or public.get('mirror', {}).get('active') != active:
+        raise ValueError('Full audit requires the healthy active snapshot without pending publication')
+    routes(site, settings, active)
+    client = client or Client(state['repository'])
+    stats = {'uploaded': 0, 'reused': 0, 'verified': 0, 'bytes': 0}
+    for url, item in references(state).items():
+        record = state['objects'][url]
+        if any(record[k] != item[k] for k in ['tag', 'filename', 'sha256']):
+            raise ValueError('Mirror object ledger does not match audit input')
+        if client.asset(record) is None:
+            raise ValueError('CNB audit attachment is missing')
+        transferred = verify_remote(url, record['sha256'], record['size'])
+        stats['verified'] += 1
+        stats['bytes'] += transferred if isinstance(transferred, int) else record['size']
+    return report(stats)
 
 
 def routes(site, settings, selected):
@@ -361,7 +442,7 @@ def routes(site, settings, selected):
     return assets, retained
 
 
-def finish(site, settings, candidate, public=None):
+def finish(site, settings, candidate, public=None, acceptance=None):
     from state import public_status
     public = public if public is not None else public_status()
     state = read_state(site, settings)
@@ -370,6 +451,10 @@ def finish(site, settings, candidate, public=None):
         raise ValueError('Both public origins must serve the accepted candidate before retention changes')
     if not state['snapshots'][candidate]['verified']:
         raise ValueError('Unverified mirror candidate')
+    if acceptance is not None:
+        if acceptance.get('snapshot') != candidate:
+            raise ValueError('Installation acceptance does not match the candidate snapshot')
+        state['accepted_install'] = acceptance
     successful = [s for s in state['successful'] if s != candidate]+[candidate]
     state['successful'] = successful[-2:]
     state['pending'] = ''
@@ -415,17 +500,22 @@ def prune(site, settings, client=None, public=None):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('command', choices=['stage', 'sync', 'finish', 'prune'])
+    parser.add_argument('command', choices=['stage', 'sync', 'finish', 'prune', 'audit'])
     parser.add_argument('--site', default='.work/pacman-site')
     parser.add_argument('--active', default='')
     parser.add_argument('--candidate', default='')
+    parser.add_argument('--full', action='store_true')
+    parser.add_argument('--acceptance', type=Path)
     args = parser.parse_args()
     settings = json.loads((ROOT/'sources.json').read_text())
     if args.command == 'stage':
         stage(args.site, settings, args.active, args.candidate)
     elif args.command == 'sync':
-        sync(args.site, settings)
+        sync(args.site, settings, full=args.full)
     elif args.command == 'finish':
-        finish(args.site, settings, args.candidate)
+        acceptance = json.loads(args.acceptance.read_text()) if args.acceptance else None
+        finish(args.site, settings, args.candidate, acceptance=acceptance)
+    elif args.command == 'audit':
+        audit(args.site, settings, args.active)
     else:
         prune(args.site, settings)

@@ -174,6 +174,15 @@ class NativeRepositoryTests(unittest.TestCase):
                     desc = subprocess.check_output(['bsdtar', '-xOf', str(recovered_db),
                                                      'external-1:2.0-1/desc'], text=True)
                     self.assertIn(external_record['sha256'], desc)
+                    discover.return_value = [package]
+                    with patch.object(repository, 'download', side_effect=AssertionError('unexpected archive download')):
+                        repository.build(site, settings, recovered)
+                    reduced = json.loads((site/'snapshots.json').read_text())[-1]
+                    for extension in ('db', 'files'):
+                        listing = subprocess.check_output(['bsdtar', '-tf', str(
+                            site/'snapshots'/reduced/'x86_64'/f'fansionia.{extension}.tar.gz')], text=True)
+                        self.assertIn('fixture-1.0.0-1/desc', listing)
+                        self.assertNotIn('external-', listing)
             finally:
                 subprocess.run(['gpgconf', '--homedir', str(home), '--kill', 'gpg-agent'], check=False)
 

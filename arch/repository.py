@@ -281,39 +281,63 @@ def snapshot_inputs(packages):
         source += key.read_bytes()
     generator = hashlib.sha256(source).hexdigest()
     inputs = {'schema': 1, 'packages': packages, 'generator': generator,
-              'keyring': checksum(ROOT/'keys/fansionia.gpg')}
+              'keyring': checksum(ROOT/'keys/fansionia.gpg'), 'trust': trust_policy()}
     return inputs, hashlib.sha256(canonical(inputs)).hexdigest()[:32]
 
 
-def acquire_packages(packages, previous, settings, mirror_state):
+def trust_policy():
+    from upstream import ROOT as upstream_root
+    inputs = [ROOT/'keys'/name for name in ('fansionia.gpg', 'signers.json')]
+    inputs.extend(sorted(upstream_root.joinpath('upstream-keys').glob('*.asc')))
+    settings = ROOT/'sources.json'
+    policy = json.loads(settings.read_text()).get('upstreams', []) if settings.exists() else []
+    return hashlib.sha256(canonical([policy, *[(p.name, checksum(p)) for p in inputs]])).hexdigest()
+
+
+def archive_identity(package):
+    return {key: value for key, value in package.items()
+            if key not in ('archive_url', 'signature_archive_url')}
+
+
+def prepare_archive(package, directory):
+    archive = Path(directory)/package['filename']
+    for prefix, destination in [('', archive), ('signature_', Path(str(archive)+'.sig'))]:
+        cache = ROOT.parent/'.cache/pacman-downloads'/package[prefix+'sha256']
+        download(package.get(prefix+'archive_url', package[prefix+'url']), cache, package[prefix+'sha256'])
+        shutil.copy2(cache, destination)
+    return archive
+
+
+def acquire_packages(packages, previous, settings, mirror_state, directory=None, reused=None):
     """Validate available inputs before snapshot identity is fixed, deferring only download outages."""
+    if directory is None:
+        with tempfile.TemporaryDirectory(prefix='fansionia-preflight-') as temporary:
+            return acquire_packages(packages, previous, settings, mirror_state, temporary, reused)
     from upstream import unavailable
     old = {p['name']: p for p in previous['packages']} if previous else {}
+    reused = reused or {}
     selected = []
     droidloom_error = None
-    with tempfile.TemporaryDirectory(prefix='fansionia-preflight-') as temporary:
-        for package in packages:
-            if droidloom_error is not None and package.get('project') == 'droidloom':
-                continue
-            archive = Path(temporary)/package['filename']
-            try:
-                for prefix, destination in [('', archive), ('signature_', Path(str(archive)+'.sig'))]:
-                    cache = ROOT.parent/'.cache/pacman-downloads'/package[prefix+'sha256']
-                    download(package.get(prefix+'archive_url', package[prefix+'url']),
-                             cache, package[prefix+'sha256'])
-                    shutil.copy2(cache, destination)
-            except Exception as error:
-                if not unavailable(error):
-                    raise
-                if package.get('project') == 'droidloom':
-                    droidloom_error = error
-                    continue
-                before = old.get(package['name'])
-                records = [before] if before and before['repository'] == package['repository'] else []
-                selected.extend(defer_packages(settings, mirror_state, records, package['name'], error))
-                continue
-            verify_package(package, archive, ROOT/'keys/fansionia.gpg', settings)
+    for package in packages:
+        if droidloom_error is not None and package.get('project') == 'droidloom':
+            continue
+        if reused.get(package['name']) == archive_identity(package):
             selected.append(package)
+            continue
+        try:
+            archive = prepare_archive(package, directory)
+        except Exception as error:
+            if not unavailable(error):
+                raise
+            if package.get('project') == 'droidloom':
+                droidloom_error = error
+                continue
+            before = old.get(package['name'])
+            records = [before] if before and before['repository'] == package['repository'] else []
+            selected.extend(defer_packages(settings, mirror_state, records, package['name'], error))
+            continue
+        verify_package(package, archive, ROOT/'keys/fansionia.gpg', settings)
+        selected.append(package)
     if droidloom_error is not None:
         selected = [p for p in selected if p.get('project') != 'droidloom']
         records = [p for p in old.values() if p.get('project') == 'droidloom']
@@ -323,6 +347,23 @@ def acquire_packages(packages, previous, settings, mirror_state):
 
 
 def build(site, settings, active, resume=''):
+    with tempfile.TemporaryDirectory(prefix='fansionia-inputs-') as temporary:
+        build_snapshot(site, settings, active, resume, Path(temporary))
+
+
+def seed_database(site, settings, active, previous, database):
+    for suffix in ('db', 'files'):
+        relative = settings['architecture']+'/'+settings['repository']+'.'+suffix+'.tar.gz'
+        source = site/'snapshots'/active/relative
+        signature = Path(str(source)+'.sig')
+        for path, filename in [(source, relative), (signature, relative+'.sig')]:
+            if checksum(path) != previous['files'][filename]:
+                raise ValueError('Persisted database checksum mismatch: '+filename)
+        subprocess.run(['gpgv', '--keyring', str(ROOT/'keys/fansionia.gpg'), str(signature), str(source)], check=True)
+        shutil.copy2(source, database.parent/source.name)
+
+
+def build_snapshot(site, settings, active, resume, temporary):
     site = Path(site)
     site.mkdir(parents=True, exist_ok=True)
     previous = previous_manifest(site, active)
@@ -339,8 +380,14 @@ def build(site, settings, active, resume=''):
     if not resume and settings.get('mirror'):
         packages = retain_upstream_rebuilds(packages, previous, settings, mirror_state)
     ensure_monotonic(packages, previous)
+    reused = {}
+    if previous and previous.get('trust') == trust_policy():
+        reused = {p['name']: archive_identity(p) for p in previous['packages']}
+    verified = {}
     if not resume and not (site/'snapshots'/snapshot_inputs(packages)[1]/'manifest.json').exists():
-        packages = acquire_packages(packages, previous, settings, mirror_state)
+        packages = acquire_packages(packages, previous, settings, mirror_state, temporary, reused)
+        verified = {p['name']: p for p in packages
+                    if not p.get('archive_url') and (temporary/p['filename']).is_file()}
         if settings.get('upstreams') and any(p['id'] == 'fansionia-keyring' for p in settings.get('projects', [])):
             require_published_keyring(packages)
     # Changes in inputs, generator or public signing material require a new
@@ -360,20 +407,33 @@ def build(site, settings, active, resume=''):
         target.mkdir(parents=True)
         database_dir = target/settings['architecture']
         database_dir.mkdir()
-        with tempfile.TemporaryDirectory(prefix='fansionia-inputs-') as temporary:
-            temporary = Path(temporary)
-            archives = []
-            for package in packages:
+        database = database_dir/(settings['repository']+'.db.tar.gz')
+        if reused:
+            seed_database(site, settings, active, previous, database)
+            removed = sorted(set(reused)-{p['name'] for p in packages})
+            if removed:
+                subprocess.run(['repo-remove', str(database), *removed], check=True)
+        archives = []
+        for package in packages:
+            if reused.get(package['name']) == archive_identity(package):
+                continue
+            if verified.get(package['name']) == package:
                 archive = temporary/package['filename']
-                for prefix, destination in [('', archive), ('signature_', Path(str(archive)+'.sig'))]:
-                    cache = ROOT.parent/'.cache/pacman-downloads'/package[prefix+'sha256']
-                    download(package.get(prefix+'archive_url', package[prefix+'url']),
-                             cache, package[prefix+'sha256'])
-                    shutil.copy2(cache, destination)
+            else:
+                archive = prepare_archive(package, temporary)
                 verify_package(package, archive, ROOT/'keys/fansionia.gpg', settings)
-                archives.append(str(archive))
-            database = database_dir/(settings['repository']+'.db.tar.gz')
+            archives.append(str(archive))
+        if archives:
             subprocess.run(['repo-add', '--include-sigs', str(database), *archives], check=True)
+        for backup in database_dir.glob('*.old'):
+            backup.unlink()
+        message = (f'pacman database inputs: {len(archives)} verified package archives '
+                   f'({sum(Path(path).stat().st_size for path in archives)} bytes), '
+                   f'{len(packages)-len(archives)} reused database entries')
+        print(message)
+        if os.environ.get('GITHUB_STEP_SUMMARY'):
+            with open(os.environ['GITHUB_STEP_SUMMARY'], 'a') as summary:
+                summary.write(message+'\n')
         files = database_dir/(settings['repository']+'.files.tar.gz')
         with Signer() as signer:
             signer.sign(database)
@@ -504,11 +564,11 @@ if __name__ == '__main__':
             _, candidate = snapshot_inputs(packages)
         else:
             candidate = resume
-        changed = candidate != active or bool(resume) or os.environ.get('FORCE_PUBLISH') == 'true'
+        changed = candidate != active or bool(resume) or os.environ.get('REPAIR_PUBLISH') == 'true'
         print('Candidate snapshot:', candidate, 'active:', active or '(none)')
         if os.environ.get('GITHUB_OUTPUT'):
             with open(os.environ['GITHUB_OUTPUT'], 'a') as output:
-                output.write(f'changed={str(changed).lower()}\nresume={resume}\n')
+                output.write(f'changed={str(changed).lower()}\nresume={resume}\nactive={active}\n')
     elif args.command == 'build':
         build(args.site, settings, args.active, args.candidate)
     elif args.command == 'worker':

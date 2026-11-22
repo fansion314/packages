@@ -1,7 +1,24 @@
 name: Publish signed pacman repository
 on:
   workflow_call:
+    inputs:
+      verification:
+        type: string
+        default: incremental
+      repair:
+        type: boolean
+        default: false
   workflow_dispatch:
+    inputs:
+      verification:
+        description: Installation and mirror verification scope
+        type: choice
+        options: [incremental, full]
+        default: full
+      repair:
+        description: Restage the active snapshot to recover routes or missing attachments
+        type: boolean
+        default: false
   schedule:
     - cron: '9,39 * * * *'
 permissions:
@@ -19,6 +36,7 @@ jobs:
       changed: ${{ steps.probe.outputs.changed }}
       commit: ${{ steps.code.outputs.commit }}
       resume: ${{ steps.probe.outputs.resume }}
+      active: ${{ steps.probe.outputs.active }}
     steps:
       - run: pacman -Syu --noconfirm --needed git python gnupg github-cli
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
@@ -30,7 +48,7 @@ jobs:
       - id: probe
         env:
           GH_TOKEN: ${{ github.token }}
-          FORCE_PUBLISH: ${{ github.event_name == 'workflow_dispatch' }}
+          REPAIR_PUBLISH: ${{ inputs.repair == true }}
         run: python3 arch/repository.py probe
   snapshot:
     needs: probe
@@ -50,11 +68,6 @@ jobs:
           persist-credentials: false
       - id: state
         run: python arch/state.py checkout .work/pacman-site
-      - uses: actions/cache@caa296126883cff596d87d8935842f9db880ef25
-        with:
-          path: .cache/pacman-downloads
-          key: pacman-inputs-${{ github.run_id }}
-          restore-keys: pacman-inputs-
       - id: snapshot
         name: Verify exact release bytes and sign a complete database
         env:
@@ -75,10 +88,14 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: python arch/state.py commit .work/pacman-site
-      - name: Upload permanent CNB attachments and verify anonymous SHA-256
+      - name: Verify and synchronize immutable CNB attachments
         env:
           CNB_MIRROR_TOKEN: ${{ secrets.CNB_MIRROR_TOKEN }}
-        run: python arch/mirror.py sync
+          FULL_VERIFY: ${{ inputs.verification == 'full' }}
+        run: |
+          args=()
+          if [[ $FULL_VERIFY == true ]]; then args+=(--full); fi
+          python arch/mirror.py sync "${args[@]}"
       - name: Persist mirror receipts even after an interrupted upload
         if: always() && steps.snapshot.outcome == 'success'
         env:
@@ -87,6 +104,14 @@ jobs:
       - uses: actions/upload-pages-artifact@7b1f4a764d45c48632c6b24a0339c27f5614fb0b
         with:
           path: .work/pacman-site
+      - name: Plan install verification against the last accepted snapshot
+        env:
+          CANDIDATE: ${{ steps.snapshot.outputs.candidate }}
+          FULL_VERIFY: ${{ inputs.verification == 'full' }}
+        run: |
+          args=()
+          if [[ $FULL_VERIFY == true ]]; then args+=(--full); fi
+          python arch/verify-install.py prepare --snapshot "$CANDIDATE" "${args[@]}"
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
           name: pacman-state
@@ -95,6 +120,9 @@ jobs:
             .work/pacman-site/snapshots.json
             .work/pacman-site/keys/
             .work/pacman-site/mirror-state.json
+            .work/pacman-site/verification/
+            .work/pacman-site/acceptance.json
+            .work/pacman-site/install-targets.txt
           retention-days: 7
   pages:
     needs: snapshot
@@ -135,13 +163,14 @@ jobs:
           CI: 'true'
         run: |
           python arch/repository.py verify-pages --candidate "$CANDIDATE"
-          python arch/repository.py worker --candidate "$CANDIDATE" --phase active
+          install -D .work/pacman-site/verification/worker.mjs arch/generated/index.mjs
           node arch/serve.mjs > /tmp/candidate-worker.log 2>&1 &
           server_pid=$!
           trap 'kill "$server_pid" || true' EXIT
           path=x86_64
           if [[ $ORIGIN == mirror ]]; then path=mirror/x86_64; fi
-          bash arch/test-install.sh "http://127.0.0.1:8765/$path"
+          python arch/verify-install.py routes --server http://127.0.0.1:8765 --origin "$ORIGIN"
+          bash arch/test-install.sh "http://127.0.0.1:8765/$path" .work/pacman-site/install-targets.txt
   worker:
     needs: [probe, snapshot, candidate]
     runs-on: ubuntu-24.04
@@ -172,12 +201,10 @@ jobs:
           python3 arch/deploy.py active "$CANDIDATE" "$CANDIDATE"
   public:
     needs: [probe, worker]
-    # A manual retry must verify an already-active snapshot too. Scheduled
-    # unchanged checks remain cheap and do not reinstall every package.
     if: >-
       always() && needs.probe.result == 'success' &&
       (needs.worker.result == 'success' ||
-       (needs.probe.outputs.changed == 'false' && github.event_name == 'workflow_dispatch'))
+       (needs.probe.outputs.changed == 'false' && inputs.verification == 'full'))
     runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
@@ -192,6 +219,18 @@ jobs:
         with:
           ref: ${{ needs.probe.outputs.commit }}
           persist-credentials: false
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+        if: needs.probe.outputs.changed == 'true'
+        with:
+          name: pacman-state
+          path: .work/pacman-site
+      - name: Prepare the full audit of the active snapshot
+        if: needs.probe.outputs.changed == 'false'
+        env:
+          ACTIVE: ${{ needs.probe.outputs.active }}
+        run: |
+          python arch/state.py checkout .work/pacman-site
+          python arch/verify-install.py prepare --snapshot "$ACTIVE" --full
       - name: Install from the public repository domain
         env:
           CI: 'true'
@@ -199,7 +238,23 @@ jobs:
         run: |
           path=x86_64
           if [[ $ORIGIN == mirror ]]; then path=mirror/x86_64; fi
-          bash arch/test-install.sh "https://packages.fansionia.world/$path"
+          python arch/verify-install.py routes --server https://packages.fansionia.world --origin "$ORIGIN"
+          bash arch/test-install.sh "https://packages.fansionia.world/$path" .work/pacman-site/install-targets.txt
+  audit-mirror:
+    needs: probe
+    if: needs.probe.outputs.changed == 'false' && inputs.verification == 'full'
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ needs.probe.outputs.commit }}
+          persist-credentials: false
+      - run: python3 arch/state.py checkout .work/pacman-site
+      - name: Read and hash all retained CNB attachments
+        env:
+          ACTIVE: ${{ needs.probe.outputs.active }}
+          CNB_MIRROR_TOKEN: ${{ secrets.CNB_MIRROR_TOKEN }}
+        run: python3 arch/mirror.py audit --active "$ACTIVE"
   retention:
     needs: [probe, snapshot, public]
     runs-on: ubuntu-24.04
@@ -216,12 +271,16 @@ jobs:
       - run: npm install --global --ignore-scripts pnpm@12.15.0
       - run: pnpm --dir arch install --frozen-lockfile --ignore-scripts
       - run: python3 arch/state.py checkout .work/pacman-site
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+        with:
+          name: pacman-state
+          path: .work/pacman-verified
       - name: Record both public installation checks and retain two successful snapshots
         env:
           CANDIDATE: ${{ needs.snapshot.outputs.candidate }}
           GH_TOKEN: ${{ github.token }}
         run: |
-          python3 arch/mirror.py finish --candidate "$CANDIDATE"
+          python3 arch/mirror.py finish --candidate "$CANDIDATE" --acceptance .work/pacman-verified/acceptance.json
           python3 arch/state.py commit .work/pacman-site
       - name: Remove retired mirror routes before deleting their attachments
         env:

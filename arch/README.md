@@ -195,9 +195,12 @@ keep their original tags and URLs; title updates never reupload attachments.
 Packages shared by multiple snapshots are stored once. Database releases use
 `snapshot-<ID>`, and public-key bundles use `keys-<content hash>`. Existing
 attachments are never overwritten: retries require identical size and SHA-256.
-Every referenced attachment is downloaded anonymously and hashed in full,
-including on retries. Source package identity and signatures are checked by the
-snapshot builder; candidate and public installs enforce pacman's signature checks.
+New attachments and legacy objects without an attachment verification record are
+downloaded anonymously and hashed in full. A prior record can be reused after
+checking current attachment identity, metadata and anonymous reachability.
+The snapshot builder validates package metadata and signatures before adding
+entries to the signed database. Unchanged entries can be reused from the prior
+signed database when the trust configuration matches.
 
 Publication is coupled: CNB sync and both clean Arch candidate installation jobs
 must succeed before either database entry advances. Public installation jobs
@@ -209,8 +212,10 @@ the currently active primary snapshot is mirrored alongside the new candidate.
 one pending candidate, verified routes and an explicit inventory of uploaded
 objects. It contains public metadata only. A pending publication is resumed
 before discovering later releases, including when activation already happened
-but public acceptance or cleanup was interrupted. Manual publications perform
-the full verification again even when the selected version is unchanged.
+but public acceptance or cleanup was interrupted. Candidate and public checks
+verify current redirects and install changed packages with strict pacman signature
+checking on both origins. They run full installs when there is no accepted
+baseline or the trust policy changes.
 
 Only after both public installation checks succeed does retention keep the
 latest two successful mirror snapshots. CI first deploys routing without the
@@ -246,9 +251,12 @@ snapshot. The generated branch is persisted before Pages/Worker deployment, so a
 retry can recover every already-published snapshot.
 
 If activation succeeded but the public-domain installation check failed, rerun
-the failed job after correcting the cause. A new manual publication also repeats
-the public installation check when its snapshot is already active; unchanged
-scheduled checks skip installation and deployment.
+the failed job after correcting the cause. A standalone dispatch with
+`verification=full` (the default) rehashes retained CNB objects and installs the
+active package set through both public origins. Select `repair=true` to restage
+an active snapshot for origin recovery or restoration of a missing attachment.
+Normal release notifications and scheduled checks stop after probing when
+there is no change or pending recovery.
 
 To roll back, generate a new Worker version selecting the previous retained
 snapshot while keeping the full current package mappings. Do not blindly restore

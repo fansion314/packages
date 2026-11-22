@@ -23,8 +23,17 @@ class FakeClient:
         self.deleted = []
 
     def upload(self, item, source):
+        created = (item['tag'], item['filename']) not in self.uploaded
         self.uploaded[(item['tag'], item['filename'])] = item.copy()
         self.sources[(item['tag'], item['filename'])] = source
+        return created
+
+    def asset(self, item, refresh=False):
+        saved = self.uploaded.get((item['tag'], item['filename']))
+        if saved is None:
+            return None
+        return {'id': item['tag']+'/'+item['filename'], 'name': item['filename'],
+                'size': saved['size'], 'hash_algo': 'sha256', 'hash_value': saved['sha256']}
 
     def delete(self, item):
         self.deleted.append(item.copy())
@@ -93,6 +102,18 @@ class AnonymousDownloadTests(unittest.TestCase):
             with self.assertRaisesRegex(RuntimeError, 'CNB anonymous download failed'):
                 self.verify()
         self.assertEqual(fetch.call_count, 4)
+
+    def test_receipt_probe_is_anonymous_head_and_rejects_size_changes(self):
+        response = MagicMock()
+        response.__enter__.return_value.headers = {'Content-Length': '42'}
+        with patch.object(mirror.urllib.request, 'urlopen', return_value=response) as fetch:
+            mirror.verify_available(self.url, 42)
+        request = fetch.call_args.args[0]
+        self.assertEqual(request.get_method(), 'HEAD')
+        self.assertIsNone(request.get_header('Authorization'))
+        with patch.object(mirror.urllib.request, 'urlopen', return_value=response):
+            with self.assertRaisesRegex(ValueError, 'size changed'):
+                mirror.verify_available(self.url, 43)
 
 
 class MirrorTests(unittest.TestCase):
@@ -244,7 +265,7 @@ class MirrorTests(unittest.TestCase):
             'files': {'x86_64/fansionia.db': mirror.checksum(database)}})
         return packages
 
-    def sync(self):
+    def sync(self, full=False):
         mirrored = {mirror.location(self.settings['mirror']['repository'], tag, filename): source
                     for (tag, filename), source in self.client.sources.items()}
         def download(url, destination, digest):
@@ -252,9 +273,11 @@ class MirrorTests(unittest.TestCase):
             self.assertEqual(mirror.checksum(source), digest)
             return source
         with patch.object(mirror, 'download', side_effect=download), \
-                patch.object(mirror, 'verify_remote') as verify:
-            mirror.sync(self.site, self.settings, self.client)
-        self.assertTrue(verify.call_count)
+                patch.object(mirror, 'verify_remote') as verify, \
+                patch.object(mirror, 'verify_available') as available:
+            stats = mirror.sync(self.site, self.settings, self.client, full=full)
+        self.assertTrue(verify.call_count or available.call_count)
+        return stats
 
     def public(self, candidate, snapshots):
         return {'active': candidate, 'phase': 'active',
@@ -342,6 +365,10 @@ class MirrorTests(unittest.TestCase):
         state = mirror.read_state(self.site, self.settings)
         item = state['snapshots'][a]['routes']['/x86_64/'+package['filename']]
         url = mirror.location(state['repository'], item['tag'], item['filename'])
+        # A journaled upload may have no full verification receipt yet.
+        state['objects'][url].pop('verified')
+        repository.write_json(self.site/mirror.STATE, state)
+        self.client.uploaded.pop((item['tag'], item['filename']))
         mirror.stage(self.site, self.settings, '', a)
         mirrored = {mirror.location(state['repository'], tag, filename): source
                     for (tag, filename), source in self.client.sources.items()}
@@ -350,17 +377,105 @@ class MirrorTests(unittest.TestCase):
                 raise urllib.error.HTTPError(source, 404, 'not uploaded yet', {}, None)
             return mirrored.get(source) or self.sources[source]
         with patch.object(mirror, 'download', side_effect=download) as fetch, \
-                patch.object(mirror, 'verify_remote'):
+                patch.object(mirror, 'verify_remote'), patch.object(mirror, 'verify_available'):
             mirror.sync(self.site, self.settings, self.client)
         urls = [call.args[0] for call in fetch.call_args_list]
         self.assertIn(url, urls)
         self.assertIn(package['url'], urls)
         mirror.stage(self.site, self.settings, '', a)
+        self.client.uploaded.pop((item['tag'], item['filename']))
         with patch.object(mirror, 'download', side_effect=ValueError('checksum mismatch')) as fetch, \
                 patch.object(mirror, 'verify_remote'):
             with self.assertRaisesRegex(ValueError, 'checksum mismatch'):
-                mirror.sync(self.site, self.settings, self.client)
+                mirror.sync(self.site, self.settings, self.client, full=True)
         self.assertEqual(fetch.call_count, 1)
+
+    def test_verified_objects_reuse_receipts_without_fetching_sources(self):
+        a = 'a'*32
+        self.snapshot(a, '1')
+        mirror.stage(self.site, self.settings, '', a)
+        initial = self.sync()
+        mirror.stage(self.site, self.settings, '', a)
+        with patch.object(mirror, 'download') as source, patch.object(mirror, 'verify_remote') as full, \
+                patch.object(mirror, 'verify_available') as head:
+            stats = mirror.sync(self.site, self.settings, self.client)
+        source.assert_not_called()
+        full.assert_not_called()
+        self.assertEqual(head.call_count, initial['verified'])
+        self.assertEqual(stats['reused'], initial['verified'])
+        self.assertEqual(stats['bytes'], 0)
+
+    def test_legacy_receipt_and_changed_attachment_identity_require_full_read(self):
+        a = 'a'*32
+        self.snapshot(a, '1')
+        mirror.stage(self.site, self.settings, '', a)
+        self.sync()
+        state = mirror.read_state(self.site, self.settings)
+        urls = list(state['objects'])
+        state['objects'][urls[0]].pop('verified')
+        state['objects'][urls[1]]['verified']['attachment']['id'] = 'replaced'
+        repository.write_json(self.site/mirror.STATE, state)
+        stats = self.sync()
+        self.assertEqual(stats['verified'], 2)
+        self.assertEqual(stats['reused'], len(urls)-2)
+        migrated = mirror.read_state(self.site, self.settings)
+        self.assertTrue(all(item.get('verified') for item in migrated['objects'].values()))
+
+    def test_receipt_is_written_only_after_full_remote_verification(self):
+        a = 'a'*32
+        self.snapshot(a, '1')
+        mirror.stage(self.site, self.settings, '', a)
+        with patch.object(mirror, 'download', side_effect=lambda url, *_: self.sources[url]), \
+                patch.object(mirror, 'verify_remote', side_effect=ValueError('bad bytes')):
+            with self.assertRaisesRegex(ValueError, 'bad bytes'):
+                mirror.sync(self.site, self.settings, self.client)
+        state = mirror.read_state(self.site, self.settings)
+        self.assertTrue(state['objects'])
+        self.assertFalse(any(item.get('verified') for item in state['objects'].values()))
+
+    def test_full_audit_reads_all_retained_objects_without_state_writes(self):
+        a = 'a'*32
+        self.snapshot(a, '1')
+        mirror.stage(self.site, self.settings, '', a)
+        self.sync()
+        self.accept(a)
+        state = mirror.read_state(self.site, self.settings)
+        before = (self.site/mirror.STATE).read_bytes()
+        with patch.object(mirror, 'verify_remote') as full, patch.object(self.client, 'upload') as upload:
+            stats = mirror.audit(self.site, self.settings, a, self.client, self.public(a, [a]))
+        self.assertEqual(full.call_count, len(mirror.references(state)))
+        self.assertEqual(stats['verified'], full.call_count)
+        upload.assert_not_called()
+        self.assertEqual((self.site/mirror.STATE).read_bytes(), before)
+        state['pending'] = a
+        repository.write_json(self.site/mirror.STATE, state)
+        with self.assertRaisesRegex(ValueError, 'healthy active'):
+            mirror.audit(self.site, self.settings, a, self.client, self.public(a, [a]))
+
+    def test_full_sync_checks_remote_bytes_without_fetching_source_copies(self):
+        a = 'a'*32
+        self.snapshot(a, '1')
+        mirror.stage(self.site, self.settings, '', a)
+        self.sync()
+        with patch.object(mirror, 'download') as source, patch.object(mirror, 'verify_remote') as verify:
+            stats = mirror.sync(self.site, self.settings, self.client, full=True)
+        source.assert_not_called()
+        self.assertEqual(stats['verified'], len(self.client.uploaded))
+        self.assertEqual(stats['verified'], verify.call_count)
+        self.assertGreater(stats['bytes'], 0)
+
+    def test_finish_records_only_acceptance_for_the_exact_candidate(self):
+        a = 'a'*32
+        self.snapshot(a, '1')
+        mirror.stage(self.site, self.settings, '', a)
+        self.sync()
+        before = (self.site/mirror.STATE).read_bytes()
+        with self.assertRaisesRegex(ValueError, 'acceptance'):
+            mirror.finish(self.site, self.settings, a, self.public(a, [a]), {'snapshot': 'b'*32})
+        self.assertEqual((self.site/mirror.STATE).read_bytes(), before)
+        acceptance = {'snapshot': a, 'policy': 'fixture', 'packages': {}}
+        mirror.finish(self.site, self.settings, a, self.public(a, [a]), acceptance)
+        self.assertEqual(mirror.read_state(self.site, self.settings)['accepted_install'], acceptance)
 
     def test_frozen_upstream_survives_mirror_retention_and_repairs_primary_routes(self):
         a, b, c, d = ('a'*32, 'b'*32, 'c'*32, 'd'*32)
@@ -507,6 +622,17 @@ class MirrorTests(unittest.TestCase):
             client.upload(item, '/nonexistent-source-is-not-opened')
         api.assert_not_called()
         put.assert_not_called()
+
+    def test_authenticated_metadata_is_cached_by_release_and_checks_digest(self):
+        client = mirror.Client('test/mirror', 'not-a-real-token')
+        item = {'tag': 'v1', 'filename': 'foo', 'size': 42, 'sha256': 'a'*64}
+        asset = {'id': '1', 'name': 'foo', 'size': 42, 'hash_algo': 'sha256', 'hash_value': 'a'*64}
+        with patch.object(client, 'release', return_value={'assets': [asset]}) as release:
+            self.assertEqual(client.asset(item), asset)
+            self.assertEqual(client.asset(item), asset)
+            release.assert_called_once_with('v1')
+            with self.assertRaisesRegex(ValueError, 'digest'):
+                client.asset(dict(item, sha256='b'*64))
 
     def test_null_assets_on_new_cnb_release_uploads_with_permanent_retention(self):
         client = mirror.Client('test/mirror', 'not-a-real-token')
