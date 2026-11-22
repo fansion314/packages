@@ -1,6 +1,9 @@
 import importlib.util
 from pathlib import Path
 import unittest
+import tempfile
+import json
+from unittest.mock import patch
 
 spec = importlib.util.spec_from_file_location('sync', Path(__file__).with_name('sync.py'))
 sync = importlib.util.module_from_spec(spec)
@@ -146,3 +149,37 @@ class MirrorRenderTests(unittest.TestCase):
         for name in ('../archive.tar.gz', '.', ''):
             with self.subTest(name=name), self.assertRaises(ValueError):
                 sync.cnb_url('dnr', {**info, 'asset': name})
+
+
+class VerificationTests(unittest.TestCase):
+    def test_github_digest_avoids_downloading_archive(self):
+        info = {'asset': 'app.tar.gz', 'tag': 'v1', 'repository': 'test/app', 'github_digest': 'sha256:'+'a'*64}
+        def download(args, **kwargs):
+            directory = Path(args[args.index('--dir')+1])
+            (directory/'app.tar.gz.sha256').write_text('a'*64+'  app.tar.gz\n')
+        with patch.object(sync.subprocess, 'run', side_effect=download) as run:
+            self.assertEqual(sync.verified_digest(info), 'a'*64)
+        self.assertNotIn('app.tar.gz', run.call_args.args[0])
+
+    def test_companion_disagreement_fails_even_with_github_digest(self):
+        info = {'asset': 'app.tar.gz', 'tag': 'v1', 'repository': 'test/app', 'github_digest': 'sha256:'+'a'*64}
+        def download(args, **kwargs):
+            (Path(args[args.index('--dir')+1])/'app.tar.gz.sha256').write_text('b'*64+'  app.tar.gz\n')
+        with patch.object(sync.subprocess, 'run', side_effect=download), self.assertRaisesRegex(ValueError, 'mismatch'):
+            sync.verified_digest(info)
+
+    def test_dependency_updates_include_consumers(self):
+        accepted = {p: 'old' for p in sync.PROJECTS}
+        current = {**accepted, 'dnr': 'new'}
+        self.assertEqual(sync.validation_projects(current, accepted), ['dnr', 'pi-dnr', 'etcher-dnr'])
+        current = {**accepted, 'mihomomo': 'new'}
+        self.assertEqual(sync.validation_projects(current, accepted), ['mihomomo', 'clash-momo'])
+        self.assertEqual(sync.validation_projects(accepted, accepted), [])
+
+    def test_failed_primary_install_does_not_record_acceptance(self):
+        with tempfile.TemporaryDirectory() as directory, patch.object(sync, 'ROOT', Path(directory)), \
+                patch.object(sync, 'validation_inputs', return_value={'dnr': 'identity'}), \
+                patch.object(sync.subprocess, 'run', side_effect=RuntimeError('install failed')):
+            with self.assertRaisesRegex(RuntimeError, 'install failed'):
+                sync.validate()
+            self.assertFalse((Path(directory)/'verification.json').exists())

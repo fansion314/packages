@@ -89,7 +89,7 @@
 - 非浏览器客户端必须可访问包域名：国家质询规则排除该 hostname，并仅对此 hostname 跳过 Browser Integrity Check。免费 Bot Fight Mode 没有主机名例外；如它拦截，关闭会影响整 zone，须有用户明确授权，不能擅自关闭全站防护或升级付费计划。
 - 2026-10-24 已获用户授权关闭该 zone 的免费 Bot Fight Mode；其余机器人设置和自定义 WAF 保留。首个正式域名仓库发布及真实 pacman 安装通过；不要为恢复默认设置而重新开启会拦截仓库客户端的挑战功能。当前 active 以线上 `/status.json` 为准，不把初始快照 ID 当永久配置。
 - 外部源用 GitHub App 通知本仓库：App `fansionia-package-distribution`，仅安装到 packages，Actions write/Metadata read；源仓库变量 `DISTRIBUTION_APP_ID` 与 secret `DISTRIBUTION_APP_PRIVATE_KEY`。勿把普通 GITHUB_TOKEN 当跨仓库 dispatch 凭据。
-- `downstream.yml` 每小时 4/19/34/49 分兜底；`arch/dispatch.py` 只恢复 `disabled_inactivity`，尊重 `disabled_manually`。GitHub 对 fork 的整仓 Actions 禁用可能仍需人在网页确认，不能声称 API enable 永远足够。
+- `downstream.yml` 接收 Release 即时通知，各分发工作流自身的 cron 负责兜底；`arch/dispatch.py` 只恢复 `disabled_inactivity`，尊重 `disabled_manually`。GitHub 对 fork 的整仓 Actions 禁用可能仍需人在网页确认，不能声称 API enable 永远足够。
 
 ## 本地检查与收尾
 

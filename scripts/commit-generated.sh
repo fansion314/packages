@@ -3,7 +3,7 @@
 set -euo pipefail
 kind=${1:?homebrew or aur}
 case "$kind" in
-  homebrew) paths=(Formula Casks homebrew/releases); inputs=(homebrew/scripts homebrew/templates scripts) ;;
+  homebrew) paths=(Formula Casks homebrew/releases homebrew/verification.json); inputs=(homebrew/scripts homebrew/templates scripts) ;;
   aur) paths=(aur/packages aur/state); inputs=(aur/sources.json aur/scripts scripts) ;;
   *) exit 2 ;;
 esac

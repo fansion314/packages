@@ -15,12 +15,11 @@ fi
 for attempt in 1 2 3 4 5; do
   if [[ $kind == homebrew ]]; then
     python3 homebrew/scripts/sync.py ${homebrew_project:+"$homebrew_project"}
-    bash homebrew/scripts/test-install.sh ${homebrew_project:+"$homebrew_project"}
+    python3 homebrew/scripts/sync.py --validate
   else
-    python3 -u aur/scripts/sync.py ${project:+"$project"}
-    if [[ ${GITHUB_EVENT_NAME:-} != schedule ]]; then
-      python3 -c 'import json,pathlib,sys; m=json.load(open("aur/sources.json")); pathlib.Path("aur/.cache/changed.json").write_text(json.dumps([n for p in m["projects"] if not sys.argv[1] or p["id"] == sys.argv[1] for n in p["packages"]]))' "$project"
-    fi
+    aur_args=()
+    if [[ ${FULL_VERIFY:-false} == true || ${GITHUB_EVENT_NAME:-} == push ]]; then aur_args+=(--full); fi
+    python3 -u aur/scripts/sync.py "${aur_args[@]}" ${project:+"$project"}
     docker run --rm --volume "$PWD:/repo" --workdir /repo/aur --env "BUILD_UID=$(id -u)" --env "VALIDATE_PROJECT=${project:-all}" \
       ghcr.io/archlinux/archlinux:base-devel bash scripts/ci-validate.sh
   fi

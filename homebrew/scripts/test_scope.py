@@ -29,7 +29,7 @@ class ScopedSyncTests(unittest.TestCase):
                 self.assertEqual(result.returncode, 0, result.stderr)
                 suffix = f' {expected}' if expected else ''
                 self.assertEqual(calls, [f'python3 homebrew/scripts/sync.py{suffix}',
-                                         f'bash homebrew/scripts/test-install.sh{suffix}',
+                                         'python3 homebrew/scripts/sync.py --validate',
                                          'bash scripts/commit-generated.sh homebrew'])
 
     def test_invalid_project_stops_before_sync(self):

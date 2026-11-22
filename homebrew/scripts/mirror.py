@@ -26,6 +26,7 @@ REMOTE = 'https://cnb.cool/'+REPOSITORY
 OWNER = 'Managed by fansion314/packages homebrew/scripts/mirror.py (schema 1).'
 RECEIPT = 'homebrew-candidate.json'
 PROVENANCE = 'homebrew/mirror.json'
+ACCEPTANCE = 'homebrew/accepted.json'
 
 
 def git(directory, *args, env=None):
@@ -169,7 +170,35 @@ def authenticated_push(output, dry_run=False):
                                'if remote main advanced')
 
 
-def prepare(output, source=ROOT, remote=REMOTE, client=None):
+def managed_files(records):
+    result = {'README.md': readme()}
+    for project, info in records.items():
+        relative, text = sync.render(project, info, source='cnb')
+        result[relative] = text
+        result[f'homebrew/releases/{project}.json'] = json.dumps(
+            {**info, 'upstream_url': info['url'], 'url': sync.cnb_url(project, info)},
+            indent=2, sort_keys=True)+'\n'
+    return result
+
+
+def content_identity(files):
+    policy = hashlib.sha256()
+    for filename in ['mirror.py', 'sync.py', 'test-install.sh', 'test-switch.sh', 'test-clash-momo.sh']:
+        policy.update((Path(__file__).parent/filename).read_bytes())
+    return hashlib.sha256(json.dumps({'files': files, 'policy': policy.hexdigest()},
+                                     sort_keys=True).encode()).hexdigest()
+
+
+def public_object(url, expected_size):
+    request = urllib.request.Request(url, method='HEAD', headers={
+        'User-Agent': 'fansionia-homebrew-mirror', 'Cache-Control': 'no-cache'})
+    with urllib.request.urlopen(request, timeout=30) as response:
+        size = response.headers.get('Content-Length')
+        if size is None or int(size) != expected_size:
+            raise ValueError('CNB anonymous attachment size changed')
+
+
+def prepare(output, source=ROOT, remote=REMOTE, client=None, full=False):
     output, source = Path(output).resolve(), Path(source).resolve()
     if output.exists():
         raise ValueError('Candidate directory already exists; use a fresh output directory')
@@ -183,44 +212,127 @@ def prepare(output, source=ROOT, remote=REMOTE, client=None):
                     '--', remote, str(output)], check=True)
     base = git(output, 'rev-parse', 'HEAD')
     previous_marker = output/PROVENANCE
-    if previous_marker.exists():
-        previous = json.loads(previous_marker.read_text())
+    previous = json.loads(previous_marker.read_text()) if previous_marker.exists() else {}
+    if previous:
         if previous.get('owner') != OWNER or previous.get('repository') != REPOSITORY:
             raise ValueError('CNB Homebrew snapshot is not owned by this publisher')
     elif (output/'README.md').read_text().splitlines()[0] != '# Fansionia pacman mirror':
         raise ValueError('Refusing to adopt an unknown CNB repository')
-    # Validate all records before uploading any new files.
+    files = managed_files(records)
+    identity = content_identity(files)
+    accepted_path = output/ACCEPTANCE
+    accepted = json.loads(accepted_path.read_text()) if accepted_path.exists() else {}
+    current = all((output/path).is_file() and (output/path).read_text() == text for path, text in files.items())
+    needed = full or not current or previous.get('identity') != identity or accepted.get('identity') != identity
+    if os.environ.get('GITHUB_OUTPUT'):
+        with open(os.environ['GITHUB_OUTPUT'], 'a') as stream:
+            stream.write(f'needed={str(needed).lower()}\nidentity={identity}\n')
+    if not needed:
+        print('CNB Homebrew content already publicly accepted; skipping downloads and installation')
+        return {'needed': False, 'identity': identity, 'projects': []}
+    changed = {}
     for project, info in records.items():
-        record = {**info, 'upstream_url': info['url'], 'url': sync.cnb_url(project, info)}
+        relative, text = sync.render(project, info, source='cnb')
+        changed[project] = hashlib.sha256(text.encode()).hexdigest()
+        record = json.loads(files[f'homebrew/releases/{project}.json'])
         path = output/'homebrew/releases'/f'{project}.json'
         if path.exists():
             compare(json.loads(path.read_text()), record)
+    accepted_projects = accepted.get('projects', {}) if accepted.get('policy') == policy_identity() else {}
+    projects = sync.validation_projects(changed, accepted_projects, full)
+    if not projects:
+        projects = ['mihomomo']
     if client is None:
-        # Authenticate receive-pack before downloading or uploading any archives.
         authenticated_push(output, dry_run=True)
         client = Client(REPOSITORY, owner=OWNER, user_agent='fansionia-homebrew-mirror')
-    paths = []
+    objects = dict(previous.get('objects', {}))
+    transferred = reused = 0
     for project, info in records.items():
+        tag = sync.cnb_tag(project, info)
+        names = [info['asset'], info['asset']+'.sha256']
+        reusable = []
+        for name in names:
+            url = location(REPOSITORY, tag, name)
+            receipt = objects.get(url)
+            valid = bool(receipt and receipt.get('verified') and receipt.get('asset_id') is not None)
+            if valid and name == info['asset'] and receipt['sha256'] != info['sha256']:
+                raise ValueError('Refusing to replace immutable CNB archive receipt')
+            if valid and not full:
+                asset = client.asset(receipt)
+                valid = bool(asset and str(asset['id']) == str(receipt['asset_id']))
+                if valid:
+                    public_object(url, receipt['size'])
+            reusable.append(valid and not full)
+        if all(reusable):
+            reused += 2
+            continue
         with tempfile.TemporaryDirectory(prefix='fansionia-homebrew-assets-') as tmp:
             archive, checksum = source_files(info, Path(tmp))
-            for path in (archive, checksum):
-                item = {'tag': sync.cnb_tag(project, info), 'title': f"Homebrew · {project} {info['version']}",
+            for path, reuse in zip((archive, checksum), reusable):
+                if reuse:
+                    reused += 1
+                    continue
+                item = {'tag': tag, 'title': f"Homebrew · {project} {info['version']}",
                         'filename': path.name, 'sha256': digest(path), 'size': path.stat().st_size}
                 client.upload(item, path)
-                verify_remote(location(REPOSITORY, item['tag'], item['filename']), item['sha256'])
-        relative, text = sync.render(project, info, source='cnb')
+                url = location(REPOSITORY, tag, path.name)
+                verify_remote(url, item['sha256'])
+                asset = client.asset(item, refresh=True)
+                if asset is None:
+                    raise ValueError('CNB attachment disappeared after verification')
+                objects[url] = {**item, 'verified': True, 'asset_id': asset['id']}
+                transferred += item['size']
+    for relative, text in files.items():
         (output/relative).parent.mkdir(parents=True, exist_ok=True)
         (output/relative).write_text(text)
-        paths.append(relative)
-        relative = f'homebrew/releases/{project}.json'
-        write_json(output/relative, {**info, 'upstream_url': info['url'], 'url': sync.cnb_url(project, info)})
-        paths.append(relative)
-    (output/'README.md').write_text(readme())
-    write_json(output/PROVENANCE, {'schema': 1, 'owner': OWNER, 'repository': REPOSITORY, 'source_sha': source_sha})
-    paths.extend(['README.md', PROVENANCE])
-    write_json(output/'.git'/RECEIPT, {'base': base, 'remote': remote, 'source_sha': source_sha,
-                                     'files': {p: digest(output/p) for p in paths}})
-    print(f'Prepared verified CNB Homebrew candidate from {source_sha}')
+    write_json(output/PROVENANCE, {'schema': 1, 'owner': OWNER, 'repository': REPOSITORY,
+        'source_sha': source_sha if not current or previous.get('identity') != identity else previous['source_sha'],
+        'identity': identity, 'objects': objects})
+    paths = [*files, PROVENANCE]
+    receipt = {'base': base, 'remote': remote, 'source_sha': source_sha, 'identity': identity,
+               'projects': projects, 'project_inputs': changed,
+               'files': {path: digest(output/path) for path in paths}}
+    write_json(output/'.git'/RECEIPT, receipt)
+    if os.environ.get('GITHUB_OUTPUT'):
+        with open(os.environ['GITHUB_OUTPUT'], 'a') as stream:
+            stream.write('projects='+json.dumps(projects)+'\n')
+    summary = f'Homebrew CNB downloaded verification bytes {transferred}; reused {reused} attachments'
+    print(summary)
+    if os.environ.get('GITHUB_STEP_SUMMARY'):
+        with open(os.environ['GITHUB_STEP_SUMMARY'], 'a') as stream:
+            stream.write(summary+'\n')
+    return {'needed': True, 'identity': identity, 'projects': projects}
+
+
+def policy_identity():
+    return content_identity({})
+
+
+def accept(output, expected):
+    output = Path(output).resolve()
+    if git(output, 'remote', 'get-url', 'origin') != REMOTE:
+        raise ValueError('Unexpected CNB acceptance remote')
+    if git(output, 'diff', '--cached', '--name-only'):
+        raise ValueError('Unexpected staged files before recording acceptance')
+    provenance = json.loads((output/PROVENANCE).read_text())
+    records = {project: json.loads((output/'homebrew/releases'/f'{project}.json').read_text())
+               for project in sync.PROJECTS}
+    # Convert mirror records back to the exact upstream records used by rendering.
+    records = {p: {k: v for k, v in dict(info, url=info['upstream_url']).items() if k != 'upstream_url'}
+               for p, info in records.items()}
+    files = managed_files(records)
+    if provenance.get('identity') != expected or content_identity(files) != expected or any(
+            (output/path).read_text() != text for path, text in files.items()):
+        raise ValueError('Public Homebrew content changed after installation tests')
+    projects = {p: hashlib.sha256(sync.render(p, info, source='cnb')[1].encode()).hexdigest()
+                for p, info in records.items()}
+    write_json(output/ACCEPTANCE, {'schema': 1, 'identity': expected, 'policy': policy_identity(), 'projects': projects})
+    git(output, 'add', '--', ACCEPTANCE)
+    if subprocess.run(['git', '-C', str(output), 'diff', '--cached', '--quiet'], check=False).returncode:
+        git(output, '-c', 'user.name=github-actions[bot]', '-c',
+            'user.email=41898282+github-actions[bot]@users.noreply.github.com',
+            'commit', '-m', 'chore(homebrew): record public installation acceptance')
+        authenticated_push(output)
 
 
 def publish(output):
@@ -249,12 +361,16 @@ def publish(output):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('command', choices=['prepare', 'publish'])
+    parser.add_argument('command', choices=['prepare', 'publish', 'accept'])
     parser.add_argument('--output-root', type=Path, default=ROOT/'.work/homebrew-cnb')
+    parser.add_argument('--identity', default='')
+    parser.add_argument('--full', action='store_true')
     args = parser.parse_args()
     try:
         if args.command == 'prepare':
-            prepare(args.output_root)
+            prepare(args.output_root, full=args.full)
+        elif args.command == 'accept':
+            accept(args.output_root, args.identity)
         else:
             publish(args.output_root)
     except subprocess.CalledProcessError as error:

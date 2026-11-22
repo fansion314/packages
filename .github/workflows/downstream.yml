@@ -18,8 +18,6 @@ on:
         type: choice
         options: [all, arch, macos, windows]
         default: all
-  schedule:
-    - cron: '4,19,34,49 * * * *'
 permissions:
   contents: read
 jobs:
@@ -60,8 +58,7 @@ jobs:
     secrets: inherit
   pacman:
     needs: validate
-    # pacman has its own half-hour schedule; retain immediate release dispatches.
-    if: (inputs.platform == '' || inputs.platform == 'all' || inputs.platform == 'arch') && github.event_name != 'schedule'
+    if: inputs.platform == '' || inputs.platform == 'all' || inputs.platform == 'arch'
     permissions:
       contents: write
       pages: write
@@ -70,7 +67,6 @@ jobs:
     secrets: inherit
   windows:
     needs: validate
-    # This single Windows package has its own half-hour recovery schedule.
-    if: needs.validate.outputs.windows == 'true' && github.event_name != 'schedule'
+    if: needs.validate.outputs.windows == 'true'
     uses: ./.github/workflows/sync-windows-clash-momo.yml
     secrets: inherit

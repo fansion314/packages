@@ -5,7 +5,20 @@ on:
       project:
         type: string
         default: ""
+      verification:
+        type: string
+        default: incremental
   workflow_dispatch:
+    inputs:
+      project:
+        description: Optional project ID (empty checks all)
+        type: string
+        default: ''
+      verification:
+        description: Verification coverage
+        type: choice
+        options: [incremental, full]
+        default: incremental
   schedule:
     - cron: '23 * * * *'
   push:
@@ -38,4 +51,5 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           PROJECT: ${{ inputs.project }}
+          FULL_VERIFY: ${{ inputs.verification == 'full' }}
         run: bash scripts/sync.sh aur "$PROJECT"

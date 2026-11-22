@@ -3,10 +3,12 @@
 import argparse
 import hashlib
 import json
+import os
 from pathlib import Path
 import re
 import subprocess
 import tempfile
+import time
 from urllib.parse import quote
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -75,17 +77,25 @@ def candidates(project, releases):
 
 def verified_digest(info):
     with tempfile.TemporaryDirectory(prefix='dnr-tap-') as directory:
-        subprocess.run(['gh', 'release', 'download', info['tag'], '--repo', info['repository'],
-                        '--pattern', info['asset'], '--pattern', info['asset'] + '.sha256', '--dir', directory], check=True)
-        archive = Path(directory) / info['asset']
-        fields = Path(str(archive) + '.sha256').read_text().split()
+        args = ['gh', 'release', 'download', info['tag'], '--repo', info['repository'],
+                '--pattern', info['asset'] + '.sha256', '--dir', directory]
+        github_digest = info.get('github_digest')
+        if github_digest is not None and not re.fullmatch(r'sha256:[a-f0-9]{64}', github_digest):
+            raise ValueError('Invalid GitHub release asset digest')
+        if not github_digest:
+            args.extend(['--pattern', info['asset']])
+        subprocess.run(args, check=True)
+        fields = (Path(directory)/(info['asset']+'.sha256')).read_text().split()
         if len(fields) != 2 or fields[1] != info['asset'] or not re.fullmatch('[a-f0-9]{64}', fields[0]):
             raise ValueError('Invalid checksum file')
-        with archive.open('rb') as stream:
-            digest = hashlib.file_digest(stream, 'sha256').hexdigest()
-        if digest != fields[0] or (info['github_digest'] and info['github_digest'] != 'sha256:' + digest):
+        if github_digest:
+            actual = github_digest.removeprefix('sha256:')
+        else:
+            with (Path(directory)/info['asset']).open('rb') as stream:
+                actual = hashlib.file_digest(stream, 'sha256').hexdigest()
+        if actual != fields[0]:
             raise ValueError('Release checksum mismatch')
-        return digest
+        return actual
 
 
 def cnb_tag(project, info):
@@ -286,9 +296,65 @@ def sync(project):
     print(f'{project}: {info["tag"]} revision {info["revision"]}, sha256 {info["sha256"]}')
 
 
+def validation_inputs(root=TAP_ROOT):
+    root = Path(root)
+    policy = hashlib.sha256()
+    for filename in ['sync.py', 'test-install.sh', 'test-clash-momo.sh']:
+        policy.update((Path(__file__).parent/filename).read_bytes())
+    inputs = {}
+    for project in PROJECTS:
+        record = json.loads((root/'homebrew/releases'/f'{project}.json').read_text())
+        relative, _ = render(project, record)
+        inputs[project] = hashlib.sha256(json.dumps({
+            'release': record, 'recipe': (root/relative).read_text(),
+            'policy': policy.hexdigest()}, sort_keys=True).encode()).hexdigest()
+    return inputs
+
+
+def validation_projects(current, accepted, full=False):
+    changed = set(current) if full else {p for p in current if accepted.get(p) != current[p]}
+    if 'dnr' in changed:
+        changed.update(['pi-dnr', 'etcher-dnr'])
+    if 'mihomomo' in changed:
+        changed.add('clash-momo')
+    return [p for p in ['dnr', 'pi-dnr', 'etcher-dnr', 'mihomomo', 'clash-momo'] if p in changed]
+
+
+def install(projects):
+    started = time.monotonic()
+    subprocess.run(['bash', str(Path(__file__).with_name('test-install.sh')), *projects], check=True)
+    origin = os.environ.get('HOMEBREW_TAP_URL', 'https://github.com/fansion314/packages.git')
+    message = f'Homebrew installation from {origin} passed for {", ".join(projects)} in {time.monotonic()-started:.1f}s'
+    print(message)
+    if os.environ.get('GITHUB_STEP_SUMMARY'):
+        with open(os.environ['GITHUB_STEP_SUMMARY'], 'a') as stream:
+            stream.write(message+'\n')
+
+
+def validate():
+    receipt = ROOT/'verification.json'
+    current = validation_inputs()
+    previous = json.loads(receipt.read_text()).get('projects', {}) if receipt.exists() else {}
+    projects = validation_projects(current, previous, os.environ.get('FULL_VERIFY') == '1')
+    if projects:
+        install(projects)
+        receipt.write_text(json.dumps({'schema': 1, 'projects': current}, indent=2, sort_keys=True)+'\n')
+    else:
+        print('Homebrew primary recipes already accepted')
+    return projects
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('projects', nargs='*', choices=list(PROJECTS))
+    actions = parser.add_mutually_exclusive_group()
+    actions.add_argument('--validate', action='store_true')
+    actions.add_argument('--install', action='store_true')
     args = parser.parse_args()
-    for project in args.projects or PROJECTS:
-        sync(project)
+    if args.validate:
+        validate()
+    elif args.install:
+        install(args.projects or list(PROJECTS))
+    else:
+        for project in args.projects or PROJECTS:
+            sync(project)

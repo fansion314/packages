@@ -54,6 +54,79 @@ class SyncTests(unittest.TestCase):
                 sync.pin_binary(files, 'fansion314/app', FakeGitHub())
 
 
+class IncrementalBinaryTests(unittest.TestCase):
+    def setUp(self):
+        self.temporary = tempfile.TemporaryDirectory()
+        self.addCleanup(self.temporary.cleanup)
+        self.archive = Path(self.temporary.name)/'app.tar.gz'
+        self.archive.write_bytes(b'verified archive')
+        self.url = 'https://github.com/fansion314/app/releases/download/v1/app.tar.gz'
+        self.digest = hashlib.sha256(self.archive.read_bytes()).hexdigest()
+        self.files = {'PKGBUILD': b'pkgname=app-bin\nsha256sums=(SKIP)\n',
+                      '.SRCINFO': ('pkgver = 1.0.0\npkgrel = 1\nsource = '+self.url+'\nsha256sums = SKIP\n').encode()}
+        self.downloads = []
+        test = self
+
+        class FakeGitHub:
+            def asset(self, repository, url):
+                return {'name': test.archive.name, 'digest': 'sha256:'+test.digest,
+                        'size': test.archive.stat().st_size}
+
+            def download(self, url, expected):
+                test.downloads.append(url)
+                return test.archive
+
+        self.github = FakeGitHub()
+        pinned = dict(self.files)
+        assets = sync.pin_binary(pinned, 'fansion314/app', self.github)
+        self.receipt = {'version': '0:1.0.0-1', 'files': sync.file_hashes(pinned), 'assets': assets}
+        self.downloads.clear()
+
+    def test_unchanged_generated_recipe_uses_api_digests_without_body_downloads(self):
+        files = dict(self.files)
+        self.assertEqual(sync.pin_binary(files, 'fansion314/app', self.github, self.receipt),
+                         self.receipt['assets'])
+        self.assertEqual(self.downloads, [])
+        self.assertEqual(sync.file_hashes(files), self.receipt['files'])
+
+    def test_full_verification_and_changed_recipe_read_assets(self):
+        sync.pin_binary(dict(self.files), 'fansion314/app', self.github, self.receipt, full=True)
+        self.assertEqual(self.downloads, [self.url])
+        self.downloads.clear()
+        files = {**self.files, 'PKGBUILD': self.files['PKGBUILD']+b'# launcher fix\n'}
+        sync.pin_binary(files, 'fansion314/app', self.github, self.receipt)
+        self.assertEqual(self.downloads, [self.url])
+
+    def test_same_version_asset_change_fails_before_downloading(self):
+        self.digest = 'f'*64
+        with self.assertRaisesRegex(ValueError, 'Same-version binary assets changed'):
+            sync.pin_binary(dict(self.files), 'fansion314/app', self.github, self.receipt)
+        self.assertEqual(self.downloads, [])
+
+    def test_new_checksum_companion_must_match_downloaded_archive(self):
+        companion = Path(self.temporary.name)/'app.tar.gz.sha256'
+        companion.write_text('0'*64+'  app.tar.gz\n')
+        companion_url = self.url+'.sha256'
+        files = dict(self.files)
+        files['.SRCINFO'] += ('source = '+companion_url+'\nsha256sums = SKIP\n').encode()
+        original_asset = self.github.asset
+        original_download = self.github.download
+
+        def asset(repository, url):
+            if url == companion_url:
+                return {'name': companion.name, 'digest': 'sha256:'+hashlib.sha256(companion.read_bytes()).hexdigest(),
+                        'size': companion.stat().st_size}
+            return original_asset(repository, url)
+
+        def download(url, expected):
+            return companion if url == companion_url else original_download(url, expected)
+
+        with patch.object(self.github, 'asset', side_effect=asset), \
+             patch.object(self.github, 'download', side_effect=download), \
+             self.assertRaisesRegex(ValueError, 'companion checksum mismatch'):
+            sync.pin_binary(files, 'fansion314/app', self.github)
+
+
 if __name__ == '__main__':
     unittest.main()
 
@@ -249,6 +322,11 @@ class RetiredProjectTests(unittest.TestCase):
         # A later full sync sees the declaration and safely does nothing.
         self.run_main([])
         self.assertEqual(json.loads((self.root/'.cache/changed.json').read_text()), [])
+
+    def test_manual_full_mode_validates_unchanged_selected_recipes(self):
+        synchronize = self.run_main(['--full', 'mygo-music'])
+        self.assertTrue(synchronize.call_args.kwargs['full'])
+        self.assertEqual(json.loads((self.root/'.cache/changed.json').read_text()), ['mygo-music'])
 
     def test_failed_successor_sync_keeps_old_recipes_and_state(self):
         for error in [ValueError('no published bundle'), ValueError('checksum mismatch')]:

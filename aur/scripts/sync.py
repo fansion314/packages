@@ -159,10 +159,10 @@ def recipe_files(project, github):
     return commit, files
 
 
-def pin_binary(files, repository, github):
+def pin_binary(files, repository, github, previous=None, full=False):
     srcinfo = files['.SRCINFO'].decode()
     meta = metadata(srcinfo)
-    overrides, assets = {}, []
+    overrides, assets, downloads = {}, [], []
     for key in ['source', 'source_x86_64']:
         if key not in meta:
             continue
@@ -171,7 +171,7 @@ def pin_binary(files, repository, github):
         if len(meta[key]) != len(checksums):
             raise ValueError('Every binary source needs a SHA-256 field')
         pinned = []
-        downloaded = {}
+        sources = {}
         for source, expected in zip(meta[key], checksums):
             filename, url = source_name(source)
             if '://' not in url:
@@ -181,20 +181,12 @@ def pin_binary(files, repository, github):
             else:
                 asset = github.asset(repository, url)
                 actual = digest_of_asset(asset)
-                file = github.download(url, actual)
-                downloaded[filename] = file
+                sources[filename] = (url, actual)
                 assets.append({'url': url, 'sha256': actual, 'size': asset['size']})
             if expected != 'SKIP' and expected != actual:
                 raise ValueError(f'Upstream recipe checksum disagrees with released bytes: {source}')
             pinned.append(actual)
-        for filename, file in downloaded.items():
-            if filename.endswith('.sha256'):
-                fields = file.read_text().split()
-                if len(fields) != 2 or fields[1] != filename[:-7] or fields[1] not in downloaded:
-                    raise ValueError('Invalid release checksum companion')
-                with downloaded[fields[1]].open('rb') as stream:
-                    if fields[0] != hashlib.file_digest(stream, 'sha256').hexdigest():
-                        raise ValueError('Release companion checksum mismatch')
+        downloads.append(sources)
         if pinned != checksums:
             overrides[digest_key] = pinned
     if overrides:
@@ -210,7 +202,29 @@ def pin_binary(files, repository, github):
                 indexes[key] += 1
             lines.append(line)
         files['.SRCINFO'] = ('\n'.join(lines) + '\n').encode()
+    identity = {'version': version(meta), 'files': file_hashes(files), 'assets': assets} if previous else None
+    if previous and previous['version'] == identity['version'] and previous['assets'] != assets:
+        raise ValueError('Same-version binary assets changed; upstream must increment pkgrel')
+    # Committed state is written only after the disposable Arch validation job
+    # succeeds. Match both generated recipes and current Release API digests.
+    if not full and previous is not None and previous == identity:
+        print(f"Reused verified binary recipe and {len(assets)} asset digests")
+        return assets
+    for sources in downloads:
+        downloaded = {name: github.download(url, expected) for name, (url, expected) in sources.items()}
+        for filename, file in downloaded.items():
+            if filename.endswith('.sha256'):
+                fields = file.read_text().split()
+                if len(fields) != 2 or fields[1] != filename[:-7] or fields[1] not in downloaded:
+                    raise ValueError('Invalid release checksum companion')
+                with downloaded[fields[1]].open('rb') as stream:
+                    if fields[0] != hashlib.file_digest(stream, 'sha256').hexdigest():
+                        raise ValueError('Release companion checksum mismatch')
     return assets
+
+
+def file_hashes(files):
+    return {path: hashlib.sha256(data).hexdigest() for path, data in sorted(files.items())}
 
 
 def check_local_sources(files):
@@ -227,7 +241,7 @@ def check_local_sources(files):
                 raise ValueError(f'Local source checksum mismatch: {name}')
 
 
-def sync(project, github):
+def sync(project, github, full=False):
     reference, upstream = recipe_files(project, github)
     proposals, records = {}, {}
     state_path = ROOT/'state'/f'{project["id"]}.json'
@@ -242,9 +256,9 @@ def sync(project, github):
         if meta['pkgbase'] != [name] or meta['pkgname'] != [name] or meta['arch'] != ['x86_64']:
             raise ValueError(f'Unexpected package identity or architecture: {name}')
         check_local_sources(files)
-        assets = pin_binary(files, project['repository'], github) if name.endswith('-bin') else []
-        file_digests = {path: hashlib.sha256(data).hexdigest() for path, data in sorted(files.items())}
-        previous = old.get('packages', {}).get(name)
+        previous = old.get('packages', {}).get(name) if old.get('repository') == project['repository'] else None
+        assets = pin_binary(files, project['repository'], github, previous, full) if name.endswith('-bin') else []
+        file_digests = file_hashes(files)
         if previous and previous['version'] == version(meta) and previous['assets'] != assets:
             raise ValueError(f'{name}: same-version binary assets changed; upstream must increment pkgrel')
         records[name] = {'version': version(meta), 'files': file_digests, 'assets': assets}
@@ -331,6 +345,7 @@ def retire_projects(project, projects):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('projects', nargs='*')
+    parser.add_argument('--full', action='store_true', help='Read and verify every selected binary asset')
     args = parser.parse_args()
     manifest = json.loads((ROOT/'sources.json').read_text())
     projects = manifest['projects']
@@ -341,12 +356,14 @@ def main():
     selected = []
     for project in projects:
         if not args.projects or project['id'] in args.projects:
-            changed.extend(sync(project, github))
+            changed.extend(sync(project, github, full=args.full))
             selected.append(project)
     for project in selected:
         retire_projects(project, projects)
     cache = ROOT/'.cache'
     cache.mkdir(exist_ok=True)
+    if args.full:
+        changed = [name for project in selected for name in project['packages']]
     (cache/'changed.json').write_text(json.dumps(changed) + '\n')
 
 

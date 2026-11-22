@@ -17,10 +17,15 @@ spec.loader.exec_module(mirror)
 class FakeClient:
     def __init__(self):
         self.uploads = []
+        self.assets = {}
 
     def upload(self, item, source):
         self.uploads.append((item.copy(), Path(source).read_bytes()))
+        self.assets[(item['tag'], item['filename'])] = {'id': len(self.uploads), **item}
         return True
+
+    def asset(self, item, refresh=False):
+        return self.assets.get((item['tag'], item['filename']))
 
 
 class HomebrewMirrorTests(unittest.TestCase):
@@ -66,10 +71,10 @@ class HomebrewMirrorTests(unittest.TestCase):
         checksum.write_text(info['sha256']+'  '+info['asset']+'\n')
         return archive, checksum
 
-    def prepare(self):
-        with patch.object(mirror, 'source_files', side_effect=self.files), patch.object(mirror, 'verify_remote') as verify:
+    def prepare(self, verified=10):
+        with patch.object(mirror, 'source_files', side_effect=self.files), patch.object(mirror, 'verify_remote') as verify, patch.object(mirror, 'public_object'):
             mirror.prepare(self.candidate, self.source, str(self.remote), self.client)
-        self.assertEqual(verify.call_count, 10)
+        self.assertEqual(verify.call_count, verified)
 
     def publish(self):
         with patch.object(mirror, 'REMOTE', str(self.remote)), patch.dict(os.environ, CNB_MIRROR_TOKEN='test-only'):
@@ -150,7 +155,7 @@ class HomebrewMirrorTests(unittest.TestCase):
         self.publish()
         tip = self.run_git(self.remote, 'rev-parse', 'main')
         self.candidate = self.root/'second'
-        self.prepare()
+        self.prepare(verified=0)
         self.publish()
         self.assertEqual(self.run_git(self.remote, 'rev-parse', 'main'), tip)
 
@@ -171,6 +176,60 @@ class HomebrewMirrorTests(unittest.TestCase):
         download.assert_not_called()
         client.assert_not_called()
         self.assertEqual(self.run_git(self.remote, 'rev-parse', 'main'), self.base)
+
+    def test_public_acceptance_skips_unchanged_archives_and_unrelated_commits(self):
+        self.prepare()
+        self.publish()
+        identity = json.loads((self.candidate/mirror.PROVENANCE).read_text())['identity']
+        with patch.object(mirror, 'REMOTE', str(self.remote)), patch.dict(os.environ, CNB_MIRROR_TOKEN='test-only'):
+            mirror.accept(self.candidate, identity)
+        (self.source/'unrelated.txt').write_text('maintenance only')
+        self.run_git(self.source, 'add', '.')
+        self.run_git(self.source, 'commit', '-m', 'unrelated')
+        with patch.object(mirror, 'source_files') as source, patch.object(mirror, 'verify_remote') as verify:
+            result = mirror.prepare(self.root/'accepted', self.source, str(self.remote), self.client)
+        self.assertFalse(result['needed'])
+        source.assert_not_called()
+        verify.assert_not_called()
+
+    def test_public_failure_keeps_retry_required_but_reuses_verified_attachments(self):
+        self.prepare()
+        self.publish()
+        with patch.object(mirror, 'source_files') as source, patch.object(mirror, 'public_object'):
+            result = mirror.prepare(self.root/'retry', self.source, str(self.remote), self.client)
+        self.assertTrue(result['needed'])
+        self.assertEqual(set(result['projects']), set(mirror.sync.PROJECTS))
+        source.assert_not_called()
+
+    def test_replaced_attachment_is_fully_verified_before_receipt_changes(self):
+        self.prepare()
+        self.publish()
+        item = self.client.assets[next(iter(self.client.assets))]
+        item['id'] = 999
+        with patch.object(mirror, 'source_files', side_effect=self.files), patch.object(mirror, 'public_object'), \
+                patch.object(mirror, 'verify_remote') as verify:
+            mirror.prepare(self.root/'retry', self.source, str(self.remote), self.client)
+        self.assertEqual(verify.call_count, 1)
+
+    def test_full_verification_rechecks_accepted_archives(self):
+        self.prepare()
+        self.publish()
+        identity = json.loads((self.candidate/mirror.PROVENANCE).read_text())['identity']
+        with patch.object(mirror, 'REMOTE', str(self.remote)), patch.dict(os.environ, CNB_MIRROR_TOKEN='test-only'):
+            mirror.accept(self.candidate, identity)
+        with patch.object(mirror, 'source_files', side_effect=self.files), patch.object(mirror, 'verify_remote') as verify:
+            result = mirror.prepare(self.root/'full', self.source, str(self.remote), self.client, full=True)
+        self.assertTrue(result['needed'])
+        self.assertEqual(verify.call_count, 10)
+        self.assertEqual(set(result['projects']), set(mirror.sync.PROJECTS))
+
+    def test_acceptance_rejects_changed_managed_content(self):
+        self.prepare()
+        self.publish()
+        identity = json.loads((self.candidate/mirror.PROVENANCE).read_text())['identity']
+        (self.candidate/'Formula/dnr.rb').write_text('modified')
+        with patch.object(mirror, 'REMOTE', str(self.remote)), self.assertRaisesRegex(ValueError, 'changed'):
+            mirror.accept(self.candidate, identity)
 
     def test_dry_run_authenticates_without_updating_refs(self):
         self.run_git(self.root, 'clone', str(self.remote), str(self.candidate))
