@@ -183,6 +183,15 @@ class NativeRepositoryTests(unittest.TestCase):
                             site/'snapshots'/reduced/'x86_64'/f'fansionia.{extension}.tar.gz')], text=True)
                         self.assertIn('fixture-1.0.0-1/desc', listing)
                         self.assertNotIn('external-', listing)
+
+                    # Add back just the changed archive to the verified base.
+                    external_record = dict(external_record, tag='upstream-fixture-reintroduced',
+                        archive_url=frozen['archive_url'], signature_archive_url=frozen['signature_archive_url'])
+                    discover.return_value = [package, external_record]
+                    with patch.object(repository, 'download', side_effect=download) as downloads:
+                        repository.build(site, settings, reduced)
+                    self.assertTrue(downloads.call_args_list)
+                    self.assertTrue(all('external-' in call.args[0] for call in downloads.call_args_list))
             finally:
                 subprocess.run(['gpgconf', '--homedir', str(home), '--kill', 'gpg-agent'], check=False)
 

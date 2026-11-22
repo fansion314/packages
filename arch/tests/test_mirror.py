@@ -310,7 +310,11 @@ class MirrorTests(unittest.TestCase):
         self.assertIn('/mirror/x86_64/foo-3-1-any.pkg.tar.zst', assets)
         self.assertIn('/mirror/keys/fansionia.asc', assets)
         self.assertIn('snapshot-'+b, assets['/mirror/x86_64/fansionia.db'])
-        mirror.finish(self.site, self.settings, c, self.public(c, [a, b, c]))
+        acceptance = {'snapshot': c, 'policy': 'fixture', 'packages': {}}
+        mirror.finish(self.site, self.settings, c, self.public(c, [a, b, c]), acceptance)
+        journal = (self.site/mirror.STATE).read_bytes()
+        mirror.finish(self.site, self.settings, c, self.public(c, [b, c]), acceptance)
+        self.assertEqual((self.site/mirror.STATE).read_bytes(), journal)
         with self.assertRaisesRegex(ValueError, 'retained public'):
             mirror.prune(self.site, self.settings, self.client, self.public(c, [a, b, c]))
         mirror.prune(self.site, self.settings, self.client, self.public(c, [b, c]))

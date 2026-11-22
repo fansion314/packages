@@ -446,8 +446,14 @@ def finish(site, settings, candidate, public=None, acceptance=None):
     from state import public_status
     public = public if public is not None else public_status()
     state = read_state(site, settings)
-    if state['pending'] != candidate or public.get('active') != candidate or public.get('phase') != 'active' or \
+    if public.get('active') != candidate or public.get('phase') != 'active' or \
             public.get('mirror', {}).get('active') != candidate:
+        raise ValueError('Both public origins must serve the accepted candidate before retention changes')
+    if state['pending'] != candidate:
+        if (not state['pending'] and state['cleanup_pending'] and state['successful'] and
+                state['successful'][-1] == candidate and acceptance is not None and
+                state.get('accepted_install') == acceptance):
+            return
         raise ValueError('Both public origins must serve the accepted candidate before retention changes')
     if not state['snapshots'][candidate]['verified']:
         raise ValueError('Unverified mirror candidate')
