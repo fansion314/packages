@@ -507,7 +507,7 @@
     "policy": "7a231e46356cf366e9daa62ed135a0691fa42dcb6b6da014b76be44ef9bd31c9",
     "snapshot": "86a1eba30bc78563fe5d8179044ba937"
   },
-  "cleanup_pending": true,
+  "cleanup_pending": false,
   "keys": {
     "/keys/fansionia.asc": {
       "filename": "fansionia.asc",
@@ -1383,150 +1383,6 @@
         "sha256": "8b8018a90f4f21cd7e1630d3fd1053cfedbcff345608be7789cefbac271c5549"
       }
     },
-    "https://cnb.cool/fansionia/packages/-/releases/download/snapshot-b9814a51e918639b9e9bf4e6bab4ff02/fansionia.db": {
-      "filename": "fansionia.db",
-      "sha256": "b0f3d7c050c949abc2b1fde3c2b1607eebf80c1a71c3429f6e5234a868b42309",
-      "size": 11909,
-      "tag": "snapshot-b9814a51e918639b9e9bf4e6bab4ff02",
-      "verified": {
-        "attachment": {
-          "hash_algo": "sha256",
-          "hash_value": "b0f3d7c050c949abc2b1fde3c2b1607eebf80c1a71c3429f6e5234a868b42309",
-          "id": "2124106367191785472",
-          "name": "fansionia.db",
-          "size": 11909
-        },
-        "sha256": "b0f3d7c050c949abc2b1fde3c2b1607eebf80c1a71c3429f6e5234a868b42309"
-      }
-    },
-    "https://cnb.cool/fansionia/packages/-/releases/download/snapshot-b9814a51e918639b9e9bf4e6bab4ff02/fansionia.db.sig": {
-      "filename": "fansionia.db.sig",
-      "sha256": "3b5cbb3636395538fdc8657cd15e37bb6645a194db872aad9fb7baf8c3f6d8a4",
-      "size": 119,
-      "tag": "snapshot-b9814a51e918639b9e9bf4e6bab4ff02",
-      "verified": {
-        "attachment": {
-          "hash_algo": "sha256",
-          "hash_value": "3b5cbb3636395538fdc8657cd15e37bb6645a194db872aad9fb7baf8c3f6d8a4",
-          "id": "2124106386493968384",
-          "name": "fansionia.db.sig",
-          "size": 119
-        },
-        "sha256": "3b5cbb3636395538fdc8657cd15e37bb6645a194db872aad9fb7baf8c3f6d8a4"
-      }
-    },
-    "https://cnb.cool/fansionia/packages/-/releases/download/snapshot-b9814a51e918639b9e9bf4e6bab4ff02/fansionia.db.tar.gz": {
-      "filename": "fansionia.db.tar.gz",
-      "sha256": "b0f3d7c050c949abc2b1fde3c2b1607eebf80c1a71c3429f6e5234a868b42309",
-      "size": 11909,
-      "tag": "snapshot-b9814a51e918639b9e9bf4e6bab4ff02",
-      "verified": {
-        "attachment": {
-          "hash_algo": "sha256",
-          "hash_value": "b0f3d7c050c949abc2b1fde3c2b1607eebf80c1a71c3429f6e5234a868b42309",
-          "id": "2124106406391750656",
-          "name": "fansionia.db.tar.gz",
-          "size": 11909
-        },
-        "sha256": "b0f3d7c050c949abc2b1fde3c2b1607eebf80c1a71c3429f6e5234a868b42309"
-      }
-    },
-    "https://cnb.cool/fansionia/packages/-/releases/download/snapshot-b9814a51e918639b9e9bf4e6bab4ff02/fansionia.db.tar.gz.sig": {
-      "filename": "fansionia.db.tar.gz.sig",
-      "sha256": "3b5cbb3636395538fdc8657cd15e37bb6645a194db872aad9fb7baf8c3f6d8a4",
-      "size": 119,
-      "tag": "snapshot-b9814a51e918639b9e9bf4e6bab4ff02",
-      "verified": {
-        "attachment": {
-          "hash_algo": "sha256",
-          "hash_value": "3b5cbb3636395538fdc8657cd15e37bb6645a194db872aad9fb7baf8c3f6d8a4",
-          "id": "2124106426344050688",
-          "name": "fansionia.db.tar.gz.sig",
-          "size": 119
-        },
-        "sha256": "3b5cbb3636395538fdc8657cd15e37bb6645a194db872aad9fb7baf8c3f6d8a4"
-      }
-    },
-    "https://cnb.cool/fansionia/packages/-/releases/download/snapshot-b9814a51e918639b9e9bf4e6bab4ff02/fansionia.files": {
-      "filename": "fansionia.files",
-      "sha256": "e65dadc3236f5be07b40fe871e9817edcedcaf42db498b0c9e50201df01071f9",
-      "size": 171596,
-      "tag": "snapshot-b9814a51e918639b9e9bf4e6bab4ff02",
-      "verified": {
-        "attachment": {
-          "hash_algo": "sha256",
-          "hash_value": "e65dadc3236f5be07b40fe871e9817edcedcaf42db498b0c9e50201df01071f9",
-          "id": "2124106447739199488",
-          "name": "fansionia.files",
-          "size": 171596
-        },
-        "sha256": "e65dadc3236f5be07b40fe871e9817edcedcaf42db498b0c9e50201df01071f9"
-      }
-    },
-    "https://cnb.cool/fansionia/packages/-/releases/download/snapshot-b9814a51e918639b9e9bf4e6bab4ff02/fansionia.files.sig": {
-      "filename": "fansionia.files.sig",
-      "sha256": "fcb5a9c935d9a5042cffc27f0e0ca859ea6d6f54b2f93fa62d47a8240e4f207c",
-      "size": 119,
-      "tag": "snapshot-b9814a51e918639b9e9bf4e6bab4ff02",
-      "verified": {
-        "attachment": {
-          "hash_algo": "sha256",
-          "hash_value": "fcb5a9c935d9a5042cffc27f0e0ca859ea6d6f54b2f93fa62d47a8240e4f207c",
-          "id": "2124106470031925248",
-          "name": "fansionia.files.sig",
-          "size": 119
-        },
-        "sha256": "fcb5a9c935d9a5042cffc27f0e0ca859ea6d6f54b2f93fa62d47a8240e4f207c"
-      }
-    },
-    "https://cnb.cool/fansionia/packages/-/releases/download/snapshot-b9814a51e918639b9e9bf4e6bab4ff02/fansionia.files.tar.gz": {
-      "filename": "fansionia.files.tar.gz",
-      "sha256": "e65dadc3236f5be07b40fe871e9817edcedcaf42db498b0c9e50201df01071f9",
-      "size": 171596,
-      "tag": "snapshot-b9814a51e918639b9e9bf4e6bab4ff02",
-      "verified": {
-        "attachment": {
-          "hash_algo": "sha256",
-          "hash_value": "e65dadc3236f5be07b40fe871e9817edcedcaf42db498b0c9e50201df01071f9",
-          "id": "2124106491385122816",
-          "name": "fansionia.files.tar.gz",
-          "size": 171596
-        },
-        "sha256": "e65dadc3236f5be07b40fe871e9817edcedcaf42db498b0c9e50201df01071f9"
-      }
-    },
-    "https://cnb.cool/fansionia/packages/-/releases/download/snapshot-b9814a51e918639b9e9bf4e6bab4ff02/fansionia.files.tar.gz.sig": {
-      "filename": "fansionia.files.tar.gz.sig",
-      "sha256": "fcb5a9c935d9a5042cffc27f0e0ca859ea6d6f54b2f93fa62d47a8240e4f207c",
-      "size": 119,
-      "tag": "snapshot-b9814a51e918639b9e9bf4e6bab4ff02",
-      "verified": {
-        "attachment": {
-          "hash_algo": "sha256",
-          "hash_value": "fcb5a9c935d9a5042cffc27f0e0ca859ea6d6f54b2f93fa62d47a8240e4f207c",
-          "id": "2124106513543630848",
-          "name": "fansionia.files.tar.gz.sig",
-          "size": 119
-        },
-        "sha256": "fcb5a9c935d9a5042cffc27f0e0ca859ea6d6f54b2f93fa62d47a8240e4f207c"
-      }
-    },
-    "https://cnb.cool/fansionia/packages/-/releases/download/snapshot-b9814a51e918639b9e9bf4e6bab4ff02/manifest.json": {
-      "filename": "manifest.json",
-      "sha256": "e668e1fe891574294c3020212b6deafa4aa8b883a5e4fe014964f4cb8edf14c0",
-      "size": 20382,
-      "tag": "snapshot-b9814a51e918639b9e9bf4e6bab4ff02",
-      "verified": {
-        "attachment": {
-          "hash_algo": "sha256",
-          "hash_value": "e668e1fe891574294c3020212b6deafa4aa8b883a5e4fe014964f4cb8edf14c0",
-          "id": "2124106226007318528",
-          "name": "manifest.json",
-          "size": 20382
-        },
-        "sha256": "e668e1fe891574294c3020212b6deafa4aa8b883a5e4fe014964f4cb8edf14c0"
-      }
-    },
     "https://cnb.cool/fansionia/packages/-/releases/download/snapshot-fafca3fa7a445cf7cf7dd0f2b5a81cd5/fansionia.db": {
       "filename": "fansionia.db",
       "sha256": "a07a81796ea652b27350522e61cd535fb3f55528f5907ae2cc0accd8b4077d9d",
@@ -2373,38 +2229,6 @@
           "size": 566
         },
         "sha256": "a89d1f6efb66273f7ab0fbb9a576dcaa13eb3d3e30ff63f79908f3cae3abb47c"
-      }
-    },
-    "https://cnb.cool/fansionia/packages/-/releases/download/upstream-home_msime_Arch-a95ef096a043f7cb9ab9468c725e771d/msime-bin-0.16.0-1-x86_64.pkg.tar.zst": {
-      "filename": "msime-bin-0.16.0-1-x86_64.pkg.tar.zst",
-      "sha256": "33eb6fbfbf3b612dec6a71367b62c68a4eded42b054074a7838c5c993e0fd752",
-      "size": 107034465,
-      "tag": "upstream-home_msime_Arch-a95ef096a043f7cb9ab9468c725e771d",
-      "verified": {
-        "attachment": {
-          "hash_algo": "sha256",
-          "hash_value": "33eb6fbfbf3b612dec6a71367b62c68a4eded42b054074a7838c5c993e0fd752",
-          "id": "2119098232660021248",
-          "name": "msime-bin-0.16.0-1-x86_64.pkg.tar.zst",
-          "size": 107034465
-        },
-        "sha256": "33eb6fbfbf3b612dec6a71367b62c68a4eded42b054074a7838c5c993e0fd752"
-      }
-    },
-    "https://cnb.cool/fansionia/packages/-/releases/download/upstream-home_msime_Arch-a95ef096a043f7cb9ab9468c725e771d/msime-bin-0.16.0-1-x86_64.pkg.tar.zst.sig": {
-      "filename": "msime-bin-0.16.0-1-x86_64.pkg.tar.zst.sig",
-      "sha256": "83c500fe0296281905b320d53db148990033461e718f33df260aa7d53b19134c",
-      "size": 566,
-      "tag": "upstream-home_msime_Arch-a95ef096a043f7cb9ab9468c725e771d",
-      "verified": {
-        "attachment": {
-          "hash_algo": "sha256",
-          "hash_value": "83c500fe0296281905b320d53db148990033461e718f33df260aa7d53b19134c",
-          "id": "2119098339136626688",
-          "name": "msime-bin-0.16.0-1-x86_64.pkg.tar.zst.sig",
-          "size": 566
-        },
-        "sha256": "83c500fe0296281905b320d53db148990033461e718f33df260aa7d53b19134c"
       }
     },
     "https://cnb.cool/fansionia/packages/-/releases/download/upstream-home_msime_Arch-c4b1513211b00122cd985778f944fa75/msime-bin-0.16.1-1-x86_64.pkg.tar.zst": {
