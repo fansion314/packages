@@ -507,7 +507,7 @@
     "policy": "7a231e46356cf366e9daa62ed135a0691fa42dcb6b6da014b76be44ef9bd31c9",
     "snapshot": "941ecd35cfe1e0c9a7174301740cc47c"
   },
-  "cleanup_pending": true,
+  "cleanup_pending": false,
   "keys": {
     "/keys/fansionia.asc": {
       "filename": "fansionia.asc",
@@ -1527,150 +1527,6 @@
         "sha256": "b38113051349d42e8f89aac2904bc489f8cc2298c9c9d637b014f85d642bd104"
       }
     },
-    "https://cnb.cool/fansionia/packages/-/releases/download/snapshot-fafca3fa7a445cf7cf7dd0f2b5a81cd5/fansionia.db": {
-      "filename": "fansionia.db",
-      "sha256": "a07a81796ea652b27350522e61cd535fb3f55528f5907ae2cc0accd8b4077d9d",
-      "size": 11901,
-      "tag": "snapshot-fafca3fa7a445cf7cf7dd0f2b5a81cd5",
-      "verified": {
-        "attachment": {
-          "hash_algo": "sha256",
-          "hash_value": "a07a81796ea652b27350522e61cd535fb3f55528f5907ae2cc0accd8b4077d9d",
-          "id": "2124452307115220992",
-          "name": "fansionia.db",
-          "size": 11901
-        },
-        "sha256": "a07a81796ea652b27350522e61cd535fb3f55528f5907ae2cc0accd8b4077d9d"
-      }
-    },
-    "https://cnb.cool/fansionia/packages/-/releases/download/snapshot-fafca3fa7a445cf7cf7dd0f2b5a81cd5/fansionia.db.sig": {
-      "filename": "fansionia.db.sig",
-      "sha256": "36c6a04ddfb3a72de56a22cfbda3b82c4784caeddc33e1eda36a1a552a4fd31d",
-      "size": 119,
-      "tag": "snapshot-fafca3fa7a445cf7cf7dd0f2b5a81cd5",
-      "verified": {
-        "attachment": {
-          "hash_algo": "sha256",
-          "hash_value": "36c6a04ddfb3a72de56a22cfbda3b82c4784caeddc33e1eda36a1a552a4fd31d",
-          "id": "2124452333547724800",
-          "name": "fansionia.db.sig",
-          "size": 119
-        },
-        "sha256": "36c6a04ddfb3a72de56a22cfbda3b82c4784caeddc33e1eda36a1a552a4fd31d"
-      }
-    },
-    "https://cnb.cool/fansionia/packages/-/releases/download/snapshot-fafca3fa7a445cf7cf7dd0f2b5a81cd5/fansionia.db.tar.gz": {
-      "filename": "fansionia.db.tar.gz",
-      "sha256": "a07a81796ea652b27350522e61cd535fb3f55528f5907ae2cc0accd8b4077d9d",
-      "size": 11901,
-      "tag": "snapshot-fafca3fa7a445cf7cf7dd0f2b5a81cd5",
-      "verified": {
-        "attachment": {
-          "hash_algo": "sha256",
-          "hash_value": "a07a81796ea652b27350522e61cd535fb3f55528f5907ae2cc0accd8b4077d9d",
-          "id": "2124452359397216256",
-          "name": "fansionia.db.tar.gz",
-          "size": 11901
-        },
-        "sha256": "a07a81796ea652b27350522e61cd535fb3f55528f5907ae2cc0accd8b4077d9d"
-      }
-    },
-    "https://cnb.cool/fansionia/packages/-/releases/download/snapshot-fafca3fa7a445cf7cf7dd0f2b5a81cd5/fansionia.db.tar.gz.sig": {
-      "filename": "fansionia.db.tar.gz.sig",
-      "sha256": "36c6a04ddfb3a72de56a22cfbda3b82c4784caeddc33e1eda36a1a552a4fd31d",
-      "size": 119,
-      "tag": "snapshot-fafca3fa7a445cf7cf7dd0f2b5a81cd5",
-      "verified": {
-        "attachment": {
-          "hash_algo": "sha256",
-          "hash_value": "36c6a04ddfb3a72de56a22cfbda3b82c4784caeddc33e1eda36a1a552a4fd31d",
-          "id": "2124452385523539968",
-          "name": "fansionia.db.tar.gz.sig",
-          "size": 119
-        },
-        "sha256": "36c6a04ddfb3a72de56a22cfbda3b82c4784caeddc33e1eda36a1a552a4fd31d"
-      }
-    },
-    "https://cnb.cool/fansionia/packages/-/releases/download/snapshot-fafca3fa7a445cf7cf7dd0f2b5a81cd5/fansionia.files": {
-      "filename": "fansionia.files",
-      "sha256": "2df4133176368bfdc86842ca1d1c464122433324869c387f5dc6c6f6099e9274",
-      "size": 171600,
-      "tag": "snapshot-fafca3fa7a445cf7cf7dd0f2b5a81cd5",
-      "verified": {
-        "attachment": {
-          "hash_algo": "sha256",
-          "hash_value": "2df4133176368bfdc86842ca1d1c464122433324869c387f5dc6c6f6099e9274",
-          "id": "2124452414439067648",
-          "name": "fansionia.files",
-          "size": 171600
-        },
-        "sha256": "2df4133176368bfdc86842ca1d1c464122433324869c387f5dc6c6f6099e9274"
-      }
-    },
-    "https://cnb.cool/fansionia/packages/-/releases/download/snapshot-fafca3fa7a445cf7cf7dd0f2b5a81cd5/fansionia.files.sig": {
-      "filename": "fansionia.files.sig",
-      "sha256": "041c71597e483c4143d510417eb9aa92b938a23a2cc181ab6a657c59b7966060",
-      "size": 119,
-      "tag": "snapshot-fafca3fa7a445cf7cf7dd0f2b5a81cd5",
-      "verified": {
-        "attachment": {
-          "hash_algo": "sha256",
-          "hash_value": "041c71597e483c4143d510417eb9aa92b938a23a2cc181ab6a657c59b7966060",
-          "id": "2124452441987260416",
-          "name": "fansionia.files.sig",
-          "size": 119
-        },
-        "sha256": "041c71597e483c4143d510417eb9aa92b938a23a2cc181ab6a657c59b7966060"
-      }
-    },
-    "https://cnb.cool/fansionia/packages/-/releases/download/snapshot-fafca3fa7a445cf7cf7dd0f2b5a81cd5/fansionia.files.tar.gz": {
-      "filename": "fansionia.files.tar.gz",
-      "sha256": "2df4133176368bfdc86842ca1d1c464122433324869c387f5dc6c6f6099e9274",
-      "size": 171600,
-      "tag": "snapshot-fafca3fa7a445cf7cf7dd0f2b5a81cd5",
-      "verified": {
-        "attachment": {
-          "hash_algo": "sha256",
-          "hash_value": "2df4133176368bfdc86842ca1d1c464122433324869c387f5dc6c6f6099e9274",
-          "id": "2124452470462390272",
-          "name": "fansionia.files.tar.gz",
-          "size": 171600
-        },
-        "sha256": "2df4133176368bfdc86842ca1d1c464122433324869c387f5dc6c6f6099e9274"
-      }
-    },
-    "https://cnb.cool/fansionia/packages/-/releases/download/snapshot-fafca3fa7a445cf7cf7dd0f2b5a81cd5/fansionia.files.tar.gz.sig": {
-      "filename": "fansionia.files.tar.gz.sig",
-      "sha256": "041c71597e483c4143d510417eb9aa92b938a23a2cc181ab6a657c59b7966060",
-      "size": 119,
-      "tag": "snapshot-fafca3fa7a445cf7cf7dd0f2b5a81cd5",
-      "verified": {
-        "attachment": {
-          "hash_algo": "sha256",
-          "hash_value": "041c71597e483c4143d510417eb9aa92b938a23a2cc181ab6a657c59b7966060",
-          "id": "2124452498945904640",
-          "name": "fansionia.files.tar.gz.sig",
-          "size": 119
-        },
-        "sha256": "041c71597e483c4143d510417eb9aa92b938a23a2cc181ab6a657c59b7966060"
-      }
-    },
-    "https://cnb.cool/fansionia/packages/-/releases/download/snapshot-fafca3fa7a445cf7cf7dd0f2b5a81cd5/manifest.json": {
-      "filename": "manifest.json",
-      "sha256": "360719856666b65693c9c595663198d06f31ebd91b77e5281b522e00bb5e149b",
-      "size": 20461,
-      "tag": "snapshot-fafca3fa7a445cf7cf7dd0f2b5a81cd5",
-      "verified": {
-        "attachment": {
-          "hash_algo": "sha256",
-          "hash_value": "360719856666b65693c9c595663198d06f31ebd91b77e5281b522e00bb5e149b",
-          "id": "2124452280728854528",
-          "name": "manifest.json",
-          "size": 20461
-        },
-        "sha256": "360719856666b65693c9c595663198d06f31ebd91b77e5281b522e00bb5e149b"
-      }
-    },
     "https://cnb.cool/fansionia/packages/-/releases/download/upstream-denial-2d23b06685e77b19788ce9a37be3918a/denial-0.6.8-1-x86_64.pkg.tar.zst": {
       "filename": "denial-0.6.8-1-x86_64.pkg.tar.zst",
       "sha256": "783bc601c1c372530eaec2e151b45453b69c355d8894b6ee8833fb3c2a1c4f76",
@@ -2055,38 +1911,6 @@
         "sha256": "0cf5e08c7cb106ac78c362c2ab05d89057a67da5d4fd71f8b340bca7211a1074"
       }
     },
-    "https://cnb.cool/fansionia/packages/-/releases/download/upstream-denial-ae6a31ec344a9c4e13e1caaabf63655e/denial-0.6.2-1-x86_64.pkg.tar.zst": {
-      "filename": "denial-0.6.2-1-x86_64.pkg.tar.zst",
-      "sha256": "73ffebae5073358e1f851a10e58704fd3f0ae8f17770246d8f585d12d55576cf",
-      "size": 54758149,
-      "tag": "upstream-denial-ae6a31ec344a9c4e13e1caaabf63655e",
-      "verified": {
-        "attachment": {
-          "hash_algo": "sha256",
-          "hash_value": "73ffebae5073358e1f851a10e58704fd3f0ae8f17770246d8f585d12d55576cf",
-          "id": "2118184223073083392",
-          "name": "denial-0.6.2-1-x86_64.pkg.tar.zst",
-          "size": 54758149
-        },
-        "sha256": "73ffebae5073358e1f851a10e58704fd3f0ae8f17770246d8f585d12d55576cf"
-      }
-    },
-    "https://cnb.cool/fansionia/packages/-/releases/download/upstream-denial-ae6a31ec344a9c4e13e1caaabf63655e/denial-0.6.2-1-x86_64.pkg.tar.zst.sig": {
-      "filename": "denial-0.6.2-1-x86_64.pkg.tar.zst.sig",
-      "sha256": "ac4d0d1b22dbd02afbc1cca0784f8359cacc191f117e51092a46274886abd99e",
-      "size": 119,
-      "tag": "upstream-denial-ae6a31ec344a9c4e13e1caaabf63655e",
-      "verified": {
-        "attachment": {
-          "hash_algo": "sha256",
-          "hash_value": "ac4d0d1b22dbd02afbc1cca0784f8359cacc191f117e51092a46274886abd99e",
-          "id": "2118184282967744512",
-          "name": "denial-0.6.2-1-x86_64.pkg.tar.zst.sig",
-          "size": 119
-        },
-        "sha256": "ac4d0d1b22dbd02afbc1cca0784f8359cacc191f117e51092a46274886abd99e"
-      }
-    },
     "https://cnb.cool/fansionia/packages/-/releases/download/upstream-denial-afe99e337cd4f23cf081ff835b66a12d/denial-plugin-manager-0.6.8-1-x86_64.pkg.tar.zst": {
       "filename": "denial-plugin-manager-0.6.8-1-x86_64.pkg.tar.zst",
       "sha256": "5a4622d7dcb28ba220e3cfac6b2863972ff32e5fab4da3ddbb763f829e53f7ee",
@@ -2215,38 +2039,6 @@
         "sha256": "1841a3c5f9303b5998c0dc8a390b14e19a5a29e9fd8976e3d26b964a5665d25b"
       }
     },
-    "https://cnb.cool/fansionia/packages/-/releases/download/upstream-denial-c96b304e03a1b25eef3013e810b380fa/denial-flutter-engine-1_0.6.2-1-x86_64.pkg.tar.zst": {
-      "filename": "denial-flutter-engine-1_0.6.2-1-x86_64.pkg.tar.zst",
-      "sha256": "9aa5c04b4614583c6c4c9740505bb34474c4ef404f5a3cdd55e59517071bd656",
-      "size": 6474041,
-      "tag": "upstream-denial-c96b304e03a1b25eef3013e810b380fa",
-      "verified": {
-        "attachment": {
-          "hash_algo": "sha256",
-          "hash_value": "9aa5c04b4614583c6c4c9740505bb34474c4ef404f5a3cdd55e59517071bd656",
-          "id": "2118184306992713728",
-          "name": "denial-flutter-engine-1_0.6.2-1-x86_64.pkg.tar.zst",
-          "size": 6474041
-        },
-        "sha256": "9aa5c04b4614583c6c4c9740505bb34474c4ef404f5a3cdd55e59517071bd656"
-      }
-    },
-    "https://cnb.cool/fansionia/packages/-/releases/download/upstream-denial-c96b304e03a1b25eef3013e810b380fa/denial-flutter-engine-1_0.6.2-1-x86_64.pkg.tar.zst.sig": {
-      "filename": "denial-flutter-engine-1_0.6.2-1-x86_64.pkg.tar.zst.sig",
-      "sha256": "7df0d3c48d09dfe53d3c07028cdc8dac410317498a6760a2df29b300ea70db11",
-      "size": 119,
-      "tag": "upstream-denial-c96b304e03a1b25eef3013e810b380fa",
-      "verified": {
-        "attachment": {
-          "hash_algo": "sha256",
-          "hash_value": "7df0d3c48d09dfe53d3c07028cdc8dac410317498a6760a2df29b300ea70db11",
-          "id": "2118184328845037568",
-          "name": "denial-flutter-engine-1_0.6.2-1-x86_64.pkg.tar.zst.sig",
-          "size": 119
-        },
-        "sha256": "7df0d3c48d09dfe53d3c07028cdc8dac410317498a6760a2df29b300ea70db11"
-      }
-    },
     "https://cnb.cool/fansionia/packages/-/releases/download/upstream-denial-e6a0ec3b5380f96cc59ce8eafb59d1fb/denial-0.6.7-1-x86_64.pkg.tar.zst": {
       "filename": "denial-0.6.7-1-x86_64.pkg.tar.zst",
       "sha256": "bc8b494e61ecd1da2df4487879bc60df6c2d2770a47bd6058e9de3bcee398c55",
@@ -2277,38 +2069,6 @@
           "size": 119
         },
         "sha256": "624c7ea6a0a9236ab22bebcd4b5105edc39431ffe33e2c03908731c25ac6c785"
-      }
-    },
-    "https://cnb.cool/fansionia/packages/-/releases/download/upstream-denial-ecdf2c096fe36c67a3b7cb7bb7c4b40b/denial-plugin-manager-0.6.2-1-x86_64.pkg.tar.zst": {
-      "filename": "denial-plugin-manager-0.6.2-1-x86_64.pkg.tar.zst",
-      "sha256": "612d0ba8844a16622bca4928b9fb8eaf7c854665bbd0ef2a8a7cd7b2ec7ad571",
-      "size": 85735868,
-      "tag": "upstream-denial-ecdf2c096fe36c67a3b7cb7bb7c4b40b",
-      "verified": {
-        "attachment": {
-          "hash_algo": "sha256",
-          "hash_value": "612d0ba8844a16622bca4928b9fb8eaf7c854665bbd0ef2a8a7cd7b2ec7ad571",
-          "id": "2118184373283688448",
-          "name": "denial-plugin-manager-0.6.2-1-x86_64.pkg.tar.zst",
-          "size": 85735868
-        },
-        "sha256": "612d0ba8844a16622bca4928b9fb8eaf7c854665bbd0ef2a8a7cd7b2ec7ad571"
-      }
-    },
-    "https://cnb.cool/fansionia/packages/-/releases/download/upstream-denial-ecdf2c096fe36c67a3b7cb7bb7c4b40b/denial-plugin-manager-0.6.2-1-x86_64.pkg.tar.zst.sig": {
-      "filename": "denial-plugin-manager-0.6.2-1-x86_64.pkg.tar.zst.sig",
-      "sha256": "25436051722cc3482a58aaad051856c936d7a3c9408228bb8b114499b238a449",
-      "size": 119,
-      "tag": "upstream-denial-ecdf2c096fe36c67a3b7cb7bb7c4b40b",
-      "verified": {
-        "attachment": {
-          "hash_algo": "sha256",
-          "hash_value": "25436051722cc3482a58aaad051856c936d7a3c9408228bb8b114499b238a449",
-          "id": "2118184456767119360",
-          "name": "denial-plugin-manager-0.6.2-1-x86_64.pkg.tar.zst.sig",
-          "size": 119
-        },
-        "sha256": "25436051722cc3482a58aaad051856c936d7a3c9408228bb8b114499b238a449"
       }
     },
     "https://cnb.cool/fansionia/packages/-/releases/download/upstream-denial-ecf36826fc9f34afbb056d1e5d81908c/denial-flutter-engine-1_0.6.5-1-x86_64.pkg.tar.zst": {
