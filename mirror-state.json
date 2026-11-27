@@ -511,28 +511,24 @@
   "keys": {
     "/keys/fansionia.asc": {
       "filename": "fansionia.asc",
-      "local": ".work/pacman-site/keys/fansionia.asc",
       "sha256": "8deb6d8e251735400c3cc7f58e3688a4e731888da8fb1c44653ef08df46527e5",
       "tag": "pacman-keys-6b566fa0060060a2ef08f3d603a1c10b",
       "title": "Fansionia \u7b7e\u540d\u516c\u94a5 \u00b7 6b566fa00600"
     },
     "/keys/fansionia.gpg": {
       "filename": "fansionia.gpg",
-      "local": ".work/pacman-site/keys/fansionia.gpg",
       "sha256": "82a0b7ed7432e1f465db6e4b6c3d5698b83a603df6cd97247dd5f2149cf57345",
       "tag": "pacman-keys-6b566fa0060060a2ef08f3d603a1c10b",
       "title": "Fansionia \u7b7e\u540d\u516c\u94a5 \u00b7 6b566fa00600"
     },
     "/keys/fingerprint.txt": {
       "filename": "fingerprint.txt",
-      "local": ".work/pacman-site/keys/fingerprint.txt",
       "sha256": "ac843487930d516ceaa5566c6bb7fbf19c5e92f47c64da0b6d3d0e4dbd762e4b",
       "tag": "pacman-keys-6b566fa0060060a2ef08f3d603a1c10b",
       "title": "Fansionia \u7b7e\u540d\u516c\u94a5 \u00b7 6b566fa00600"
     },
     "/keys/signers.json": {
       "filename": "signers.json",
-      "local": ".work/pacman-site/keys/signers.json",
       "sha256": "9a8792dace07a068f7c1a08c086b8827f7aff77f4c9e6e575c502310eed7d0d9",
       "tag": "pacman-keys-6b566fa0060060a2ef08f3d603a1c10b",
       "title": "Fansionia \u7b7e\u540d\u516c\u94a5 \u00b7 6b566fa00600"
@@ -793,6 +789,70 @@
           "size": 119
         },
         "sha256": "39fe340671fe44928c0eef582a51170488ffb17a2a3b9608a23c1f13d80c860b"
+      }
+    },
+    "https://cnb.cool/fansionia/packages/-/releases/download/droidloom-v0.1.0-52/droidloom-image-0.1.0-52-x86_64.pkg.tar.zst": {
+      "filename": "droidloom-image-0.1.0-52-x86_64.pkg.tar.zst",
+      "sha256": "2df938e8bd83e2676f8362bced26c9df8f898702c537a3ee78305e6b37ff0e0a",
+      "size": 74221246,
+      "tag": "droidloom-v0.1.0-52",
+      "verified": {
+        "attachment": {
+          "hash_algo": "sha256",
+          "hash_value": "2df938e8bd83e2676f8362bced26c9df8f898702c537a3ee78305e6b37ff0e0a",
+          "id": "2126304504765530112",
+          "name": "droidloom-image-0.1.0-52-x86_64.pkg.tar.zst",
+          "size": 74221246
+        },
+        "sha256": "2df938e8bd83e2676f8362bced26c9df8f898702c537a3ee78305e6b37ff0e0a"
+      }
+    },
+    "https://cnb.cool/fansionia/packages/-/releases/download/droidloom-v0.1.0-52/droidloom-image-0.1.0-52-x86_64.pkg.tar.zst.sig": {
+      "filename": "droidloom-image-0.1.0-52-x86_64.pkg.tar.zst.sig",
+      "sha256": "ba54f943a87c2d1e6a53a7ab5f47fedb52adea65bd3373142ab216b36c42d026",
+      "size": 119,
+      "tag": "droidloom-v0.1.0-52",
+      "verified": {
+        "attachment": {
+          "hash_algo": "sha256",
+          "hash_value": "ba54f943a87c2d1e6a53a7ab5f47fedb52adea65bd3373142ab216b36c42d026",
+          "id": "2126304594850787328",
+          "name": "droidloom-image-0.1.0-52-x86_64.pkg.tar.zst.sig",
+          "size": 119
+        },
+        "sha256": "ba54f943a87c2d1e6a53a7ab5f47fedb52adea65bd3373142ab216b36c42d026"
+      }
+    },
+    "https://cnb.cool/fansionia/packages/-/releases/download/droidloom-v0.1.0-52/droidloom-runtime-0.1.0-52-x86_64.pkg.tar.zst": {
+      "filename": "droidloom-runtime-0.1.0-52-x86_64.pkg.tar.zst",
+      "sha256": "7516d3e47fde31f383ad40809cb62493b317c8ac936d80df47d1b77516b681df",
+      "size": 12457247,
+      "tag": "droidloom-v0.1.0-52",
+      "verified": {
+        "attachment": {
+          "hash_algo": "sha256",
+          "hash_value": "7516d3e47fde31f383ad40809cb62493b317c8ac936d80df47d1b77516b681df",
+          "id": "2126304637385228288",
+          "name": "droidloom-runtime-0.1.0-52-x86_64.pkg.tar.zst",
+          "size": 12457247
+        },
+        "sha256": "7516d3e47fde31f383ad40809cb62493b317c8ac936d80df47d1b77516b681df"
+      }
+    },
+    "https://cnb.cool/fansionia/packages/-/releases/download/droidloom-v0.1.0-52/droidloom-runtime-0.1.0-52-x86_64.pkg.tar.zst.sig": {
+      "filename": "droidloom-runtime-0.1.0-52-x86_64.pkg.tar.zst.sig",
+      "sha256": "1626c998aaa4bd603669f33a5f05146d813e19bf75a97fb36388533b486d087a",
+      "size": 119,
+      "tag": "droidloom-v0.1.0-52",
+      "verified": {
+        "attachment": {
+          "hash_algo": "sha256",
+          "hash_value": "1626c998aaa4bd603669f33a5f05146d813e19bf75a97fb36388533b486d087a",
+          "id": "2126304673858891776",
+          "name": "droidloom-runtime-0.1.0-52-x86_64.pkg.tar.zst.sig",
+          "size": 119
+        },
+        "sha256": "1626c998aaa4bd603669f33a5f05146d813e19bf75a97fb36388533b486d087a"
       }
     },
     "https://cnb.cool/fansionia/packages/-/releases/download/fansionia-keyring-v20261105-1/fansionia-keyring-20261105-1-any.pkg.tar.zst": {
@@ -1359,7 +1419,17 @@
       "filename": "fansionia.db.tar.gz.sig",
       "sha256": "a907dcf663a64bb19e3894007dbf4fa73ade991c61eb51a0c3e1815995f2d4a5",
       "size": 119,
-      "tag": "snapshot-0705c783853b8b51f3e6952835928b56"
+      "tag": "snapshot-0705c783853b8b51f3e6952835928b56",
+      "verified": {
+        "attachment": {
+          "hash_algo": "sha256",
+          "hash_value": "a907dcf663a64bb19e3894007dbf4fa73ade991c61eb51a0c3e1815995f2d4a5",
+          "id": "2126053512002187264",
+          "name": "fansionia.db.tar.gz.sig",
+          "size": 119
+        },
+        "sha256": "a907dcf663a64bb19e3894007dbf4fa73ade991c61eb51a0c3e1815995f2d4a5"
+      }
     },
     "https://cnb.cool/fansionia/packages/-/releases/download/snapshot-0705c783853b8b51f3e6952835928b56/fansionia.files": {
       "filename": "fansionia.files",
@@ -1583,6 +1653,150 @@
           "size": 20473
         },
         "sha256": "1ea0ee649f19a1e8251423047142fbc5fbbfe0066a3dde823f144670fef9793f"
+      }
+    },
+    "https://cnb.cool/fansionia/packages/-/releases/download/snapshot-f93aec6d7e8f4a39b6c671b80c928baf/fansionia.db": {
+      "filename": "fansionia.db",
+      "sha256": "7fd518900756c589035936c60c2c5faaf180c8879ba73c55a7bee8d6d994827a",
+      "size": 11966,
+      "tag": "snapshot-f93aec6d7e8f4a39b6c671b80c928baf",
+      "verified": {
+        "attachment": {
+          "hash_algo": "sha256",
+          "hash_value": "7fd518900756c589035936c60c2c5faaf180c8879ba73c55a7bee8d6d994827a",
+          "id": "2126304699179909120",
+          "name": "fansionia.db",
+          "size": 11966
+        },
+        "sha256": "7fd518900756c589035936c60c2c5faaf180c8879ba73c55a7bee8d6d994827a"
+      }
+    },
+    "https://cnb.cool/fansionia/packages/-/releases/download/snapshot-f93aec6d7e8f4a39b6c671b80c928baf/fansionia.db.sig": {
+      "filename": "fansionia.db.sig",
+      "sha256": "dcd362d49ee980764f1c36eaff6c39df1b968a4d49ddfb1efa9223ed3c6d2874",
+      "size": 119,
+      "tag": "snapshot-f93aec6d7e8f4a39b6c671b80c928baf",
+      "verified": {
+        "attachment": {
+          "hash_algo": "sha256",
+          "hash_value": "dcd362d49ee980764f1c36eaff6c39df1b968a4d49ddfb1efa9223ed3c6d2874",
+          "id": "2126304725830516736",
+          "name": "fansionia.db.sig",
+          "size": 119
+        },
+        "sha256": "dcd362d49ee980764f1c36eaff6c39df1b968a4d49ddfb1efa9223ed3c6d2874"
+      }
+    },
+    "https://cnb.cool/fansionia/packages/-/releases/download/snapshot-f93aec6d7e8f4a39b6c671b80c928baf/fansionia.db.tar.gz": {
+      "filename": "fansionia.db.tar.gz",
+      "sha256": "7fd518900756c589035936c60c2c5faaf180c8879ba73c55a7bee8d6d994827a",
+      "size": 11966,
+      "tag": "snapshot-f93aec6d7e8f4a39b6c671b80c928baf",
+      "verified": {
+        "attachment": {
+          "hash_algo": "sha256",
+          "hash_value": "7fd518900756c589035936c60c2c5faaf180c8879ba73c55a7bee8d6d994827a",
+          "id": "2126304751239606272",
+          "name": "fansionia.db.tar.gz",
+          "size": 11966
+        },
+        "sha256": "7fd518900756c589035936c60c2c5faaf180c8879ba73c55a7bee8d6d994827a"
+      }
+    },
+    "https://cnb.cool/fansionia/packages/-/releases/download/snapshot-f93aec6d7e8f4a39b6c671b80c928baf/fansionia.db.tar.gz.sig": {
+      "filename": "fansionia.db.tar.gz.sig",
+      "sha256": "dcd362d49ee980764f1c36eaff6c39df1b968a4d49ddfb1efa9223ed3c6d2874",
+      "size": 119,
+      "tag": "snapshot-f93aec6d7e8f4a39b6c671b80c928baf",
+      "verified": {
+        "attachment": {
+          "hash_algo": "sha256",
+          "hash_value": "dcd362d49ee980764f1c36eaff6c39df1b968a4d49ddfb1efa9223ed3c6d2874",
+          "id": "2126304778389340160",
+          "name": "fansionia.db.tar.gz.sig",
+          "size": 119
+        },
+        "sha256": "dcd362d49ee980764f1c36eaff6c39df1b968a4d49ddfb1efa9223ed3c6d2874"
+      }
+    },
+    "https://cnb.cool/fansionia/packages/-/releases/download/snapshot-f93aec6d7e8f4a39b6c671b80c928baf/fansionia.files": {
+      "filename": "fansionia.files",
+      "sha256": "a5178bc683fe09ab71cde0d336cf97e9bc775dc01c0dc3c001f81b6d196aef40",
+      "size": 175603,
+      "tag": "snapshot-f93aec6d7e8f4a39b6c671b80c928baf",
+      "verified": {
+        "attachment": {
+          "hash_algo": "sha256",
+          "hash_value": "a5178bc683fe09ab71cde0d336cf97e9bc775dc01c0dc3c001f81b6d196aef40",
+          "id": "2126304806323400704",
+          "name": "fansionia.files",
+          "size": 175603
+        },
+        "sha256": "a5178bc683fe09ab71cde0d336cf97e9bc775dc01c0dc3c001f81b6d196aef40"
+      }
+    },
+    "https://cnb.cool/fansionia/packages/-/releases/download/snapshot-f93aec6d7e8f4a39b6c671b80c928baf/fansionia.files.sig": {
+      "filename": "fansionia.files.sig",
+      "sha256": "e4e174d24ba474a5aaecc61b24ab56f3305220a6706ee68922637b79a5d862a3",
+      "size": 119,
+      "tag": "snapshot-f93aec6d7e8f4a39b6c671b80c928baf",
+      "verified": {
+        "attachment": {
+          "hash_algo": "sha256",
+          "hash_value": "e4e174d24ba474a5aaecc61b24ab56f3305220a6706ee68922637b79a5d862a3",
+          "id": "2126304833674461184",
+          "name": "fansionia.files.sig",
+          "size": 119
+        },
+        "sha256": "e4e174d24ba474a5aaecc61b24ab56f3305220a6706ee68922637b79a5d862a3"
+      }
+    },
+    "https://cnb.cool/fansionia/packages/-/releases/download/snapshot-f93aec6d7e8f4a39b6c671b80c928baf/fansionia.files.tar.gz": {
+      "filename": "fansionia.files.tar.gz",
+      "sha256": "a5178bc683fe09ab71cde0d336cf97e9bc775dc01c0dc3c001f81b6d196aef40",
+      "size": 175603,
+      "tag": "snapshot-f93aec6d7e8f4a39b6c671b80c928baf",
+      "verified": {
+        "attachment": {
+          "hash_algo": "sha256",
+          "hash_value": "a5178bc683fe09ab71cde0d336cf97e9bc775dc01c0dc3c001f81b6d196aef40",
+          "id": "2126304861767909376",
+          "name": "fansionia.files.tar.gz",
+          "size": 175603
+        },
+        "sha256": "a5178bc683fe09ab71cde0d336cf97e9bc775dc01c0dc3c001f81b6d196aef40"
+      }
+    },
+    "https://cnb.cool/fansionia/packages/-/releases/download/snapshot-f93aec6d7e8f4a39b6c671b80c928baf/fansionia.files.tar.gz.sig": {
+      "filename": "fansionia.files.tar.gz.sig",
+      "sha256": "e4e174d24ba474a5aaecc61b24ab56f3305220a6706ee68922637b79a5d862a3",
+      "size": 119,
+      "tag": "snapshot-f93aec6d7e8f4a39b6c671b80c928baf",
+      "verified": {
+        "attachment": {
+          "hash_algo": "sha256",
+          "hash_value": "e4e174d24ba474a5aaecc61b24ab56f3305220a6706ee68922637b79a5d862a3",
+          "id": "2126304891039952896",
+          "name": "fansionia.files.tar.gz.sig",
+          "size": 119
+        },
+        "sha256": "e4e174d24ba474a5aaecc61b24ab56f3305220a6706ee68922637b79a5d862a3"
+      }
+    },
+    "https://cnb.cool/fansionia/packages/-/releases/download/snapshot-f93aec6d7e8f4a39b6c671b80c928baf/manifest.json": {
+      "filename": "manifest.json",
+      "sha256": "92464834b767be2a9f2626cee8fa9c8cda37aefe5c9ccb1404378b92fcede93d",
+      "size": 20473,
+      "tag": "snapshot-f93aec6d7e8f4a39b6c671b80c928baf",
+      "verified": {
+        "attachment": {
+          "hash_algo": "sha256",
+          "hash_value": "92464834b767be2a9f2626cee8fa9c8cda37aefe5c9ccb1404378b92fcede93d",
+          "id": "2126304245851140096",
+          "name": "manifest.json",
+          "size": 20473
+        },
+        "sha256": "92464834b767be2a9f2626cee8fa9c8cda37aefe5c9ccb1404378b92fcede93d"
       }
     },
     "https://cnb.cool/fansionia/packages/-/releases/download/upstream-denial-2d23b06685e77b19788ce9a37be3918a/denial-0.6.8-1-x86_64.pkg.tar.zst": {
@@ -3228,7 +3442,6 @@
       "routes": {
         "/manifest.json": {
           "filename": "manifest.json",
-          "local": ".work/pacman-site/snapshots/0705c783853b8b51f3e6952835928b56/manifest.json",
           "sha256": "fe867f92569dcab370be8e719088372b97ac46a6fdf3583fb08307c536518940",
           "tag": "snapshot-0705c783853b8b51f3e6952835928b56",
           "title": "\u4ed3\u5e93\u5feb\u7167 \u00b7 0705c783853b"
@@ -3445,56 +3658,48 @@
         },
         "/x86_64/fansionia.db": {
           "filename": "fansionia.db",
-          "local": ".work/pacman-site/snapshots/0705c783853b8b51f3e6952835928b56/x86_64/fansionia.db",
           "sha256": "091e187c9a43cd71a230cf5f914f0c90ef3691135b1dfae241392088e3fe5a57",
           "tag": "snapshot-0705c783853b8b51f3e6952835928b56",
           "title": "\u4ed3\u5e93\u5feb\u7167 \u00b7 0705c783853b"
         },
         "/x86_64/fansionia.db.sig": {
           "filename": "fansionia.db.sig",
-          "local": ".work/pacman-site/snapshots/0705c783853b8b51f3e6952835928b56/x86_64/fansionia.db.sig",
           "sha256": "a907dcf663a64bb19e3894007dbf4fa73ade991c61eb51a0c3e1815995f2d4a5",
           "tag": "snapshot-0705c783853b8b51f3e6952835928b56",
           "title": "\u4ed3\u5e93\u5feb\u7167 \u00b7 0705c783853b"
         },
         "/x86_64/fansionia.db.tar.gz": {
           "filename": "fansionia.db.tar.gz",
-          "local": ".work/pacman-site/snapshots/0705c783853b8b51f3e6952835928b56/x86_64/fansionia.db.tar.gz",
           "sha256": "091e187c9a43cd71a230cf5f914f0c90ef3691135b1dfae241392088e3fe5a57",
           "tag": "snapshot-0705c783853b8b51f3e6952835928b56",
           "title": "\u4ed3\u5e93\u5feb\u7167 \u00b7 0705c783853b"
         },
         "/x86_64/fansionia.db.tar.gz.sig": {
           "filename": "fansionia.db.tar.gz.sig",
-          "local": ".work/pacman-site/snapshots/0705c783853b8b51f3e6952835928b56/x86_64/fansionia.db.tar.gz.sig",
           "sha256": "a907dcf663a64bb19e3894007dbf4fa73ade991c61eb51a0c3e1815995f2d4a5",
           "tag": "snapshot-0705c783853b8b51f3e6952835928b56",
           "title": "\u4ed3\u5e93\u5feb\u7167 \u00b7 0705c783853b"
         },
         "/x86_64/fansionia.files": {
           "filename": "fansionia.files",
-          "local": ".work/pacman-site/snapshots/0705c783853b8b51f3e6952835928b56/x86_64/fansionia.files",
           "sha256": "699ae61148988b0f0e7445a4b9d4d1626f4e0010fb17ecae48cff6111082da0a",
           "tag": "snapshot-0705c783853b8b51f3e6952835928b56",
           "title": "\u4ed3\u5e93\u5feb\u7167 \u00b7 0705c783853b"
         },
         "/x86_64/fansionia.files.sig": {
           "filename": "fansionia.files.sig",
-          "local": ".work/pacman-site/snapshots/0705c783853b8b51f3e6952835928b56/x86_64/fansionia.files.sig",
           "sha256": "f4349b17648665e48b20277684ea4547e3644b8b9194e811e525dabb446094f5",
           "tag": "snapshot-0705c783853b8b51f3e6952835928b56",
           "title": "\u4ed3\u5e93\u5feb\u7167 \u00b7 0705c783853b"
         },
         "/x86_64/fansionia.files.tar.gz": {
           "filename": "fansionia.files.tar.gz",
-          "local": ".work/pacman-site/snapshots/0705c783853b8b51f3e6952835928b56/x86_64/fansionia.files.tar.gz",
           "sha256": "699ae61148988b0f0e7445a4b9d4d1626f4e0010fb17ecae48cff6111082da0a",
           "tag": "snapshot-0705c783853b8b51f3e6952835928b56",
           "title": "\u4ed3\u5e93\u5feb\u7167 \u00b7 0705c783853b"
         },
         "/x86_64/fansionia.files.tar.gz.sig": {
           "filename": "fansionia.files.tar.gz.sig",
-          "local": ".work/pacman-site/snapshots/0705c783853b8b51f3e6952835928b56/x86_64/fansionia.files.tar.gz.sig",
           "sha256": "f4349b17648665e48b20277684ea4547e3644b8b9194e811e525dabb446094f5",
           "tag": "snapshot-0705c783853b8b51f3e6952835928b56",
           "title": "\u4ed3\u5e93\u5feb\u7167 \u00b7 0705c783853b"
@@ -3654,13 +3859,12 @@
           "title": "warpdotdev v0.2026.11.18.08.17.stable_06-1 \u00b7 warp-terminal"
         }
       },
-      "verified": false
+      "verified": true
     },
     "81269514527f1d0af631566f942236e0": {
       "routes": {
         "/manifest.json": {
           "filename": "manifest.json",
-          "local": ".work/pacman-site/snapshots/81269514527f1d0af631566f942236e0/manifest.json",
           "sha256": "1ea0ee649f19a1e8251423047142fbc5fbbfe0066a3dde823f144670fef9793f",
           "tag": "snapshot-81269514527f1d0af631566f942236e0",
           "title": "\u4ed3\u5e93\u5feb\u7167 \u00b7 81269514527f"
@@ -3877,56 +4081,48 @@
         },
         "/x86_64/fansionia.db": {
           "filename": "fansionia.db",
-          "local": ".work/pacman-site/snapshots/81269514527f1d0af631566f942236e0/x86_64/fansionia.db",
           "sha256": "1a5fc404116e2a018669e90979fca8f148cc076dbdeb88a5b3301a6d01b906bc",
           "tag": "snapshot-81269514527f1d0af631566f942236e0",
           "title": "\u4ed3\u5e93\u5feb\u7167 \u00b7 81269514527f"
         },
         "/x86_64/fansionia.db.sig": {
           "filename": "fansionia.db.sig",
-          "local": ".work/pacman-site/snapshots/81269514527f1d0af631566f942236e0/x86_64/fansionia.db.sig",
           "sha256": "b412ac5ae25513e7eebd1cee678cb2c8e4682957f16070ca10cacb1fcbe00557",
           "tag": "snapshot-81269514527f1d0af631566f942236e0",
           "title": "\u4ed3\u5e93\u5feb\u7167 \u00b7 81269514527f"
         },
         "/x86_64/fansionia.db.tar.gz": {
           "filename": "fansionia.db.tar.gz",
-          "local": ".work/pacman-site/snapshots/81269514527f1d0af631566f942236e0/x86_64/fansionia.db.tar.gz",
           "sha256": "1a5fc404116e2a018669e90979fca8f148cc076dbdeb88a5b3301a6d01b906bc",
           "tag": "snapshot-81269514527f1d0af631566f942236e0",
           "title": "\u4ed3\u5e93\u5feb\u7167 \u00b7 81269514527f"
         },
         "/x86_64/fansionia.db.tar.gz.sig": {
           "filename": "fansionia.db.tar.gz.sig",
-          "local": ".work/pacman-site/snapshots/81269514527f1d0af631566f942236e0/x86_64/fansionia.db.tar.gz.sig",
           "sha256": "b412ac5ae25513e7eebd1cee678cb2c8e4682957f16070ca10cacb1fcbe00557",
           "tag": "snapshot-81269514527f1d0af631566f942236e0",
           "title": "\u4ed3\u5e93\u5feb\u7167 \u00b7 81269514527f"
         },
         "/x86_64/fansionia.files": {
           "filename": "fansionia.files",
-          "local": ".work/pacman-site/snapshots/81269514527f1d0af631566f942236e0/x86_64/fansionia.files",
           "sha256": "2bbe83ca1b1a8d1c48190634dce79533f2f60091554a5b4df1eacf77bc124c3f",
           "tag": "snapshot-81269514527f1d0af631566f942236e0",
           "title": "\u4ed3\u5e93\u5feb\u7167 \u00b7 81269514527f"
         },
         "/x86_64/fansionia.files.sig": {
           "filename": "fansionia.files.sig",
-          "local": ".work/pacman-site/snapshots/81269514527f1d0af631566f942236e0/x86_64/fansionia.files.sig",
           "sha256": "466d2453466ff12d37f462466e4d3cb74f74a723733efaf95799a397cfded614",
           "tag": "snapshot-81269514527f1d0af631566f942236e0",
           "title": "\u4ed3\u5e93\u5feb\u7167 \u00b7 81269514527f"
         },
         "/x86_64/fansionia.files.tar.gz": {
           "filename": "fansionia.files.tar.gz",
-          "local": ".work/pacman-site/snapshots/81269514527f1d0af631566f942236e0/x86_64/fansionia.files.tar.gz",
           "sha256": "2bbe83ca1b1a8d1c48190634dce79533f2f60091554a5b4df1eacf77bc124c3f",
           "tag": "snapshot-81269514527f1d0af631566f942236e0",
           "title": "\u4ed3\u5e93\u5feb\u7167 \u00b7 81269514527f"
         },
         "/x86_64/fansionia.files.tar.gz.sig": {
           "filename": "fansionia.files.tar.gz.sig",
-          "local": ".work/pacman-site/snapshots/81269514527f1d0af631566f942236e0/x86_64/fansionia.files.tar.gz.sig",
           "sha256": "466d2453466ff12d37f462466e4d3cb74f74a723733efaf95799a397cfded614",
           "tag": "snapshot-81269514527f1d0af631566f942236e0",
           "title": "\u4ed3\u5e93\u5feb\u7167 \u00b7 81269514527f"
@@ -4086,13 +4282,12 @@
           "title": "warpdotdev v0.2026.11.18.08.17.stable_06-1 \u00b7 warp-terminal"
         }
       },
-      "verified": false
+      "verified": true
     },
     "f93aec6d7e8f4a39b6c671b80c928baf": {
       "routes": {
         "/manifest.json": {
           "filename": "manifest.json",
-          "local": ".work/pacman-site/snapshots/f93aec6d7e8f4a39b6c671b80c928baf/manifest.json",
           "sha256": "92464834b767be2a9f2626cee8fa9c8cda37aefe5c9ccb1404378b92fcede93d",
           "tag": "snapshot-f93aec6d7e8f4a39b6c671b80c928baf",
           "title": "\u4ed3\u5e93\u5feb\u7167 \u00b7 f93aec6d7e8f"
@@ -4309,56 +4504,48 @@
         },
         "/x86_64/fansionia.db": {
           "filename": "fansionia.db",
-          "local": ".work/pacman-site/snapshots/f93aec6d7e8f4a39b6c671b80c928baf/x86_64/fansionia.db",
           "sha256": "7fd518900756c589035936c60c2c5faaf180c8879ba73c55a7bee8d6d994827a",
           "tag": "snapshot-f93aec6d7e8f4a39b6c671b80c928baf",
           "title": "\u4ed3\u5e93\u5feb\u7167 \u00b7 f93aec6d7e8f"
         },
         "/x86_64/fansionia.db.sig": {
           "filename": "fansionia.db.sig",
-          "local": ".work/pacman-site/snapshots/f93aec6d7e8f4a39b6c671b80c928baf/x86_64/fansionia.db.sig",
           "sha256": "dcd362d49ee980764f1c36eaff6c39df1b968a4d49ddfb1efa9223ed3c6d2874",
           "tag": "snapshot-f93aec6d7e8f4a39b6c671b80c928baf",
           "title": "\u4ed3\u5e93\u5feb\u7167 \u00b7 f93aec6d7e8f"
         },
         "/x86_64/fansionia.db.tar.gz": {
           "filename": "fansionia.db.tar.gz",
-          "local": ".work/pacman-site/snapshots/f93aec6d7e8f4a39b6c671b80c928baf/x86_64/fansionia.db.tar.gz",
           "sha256": "7fd518900756c589035936c60c2c5faaf180c8879ba73c55a7bee8d6d994827a",
           "tag": "snapshot-f93aec6d7e8f4a39b6c671b80c928baf",
           "title": "\u4ed3\u5e93\u5feb\u7167 \u00b7 f93aec6d7e8f"
         },
         "/x86_64/fansionia.db.tar.gz.sig": {
           "filename": "fansionia.db.tar.gz.sig",
-          "local": ".work/pacman-site/snapshots/f93aec6d7e8f4a39b6c671b80c928baf/x86_64/fansionia.db.tar.gz.sig",
           "sha256": "dcd362d49ee980764f1c36eaff6c39df1b968a4d49ddfb1efa9223ed3c6d2874",
           "tag": "snapshot-f93aec6d7e8f4a39b6c671b80c928baf",
           "title": "\u4ed3\u5e93\u5feb\u7167 \u00b7 f93aec6d7e8f"
         },
         "/x86_64/fansionia.files": {
           "filename": "fansionia.files",
-          "local": ".work/pacman-site/snapshots/f93aec6d7e8f4a39b6c671b80c928baf/x86_64/fansionia.files",
           "sha256": "a5178bc683fe09ab71cde0d336cf97e9bc775dc01c0dc3c001f81b6d196aef40",
           "tag": "snapshot-f93aec6d7e8f4a39b6c671b80c928baf",
           "title": "\u4ed3\u5e93\u5feb\u7167 \u00b7 f93aec6d7e8f"
         },
         "/x86_64/fansionia.files.sig": {
           "filename": "fansionia.files.sig",
-          "local": ".work/pacman-site/snapshots/f93aec6d7e8f4a39b6c671b80c928baf/x86_64/fansionia.files.sig",
           "sha256": "e4e174d24ba474a5aaecc61b24ab56f3305220a6706ee68922637b79a5d862a3",
           "tag": "snapshot-f93aec6d7e8f4a39b6c671b80c928baf",
           "title": "\u4ed3\u5e93\u5feb\u7167 \u00b7 f93aec6d7e8f"
         },
         "/x86_64/fansionia.files.tar.gz": {
           "filename": "fansionia.files.tar.gz",
-          "local": ".work/pacman-site/snapshots/f93aec6d7e8f4a39b6c671b80c928baf/x86_64/fansionia.files.tar.gz",
           "sha256": "a5178bc683fe09ab71cde0d336cf97e9bc775dc01c0dc3c001f81b6d196aef40",
           "tag": "snapshot-f93aec6d7e8f4a39b6c671b80c928baf",
           "title": "\u4ed3\u5e93\u5feb\u7167 \u00b7 f93aec6d7e8f"
         },
         "/x86_64/fansionia.files.tar.gz.sig": {
           "filename": "fansionia.files.tar.gz.sig",
-          "local": ".work/pacman-site/snapshots/f93aec6d7e8f4a39b6c671b80c928baf/x86_64/fansionia.files.tar.gz.sig",
           "sha256": "e4e174d24ba474a5aaecc61b24ab56f3305220a6706ee68922637b79a5d862a3",
           "tag": "snapshot-f93aec6d7e8f4a39b6c671b80c928baf",
           "title": "\u4ed3\u5e93\u5feb\u7167 \u00b7 f93aec6d7e8f"
@@ -4518,7 +4705,7 @@
           "title": "warpdotdev v0.2026.11.18.08.17.stable_06-1 \u00b7 warp-terminal"
         }
       },
-      "verified": false
+      "verified": true
     }
   },
   "successful": [
